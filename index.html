@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Library of Algorithms</title>
+    <title>AlgoView | Library</title>
     <style>
         :root {
             --bg-main: #1a1a1c;
@@ -15,11 +15,12 @@
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
             --border: #3e3e42;
+            --logo-gradient: linear-gradient(135deg, #7f77dd 0%, #4facfe 100%);
         }
 
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            padding: 40px 20px; 
+            padding: 60px 20px; 
             background: var(--bg-main); 
             color: var(--text-main);
             margin: 0;
@@ -28,18 +29,39 @@
             align-items: center;
         }
 
-        h1 { 
-            color: var(--text-main); 
-            margin-bottom: 10px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
+        /* Логотип AlgoView */
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--logo-gradient);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        .logo-text span {
+            background: var(--logo-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .subtitle {
             font-size: 14px;
             color: var(--text-secondary);
-            margin-bottom: 40px;
+            margin-bottom: 50px;
             text-align: center;
+            opacity: 0.8;
         }
 
         ul { 
@@ -55,9 +77,18 @@
             font-size: 11px;
             text-transform: uppercase;
             color: var(--text-secondary);
-            margin: 30px 0 10px 10px;
-            letter-spacing: 1.5px;
+            margin: 35px 0 12px 10px;
+            letter-spacing: 2px;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .category::after {
+            content: "";
+            height: 1px;
+            flex-grow: 1;
+            background: var(--border);
         }
 
         a { 
@@ -67,74 +98,94 @@
             font-weight: 500;
             display: flex;
             align-items: center;
-            padding: 16px 24px;
+            padding: 18px 24px;
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         a:hover { 
-            transform: translateY(-3px); 
+            transform: translateY(-4px) scale(1.01); 
             border-color: var(--accent);
             background: #2d2d30;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
         }
 
-        a span {
+        a span.icon {
             margin-right: 15px;
             font-size: 20px;
+            background: var(--bg-input);
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        /* Индикатор количества (опционально) */
+        .count {
+            margin-left: auto;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: var(--border);
+            padding: 2px 8px;
+            border-radius: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>📚 Library of Algorithms</h1>
-    <div class="subtitle">Interactive visualizations for data structures and algorithms</div>
+
+    <div class="logo">
+        <div class="logo-icon">V</div>
+        <div class="logo-text">Algo<span>View</span></div>
+    </div>
+    <div class="subtitle">Interactive algorithms laboratory</div>
     
     <ul>
         <div class="category">Searching</div>
         <li>
             <a href="Binary Search/index.html">
-                <span>🔍</span> 704. Binary Search
+                <span class="icon">🔍</span> 704. Binary Search
+                <div class="count">O(log n)</div>
             </a>
         </li>
         <li>
             <a href="Jump Search/index.html">
-                <span>🦘</span> Jump Search
+                <span class="icon">🦘</span> Jump Search
+                <div class="count">O(√n)</div>
             </a>
         </li>
 
         <div class="category">Dynamic Programming</div>
         <li>
             <a href="Longest Common Subsequence/index.html">
-                <span>📉</span> 1143. Longest Common Subsequence
+                <span class="icon">📉</span> 1143. Longest Common Subsequence
             </a>
         </li>        
         <li>
             <a href="Wagner-Fischer/index.html">
-                <span>📉</span> 72. Edit Distance (Wagner–Fischer)
+                <span class="icon">📉</span> 72. Edit Distance
             </a>
         </li>
         <li>
             <a href="Longest Arithmetic Subsequence/index.html">
-                <span>🧬</span> 1027. Longest Arithmetic Subsequence
+                <span class="icon">🧬</span> 1027. Longest Arithmetic Subsequence
             </a>
         </li>
         <li>
             <a href="Climbing Stairs/index.html">
-                <span>🧬</span> 70. Climbing Stairs
+                <span class="icon">🧬</span> 70. Climbing Stairs
             </a>
         </li>
         <li>
             <a href="Minimum Path Sum/index.html">
-                <span>🧬</span> 64. Minimum Path Sum
+                <span class="icon">🧬</span> 64. Minimum Path Sum
             </a>
         </li>        
     </ul>
+
 </body>
 </html>
