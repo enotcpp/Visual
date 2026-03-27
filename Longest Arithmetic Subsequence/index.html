@@ -2,270 +2,300 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-  <title>Arithmetic Progression DP Visualizer</title>
-  <style>
-    :root {
-      --bg-main: #1a1a1c;
-      --bg-card: #242426;
-      --bg-input: #2d2d30;
-      --text-main: #e1e1e3;
-      --text-secondary: #9ba1a6;
-      --accent: #7f77dd;
-      --accent-secondary: #1d9e75;
-      --border: #3e3e42;
-    }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arithmetic Subsequence DP | AlgoView</title>
+    <style>
+        :root {
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-soft: rgba(127, 119, 221, 0.1);
+            --accent-secondary: #1d9e75;
+            --border: #313136;
+            --code-bg: #0d0d0f;
+            --marking: #e67e22;
+        }
 
-    * { box-sizing: border-box; }
-    body { 
-      margin: 0; padding: 2rem 0; 
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-      background-color: var(--bg-main); color: var(--text-main); 
-    }
-    
-    .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
-    
-    .inputs { display: flex; gap: 12px; margin: 0 0 20px; align-items: center; flex-wrap: wrap; }
-    .inputs label { font-size: 14px; color: var(--text-secondary); }
-    .inputs input { 
-      background: var(--bg-input); border: 1px solid var(--border);
-      color: var(--text-main); padding: 10px 14px; border-radius: 8px;
-      width: 300px; font-family: monospace; font-size: 14px;
-    }
-    
-    button {
-      padding: 12px 24px; border-radius: 8px; border: none;
-      background: var(--accent); color: white; font-weight: 600;
-      cursor: pointer; transition: opacity 0.2s; font-size: 14px;
-    }
-    button:hover { opacity: 0.9; }
-    button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        body { 
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
 
-    .info-box {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px; font-size: 14px; line-height: 1.6;
-      min-height: 80px; margin: 0 0 20px;
-    }
-    .info-box b { color: var(--accent); }
-    .info-box code { background: #3e3e42; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        /* VISUALIZER SECTION */
+        .visualizer-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { font-size: 22px; margin: 0 0 25px 0; display: flex; align-items: center; gap: 10px; }
 
-    .legend { display: flex; gap: 15px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); margin: 0 0 20px; }
-    .leg { display: flex; align-items: center; gap: 6px; }
-    .ldot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+        .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 10px 15px; border-radius: 8px; width: 300px; outline: none;
+        }
 
-    .nums-row { display: flex; gap: 8px; margin: 0 0 20px; flex-wrap: wrap; }
-    .nbox {
-      width: 50px; height: 44px; border-radius: 10px;
-      border: 1px solid var(--border); background: var(--bg-card);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-size: 16px; font-weight: 600; transition: all 0.25s;
-    }
-    .nbox .nidx { font-size: 10px; font-weight: 400; color: var(--text-secondary); }
-    .nbox.hi-i { border: 2px solid var(--accent); background: #3c3489; color: white; }
-    .nbox.hi-j { border: 2px solid var(--accent-secondary); background: #085041; color: white; }
+        button {
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button.primary { background: var(--accent); color: white; border: none; }
 
-    .tbl-wrap { overflow-x: auto; margin: 0 0 20px; border-radius: 8px; border: 1px solid var(--border); }
-    table { border-collapse: separate; border-spacing: 4px; font-size: 12px; min-width: 100%; background: var(--bg-main); table-layout: fixed; }
-    
-    th { font-size: 11px; color: var(--text-secondary); padding: 8px; background: var(--bg-card); width: 50px; }
-    
-    /* ФИКСИРОВАННЫЙ ПЕРВЫЙ СТОЛБЕЦ */
-    .row-lbl { 
-      font-size: 11px; color: var(--text-secondary); 
-      text-align: center; padding: 4px; 
-      background: var(--bg-card);
-      width: 60px; min-width: 60px; max-width: 60px; /* Жесткий размер */
-      position: sticky; left: 0; z-index: 2;
-    }
+        /* Твоя легенда */
+        .legend { display: flex; gap: 15px; margin-bottom: 20px; font-size: 11px; color: var(--text-secondary); }
+        .leg { display: flex; align-items: center; gap: 6px; }
+        .ldot { width: 12px; height: 12px; border-radius: 3px; }
 
-    .cell {
-      width: 50px; height: 38px; border-radius: 6px;
-      border: 1px solid var(--border); background: var(--bg-card);
-      text-align: center; vertical-align: middle; color: var(--text-secondary);
-    }
-    .cell.has { background: var(--bg-input); color: var(--text-main); font-weight: 500; }
-    .cell.updated { background: var(--accent); border: 2px solid white; color: white; font-weight: bold; }
-    .cell.cur-i { border: 1.5px solid var(--accent); }
-    .cell.cur-j { border: 1.5px solid var(--accent-secondary); }
+        /* Элементы последовательности */
+        .nums-row { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+        .nbox {
+            width: 48px; height: 42px; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--bg-main); display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; font-weight: 600; transition: 0.2s;
+        }
+        .nidx { font-size: 9px; color: var(--text-secondary); }
+        .nbox.hi-i { border: 2px solid var(--accent); background: var(--accent-soft); color: var(--accent); }
+        .nbox.hi-j { border: 2px solid var(--accent-secondary); background: rgba(29, 158, 117, 0.1); color: var(--accent-secondary); }
 
-    .ctrls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-    .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
-    
-    .res { font-size: 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--border); padding-top: 20px; }
-    .res-val { font-size: 24px; font-weight: bold; color: var(--accent); }
-    .best-seq { font-size: 14px; color: var(--accent-secondary); margin-top: 8px; font-family: monospace; }
-    .err { color: #ff6b6b; font-size: 12px; margin-bottom: 10px; }
-  </style>
+        /* DP Table */
+        .tbl-wrap { 
+            overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; 
+            background: var(--bg-main); margin-bottom: 25px; max-height: 400px;
+        }
+        table { border-collapse: separate; border-spacing: 2px; width: 100%; table-layout: fixed; }
+        th, td { width: 45px; min-width: 45px; height: 35px; text-align: center; font-size: 11px; }
+        th { background: var(--bg-card); color: var(--text-secondary); font-weight: normal; position: sticky; top: 0; z-index: 3; }
+        .row-lbl { background: var(--bg-card); position: sticky; left: 0; z-index: 4; font-weight: bold; }
+        
+        .cell { background: var(--bg-card); color: rgba(255,255,255,0.1); border-radius: 4px; }
+        .cell.has { background: var(--bg-input); color: var(--text-main); }
+        .cell.updated { background: var(--accent); color: white; font-weight: bold; z-index: 2; }
+        .cell.cur-i { border: 1px solid var(--accent); }
+        .cell.cur-j { border: 1px solid var(--accent-secondary); }
+
+        /* LAB INFO SECTION */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn {
+            background: none; border: none; padding: 18px 25px; color: var(--text-secondary);
+            font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer;
+        }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn {
+            font-size: 10px; padding: 4px 8px; background: transparent; 
+            border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer;
+        }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; font-size: 14px; }
+        
+        .best-seq { font-size: 13px; color: var(--accent-secondary); font-family: monospace; margin-top: 10px; }
+    </style>
 </head>
 <body>
 
 <div class="wrap">
-  <div class="inputs">
-    <label>Sequence:</label>
-    <input id="seq-in" type="text" value="20, 1, 15, 3, 10, 5, 8" placeholder="e.g. 1, 3, 5, 2, 4">
-    <button onclick="rebuild()">Apply</button>
-  </div>
-  <div id="err-msg" class="err"></div>
+    <div class="visualizer-section">
+        <h1>🧬 Arithmetic Subsequence Visualizer</h1>
+        
+        <div class="inputs">
+            <input id="seq-in" type="text" value="20, 1, 15, 3, 10, 5, 8">
+            <button onclick="rebuild()" class="primary">Apply</button>
+        </div>
 
-  <div class="legend">
-    <div class="leg"><div class="ldot" style="background:#3c3489;border:2px solid var(--accent)"></div>current i</div>
-    <div class="leg"><div class="ldot" style="background:#085041;border:2px solid var(--accent-secondary)"></div>current j</div>
-    <div class="leg"><div class="ldot" style="background:var(--accent);border:1px solid white"></div>updated cell</div>
-  </div>
+        <div class="legend">
+            <div class="leg"><div class="ldot" style="background:var(--accent-soft); border:1px solid var(--accent)"></div> current i</div>
+            <div class="leg"><div class="ldot" style="background:rgba(29, 158, 117, 0.1); border:1px solid var(--accent-secondary)"></div> current j</div>
+            <div class="leg"><div class="ldot" style="background:var(--accent)"></div> update</div>
+        </div>
 
-  <div class="nums-row" id="nums-row"></div>
-  <div class="info-box" id="info">Click "Next Step" to begin.</div>
-  
-  <div class="tbl-wrap"><div id="tbl"></div></div>
+        <div id="info" style="min-height: 60px; color: var(--text-secondary); font-size: 14px; border-left: 3px solid var(--accent); padding-left: 15px; margin-bottom: 20px;">
+            Initializing...
+        </div>
 
-  <div class="ctrls">
-    <button class="secondary" onclick="go(-1)">← Back</button>
-    <button onclick="go(1)">Next Step →</button>
-    <button class="secondary" onclick="jumpEnd()">Finish »</button>
-    <button class="secondary" onclick="resetAll()">Reset</button>
-    <span class="ctr-lbl" id="ctr"></span>
-  </div>
-  
-  <div class="res">Max Length: <span class="res-val" id="resv">—</span></div>
-  <div class="best-seq" id="bestseq"></div>
+        <div class="nums-row" id="nums-row"></div>
+        <div class="tbl-wrap" id="tbl"></div>
+
+        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
+        <div class="best-seq" id="bestseq"></div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code id="cpp-display"></code></pre></div>
+    </div>
 </div>
 
 <script>
-let nums = [20, 1, 15, 3, 10, 5, 8];
-let n = nums.length;
-let DIFFS = [];
-let steps = [];
-let cur = 0;
+    const db = {
+        theory: {
+            EN: "<h3>Longest Arithmetic Subsequence</h3><p>Find the length of the longest subsequence in an array that forms an arithmetic progression. An arithmetic progression has a constant difference <b>d</b> between consecutive terms.</p><p>We use DP with a hash map (or table): <b>dp[i][diff]</b> stores the length of the progression ending at index <b>i</b> with difference <b>diff</b>.</p>",
+            RU: "<h3>Самая длинная арифм. прогрессия</h3><p>Задача: найти длину самой длинной подпоследовательности, которая является арифметической прогрессией. В такой прогрессии разность <b>d</b> между соседними элементами постоянна.</p><p>Используется динамическое программирование: <b>dp[i][diff]</b> — это длина прогрессии, заканчивающейся на индексе <b>i</b> с разностью <b>diff</b>.</p>"
+        },
+        python: {
+            v1: "def longestArithSeqLength(nums):\n    dp = {}\n    for i in range(len(nums)):\n        for j in range(i):\n            diff = nums[i] - nums[j]\n            dp[i, diff] = dp.get((j, diff), 1) + 1\n    return max(dp.values())",
+            v2: "# Using list of dicts\ndef solve(nums):\n    n = len(nums)\n    dp = [{} for _ in range(n)]\n    res = 0\n    for i in range(n):\n        for j in range(i):\n            d = nums[i] - nums[j]\n            dp[i][d] = dp[j].get(d, 1) + 1\n            res = max(res, dp[i][d])\n    return res"
+        },
+        cpp: {
+            v1: "int longestArithSeqLength(vector<int>& nums) {\n    int n = nums.size(), res = 0;\n    vector<unordered_map<int, int>> dp(n);\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < i; j++) {\n            int d = nums[i] - nums[j];\n            dp[i][d] = dp[j].count(d) ? dp[j][d] + 1 : 2;\n            res = max(res, dp[i][d]);\n        }\n    }\n    return res;\n}",
+            v2: "// Using 2D array if diff range is small\n// int dp[1001][1001];"
+        }
+    };
 
-function dfmt(d) { return (d >= 0 ? '+' : '') + d; }
+    let currentMainTab = 'theory', nums = [], n = 0, DIFFS = [], steps = [], cur = 0, timer = null;
 
-function rebuild() {
-  const input = document.getElementById('seq-in').value;
-  const parsed = input.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-  
-  if (parsed.length < 2) {
-    document.getElementById('err-msg').textContent = "Please enter at least 2 numbers.";
-    return;
-  }
-  if (parsed.length > 20) {
-    document.getElementById('err-msg').textContent = "Max 20 numbers for visualization.";
-    return;
-  }
-  
-  document.getElementById('err-msg').textContent = "";
-  nums = parsed;
-  n = nums.length;
-  init();
-}
-
-function init() {
-  const s = new Set();
-  for (let i = 1; i < n; i++) for (let j = 0; j < i; j++) s.add(nums[i] - nums[j]);
-  DIFFS = [...s].sort((a, b) => a - b);
-  
-  steps = buildSteps();
-  cur = 0;
-  render();
-}
-
-function buildSteps() {
-  const _steps = [];
-  let dp = Array.from({ length: n }, () => ({}));
-  let res = 1;
-  let bestI = 0, bestD = null;
-
-  _steps.push({ i: -1, j: -1, diff: null, dp: dp.map(o => ({ ...o })), res, msg: 'Starting point. DP table is empty.', bestI, bestD });
-
-  for (let i = 1; i < n; i++) {
-    for (let j = 0; j < i; j++) {
-      const d = nums[i] - nums[j];
-      const prev = dp[j][d] !== undefined ? dp[j][d] : 1;
-      const nv = prev + 1;
-      
-      dp = dp.map(o => ({ ...o }));
-      dp[i] = { ...dp[i], [d]: Math.max(dp[i][d] || 1, nv) };
-      
-      if (dp[i][d] > res) { res = dp[i][d]; bestI = i; bestD = d; }
-      
-      _steps.push({
-        i, j, diff: d,
-        dp: dp.map(o => ({ ...o })),
-        res, bestI, bestD,
-        msg: `Checking <b>nums[${i}]=${nums[i]}</b> and <b>nums[${j}]=${nums[j]}</b>.<br>Common difference <b>d = ${dfmt(d)}</b>.<br>Length at j was ${prev} → New length at i is <b>${nv}</b>.`
-      });
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        renderContextControls();
     }
-  }
 
-  _steps.push({ i: -1, j: -1, diff: null, dp: dp.map(o => ({ ...o })), res, bestI, bestD, msg: `<b>Finished.</b> Max progression length is <b>${res}</b>.` });
-  return _steps;
-}
-
-function recoverSeq(dp, bi, bd) {
-  const seq = [nums[bi]];
-  let ci = bi;
-  while (true) {
-    let found = false;
-    for (let j = 0; j < ci; j++) {
-      if (nums[ci] - nums[j] === bd && dp[j][bd] === (dp[ci][bd] || 1) - 1) {
-        seq.unshift(nums[j]); ci = j; found = true; break;
-      }
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active');
+                if(currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[item];
+                else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][item];
+            };
+            panel.appendChild(b);
+        });
+        if(currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory['EN'];
+        else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab]['v1'];
     }
-    if (!found) break;
-  }
-  return seq;
-}
 
-function render() {
-  const s = steps[cur];
-  document.getElementById('ctr').textContent = `step ${cur} / ${steps.length - 1}`;
-  document.getElementById('resv').textContent = cur === 0 ? '—' : s.res;
+    function dfmt(d) { return (d >= 0 ? '+' : '') + d; }
 
-  if (cur > 0 && s.res > 1 && s.bestD !== null) {
-    const seq = recoverSeq(s.dp, s.bestI, s.bestD);
-    document.getElementById('bestseq').textContent = `Best sequence found: [${seq.join(', ')}] (diff: ${dfmt(s.bestD)})`;
-  } else {
-    document.getElementById('bestseq').textContent = '';
-  }
-
-  document.getElementById('info').innerHTML = s.msg;
-
-  const nr = document.getElementById('nums-row');
-  nr.innerHTML = nums.map((v, idx) => {
-    let cls = 'nbox';
-    if (idx === s.i) cls += ' hi-i';
-    else if (idx === s.j) cls += ' hi-j';
-    return `<div class="${cls}"><span class="nidx">[${idx}]</span>${v}</div>`;
-  }).join('');
-
-  let html = '<table><thead><tr><th class="row-lbl">i \\ d</th>';
-  for (const d of DIFFS) html += `<th>${dfmt(d)}</th>`;
-  html += '</tr></thead><tbody>';
-
-  for (let i = 0; i < n; i++) {
-    html += `<tr><td class="row-lbl"><b>i=${i}</b><br>(${nums[i]})</td>`;
-    for (const d of DIFFS) {
-      const val = s.dp[i][d];
-      let cls = 'cell';
-      if (val !== undefined) cls += ' has';
-      if (i === s.i && d === s.diff) cls += ' updated';
-      else if (i === s.i) cls += ' cur-i';
-      else if (i === s.j && d === s.diff) cls += ' cur-j';
-      html += `<td class="${cls}">${val !== undefined ? val : ''}</td>`;
+    function rebuild() {
+        const input = document.getElementById('seq-in').value;
+        nums = input.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        n = nums.length;
+        if (n < 2) return;
+        
+        const s = new Set();
+        for (let i = 1; i < n; i++) for (let j = 0; j < i; j++) s.add(nums[i] - nums[j]);
+        DIFFS = [...s].sort((a, b) => a - b);
+        
+        initSteps();
     }
-    html += '</tr>';
-  }
-  html += '</tbody></table>';
-  document.getElementById('tbl').innerHTML = html;
-}
 
-function go(dir) { const nx = cur + dir; if (nx >= 0 && nx < steps.length) { cur = nx; render(); } }
-function jumpEnd() { cur = steps.length - 1; render(); }
-function resetAll() { cur = 0; render(); }
+    function initSteps() {
+        steps = []; let dp = Array.from({ length: n }, () => ({}));
+        let res = 1, bestI = 0, bestD = null;
 
-init();
+        steps.push({ i: -1, j: -1, diff: null, dp: dp.map(o => ({ ...o })), res, msg: 'Starting point. DP table is empty.' });
+
+        for (let i = 1; i < n; i++) {
+            for (let j = 0; j < i; j++) {
+                const d = nums[i] - nums[j];
+                const prev = dp[j][d] !== undefined ? dp[j][d] : 1;
+                const nv = prev + 1;
+                dp = dp.map(o => ({ ...o }));
+                dp[i] = { ...dp[i], [d]: Math.max(dp[i][d] || 1, nv) };
+                if (dp[i][d] > res) { res = dp[i][d]; bestI = i; bestD = d; }
+                
+                // ТВОЙ ТЕКСТ СОХРАНЕН ПОЛНОСТЬЮ
+                steps.push({
+                    i, j, diff: d, dp: dp.map(o => ({ ...o })), res, bestI, bestD,
+                    msg: `Checking <b>nums[${i}]=${nums[i]}</b> and <b>nums[${j}]=${nums[j]}</b>.<br>Common difference <b>d = ${dfmt(d)}</b>.<br>Length at j was ${prev} → New length at i is <b>${nv}</b>.`
+                });
+            }
+        }
+        steps.push({ i: -1, j: -1, diff: null, dp: dp.map(o => ({ ...o })), res, bestI, bestD, msg: `<b>Finished.</b> Max progression length is <b>${res}</b>.` });
+        cur = 0; render();
+    }
+
+    function recoverSeq(dp, bi, bd) {
+        const seq = [nums[bi]]; let ci = bi;
+        while (true) {
+            let found = false;
+            for (let j = 0; j < ci; j++) {
+                if (nums[ci] - nums[j] === bd && dp[j][bd] === (dp[ci][bd] || 1) - 1) {
+                    seq.unshift(nums[j]); ci = j; found = true; break;
+                }
+            }
+            if (!found) break;
+        }
+        return seq;
+    }
+
+    function render() {
+        const s = steps[cur];
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length - 1}`;
+
+        if (cur > 0 && s.res > 1 && s.bestD !== null) {
+            const seq = recoverSeq(s.dp, s.bestI, s.bestD);
+            document.getElementById('bestseq').textContent = `Best sequence: [${seq.join(', ')}] (d: ${dfmt(s.bestD)})`;
+        }
+
+        const nr = document.getElementById('nums-row');
+        nr.innerHTML = nums.map((v, idx) => {
+            let cls = 'nbox' + (idx === s.i ? ' hi-i' : '') + (idx === s.j ? ' hi-j' : '');
+            return `<div class="${cls}"><span class="nidx">[${idx}]</span>${v}</div>`;
+        }).join('');
+
+        let html = '<table><tr><th class="row-lbl">i \\ d</th>';
+        for (const d of DIFFS) html += `<th>${dfmt(d)}</th>`;
+        html += '</tr>';
+        for (let i = 0; i < n; i++) {
+            html += `<tr><td class="row-lbl">i=${i} (${nums[i]})</td>`;
+            for (const d of DIFFS) {
+                const val = s.dp[i][d];
+                let cls = 'cell' + (val !== undefined ? ' has' : '') + 
+                          (i === s.i && d === s.diff ? ' updated' : '') + 
+                          (i === s.i && d !== s.diff ? ' cur-i' : '') +
+                          (i === s.j && d === s.diff ? ' cur-j' : '');
+                html += `<td class="${cls}">${val || ''}</td>`;
+            }
+            html += '</tr>';
+        }
+        document.getElementById('tbl').innerHTML = html + '</table>';
+    }
+
+    function go(dir) {
+        if (cur+dir >= 0 && cur+dir < steps.length) { cur += dir; render(); }
+        else if (timer) toggleAuto();
+    }
+
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 500); }
+    }
+
+    renderContextControls();
+    rebuild();
 </script>
 </body>
 </html>
-
