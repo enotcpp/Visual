@@ -30,10 +30,10 @@
         
         .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
 
-        /* --- LOGO ALGOVIEW --- */
+        /* 1. ДОБАВЛЯЕМ СТИЛИ ДЛЯ ЛОГОТИПА */
         .logo {
             position: absolute;
-            top: 40px;
+            top: 20px;
             left: 20px;
             display: flex;
             align-items: center;
@@ -44,18 +44,22 @@
             text-transform: uppercase;
             color: var(--text-main);
             opacity: 0.8;
+            pointer-events: none;
         }
         .logo-box {
-            width: 20px; height: 20px;
+            width: 20px;
+            height: 20px;
             background: var(--accent);
             border-radius: 4px;
         }
-        /* -------------------- */
 
+        /* 2. ДОБАВЛЯЕМ position: relative, чтобы логотип позиционировался относительно wrap */
         .wrap { 
+            max-width: 850px; 
+            margin: 0 auto; 
+            padding: 40px 20px 0; /* Увеличили верхний padding для отступа под лого */
             position: relative; 
-            padding-top: 60px; /* Отступ сверху, чтобы заголовок не налезал на лого */
-        }  
+        }
         
         /* VISUALIZER SECTION */
         .visualizer-card {
