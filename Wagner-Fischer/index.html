@@ -2,271 +2,276 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Edit Distance Visualizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Distance Visualizer | AlgoView</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
     <style>
         :root {
-            --bg-main: #1a1a1c;
-            --bg-card: #242426;
-            --bg-input: #2d2d30;
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --border: #3e3e42;
+            --accent-soft: rgba(127, 119, 221, 0.1);
+            --accent-secondary: #1d9e75;
+            --border: #313136;
+            --code-bg: #0d0d0f;
         }
 
-        * { box-sizing: border-box; }
         body { 
-            margin: 0; 
-            padding: 2rem 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg-main);
-            color: var(--text-main); 
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-main); color: var(--text-main); 
         }
         
-        .wrap { max-width: 700px; margin: 0 auto; padding: 0 20px; }
-        
-        .inputs { display: flex; gap: 12px; margin: 0 0 20px; align-items: center; flex-wrap: wrap; }
-        .inputs label { font-size: 14px; color: var(--text-secondary); }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+        /* VISUALIZER SECTION */
+        .visualizer-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { font-size: 22px; margin: 0 0 25px 0; }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; flex-wrap: wrap; }
         .inputs input { 
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 8px;
-            width: 140px; 
-            font-family: monospace; 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 10px 15px; border-radius: 8px; width: 140px; outline: none;
         }
-        
+
         button {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            background: var(--accent);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            font-size: 14px;
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
         }
-        button:hover { opacity: 0.9; }
-        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button.primary { background: var(--accent); color: white; border: none; }
 
         .info-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px; 
-            font-size: 14px; 
-            line-height: 1.6;
-            min-height: 80px; 
-            margin: 0 0 20px;
+            background: var(--bg-main); border-left: 4px solid var(--accent);
+            padding: 20px; min-height: 80px; margin-bottom: 25px;
+            font-size: 14px; line-height: 1.6; color: var(--text-secondary);
         }
         .info-box b { color: var(--accent); }
-        .info-box code { background: #3e3e42; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
 
-        .legend { display: flex; gap: 15px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); margin: 0 0 20px; }
-        .leg { display: flex; align-items: center; gap: 6px; }
-        .ldot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
-
-        .tbl-wrap { overflow-x: auto; margin: 0 0 20px; }
+        /* TABLE */
+        .tbl-wrap { overflow-x: auto; margin-bottom: 30px; }
         table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
-        th { font-size: 13px; color: var(--text-secondary); padding: 5px; min-width: 48px; }
-        .rlbl { font-size: 13px; color: var(--text-secondary); text-align: right; padding-right: 10px; }
+        th, .rlbl { font-size: 13px; color: var(--text-secondary); padding: 5px; min-width: 45px; text-align: center; }
 
         .cell {
-            width: 48px; height: 48px; border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            text-align: center; vertical-align: middle;
-            font-size: 16px; color: var(--text-secondary);
-            transition: all .2s;
+            width: 45px; height: 45px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-card);
+            text-align: center; font-size: 16px; color: var(--text-secondary);
+            transition: all 0.2s;
         }
-        .cell.filled  { background: var(--bg-input); color: var(--text-main); }
-        .cell.cur     { background: #3c3489; border: 2px solid #7f77dd; color: white; font-weight: bold; }
-        .cell.match   { background: #085041; border: 2px solid #1d9e75; color: white; }
-        .cell.op-rep  { background: #633806; border: 1.5px solid #ba7517; color: white; }
-        .cell.op-del  { background: #712b13; border: 1.5px solid #993c1d; color: white; }
-        .cell.op-ins  { background: #0c447c; border: 1.5px solid #185fa5; color: white; }
-        .cell.hi      { border-color: #5c5c63; }
+        .cell.filled { background: var(--bg-input); color: var(--text-main); }
+        .cell.cur { border: 2.5px solid var(--accent); color: white; transform: scale(1.05); z-index: 2; }
+        .cell.source { background: #3c3489; border-color: var(--accent); color: white; }
+        .cell.match { background: #085041; border-color: var(--accent-secondary); color: white; }
 
-        .op-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin: 0 4px; text-transform: uppercase; }
-        .badge-match { background: #1d9e75; color: white; }
-        .badge-rep   { background: #ba7517; color: white; }
-        .badge-del   { background: #993c1d; color: white; }
-        .badge-ins   { background: #185fa5; color: white; }
+        /* LAB INFO SECTION */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn {
+            background: none; border: none; padding: 18px 25px; color: var(--text-secondary);
+            font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer;
+        }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn {
+            font-size: 10px; padding: 4px 8px; background: transparent; 
+            border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer;
+        }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
 
-        .ctrls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
-        .res { font-size: 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--border); padding-top: 20px; }
-        .res-val { font-size: 24px; font-weight: bold; color: var(--accent); }
-        
-        .str-row { font-size: 16px; margin: 0 0 15px; min-height: 24px; background: var(--bg-card); padding: 10px; border-radius: 8px; }
-        .ch { display: inline-block; padding: 0 4px; margin: 0 1px; border-radius: 4px; font-family: monospace; }
-        .ch-cur   { background: #3c3489; color: white; }
-        .ch-match { background: #085041; color: white; }
-        .err { font-size: 12px; color: #ff6b6b; margin-top: -15px; margin-bottom: 15px; min-height: 16px; }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
-  <div class="inputs">
-    <label>Text 1</label>
-    <input id="in1" type="text" value="adbdcd" maxlength="12" oninput="onInput()">
-    <label>Text 2</label>
-    <input id="in2" type="text" value="abc" maxlength="12" oninput="onInput()">
-    <button onclick="rebuild()">Apply</button>
-  </div>
-  <div class="err" id="err"></div>
+    <div class="visualizer-section">
+        <h1>📐 Edit Distance (Wagner-Fischer)</h1>
+        
+        <div class="inputs">
+            <input id="in1" type="text" value="kitten" maxlength="12">
+            <input id="in2" type="text" value="sitting" maxlength="12">
+            <button onclick="rebuild()" class="primary">Apply</button>
+        </div>
 
-  <div class="legend">
-    <div class="leg"><div class="ldot" style="background:#3c3489;border:2px solid #7f77dd"></div>current</div>
-    <div class="leg"><div class="ldot" style="background:#085041;border:2px solid #1d9e75"></div>match</div>
-    <div class="leg"><div class="ldot" style="background:#633806;border:1.5px solid #ba7517"></div>replace</div>
-    <div class="leg"><div class="ldot" style="background:#712b13;border:1.5px solid #993c1d"></div>delete</div>
-    <div class="leg"><div class="ldot" style="background:#0c447c;border:1.5px solid #185fa5"></div>insert</div>
-  </div>
+        <div class="info-box" id="info">Ready to start.</div>
 
-  <div class="str-row" id="str-display"></div>
-  <div class="info-box" id="info">Click "Next Step" to start.</div>
-  
-  <div class="tbl-wrap"><div id="tbl"></div></div>
+        <div class="tbl-wrap" id="tbl"></div>
 
-  <div class="ctrls">
-    <button class="secondary" onclick="go(-1)">< Back</button>
-    <button onclick="go(1)">Next Step ></button>
-    <button class="secondary" onclick="jumpEnd()">Finish �</button>
-    <button class="secondary" onclick="resetAll()">Reset</button>
-    <span class="ctr-lbl" id="ctr"></span>
-  </div>
-  
-  <div class="res">Final DP[n][m]: <span class="res-val" id="resv">�</span></div>
+        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+            <button onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code class="language-python" id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp" id="cpp-display"></code></pre></div>
+    </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
 <script>
-let t1 = 'adbdcd', t2 = 'abc';
-let steps = [], cur = 0;
+    const db = {
+        theory: {
+            EN: "<h3>Edit Distance</h3><p>Also known as Levenshtein distance. It measures the minimum number of operations (insertions, deletions, substitutions) required to change one word into another.</p>",
+            RU: "<h3>Расстояние редактирования</h3><p>Также известно как расстояние Левенштейна. Это минимальное количество операций (вставка, удаление, замена), необходимых для превращения одной строки в другую.</p>"
+        },
+        python: {
+            v1: "def editDistance(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0]*(n+1) for _ in range(m+1)]\n    for i in range(m+1): dp[i][0] = i\n    for j in range(n+1): dp[0][j] = j\n    \n    for i in range(1, m+1):\n        for j in range(1, n+1):\n            if s1[i-1] == s2[j-1]:\n                dp[i][j] = dp[i-1][j-1]\n            else:\n                dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])\n    return dp[m][n]",
+            v2: "# Space optimized version\ndef editDistance(s1, s2):\n    n = len(s2)\n    prev = list(range(n + 1))\n    for i, c1 in enumerate(s1):\n        curr = [i + 1]\n        for j, c2 in enumerate(s2):\n            curr.append(prev[j] if c1 == c2 else 1 + min(prev[j], prev[j+1], curr[-1]))\n        prev = curr\n    return prev[-1]"
+        },
+        cpp: {
+            v1: "int editDistance(string s1, string s2) {\n    int m = s1.length(), n = s2.length();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1));\n    for (int i = 0; i <= m; i++) dp[i][0] = i;\n    for (int j = 0; j <= n; j++) dp[0][j] = j;\n    \n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1[i-1] == s2[j-1])\n                dp[i][j] = dp[i-1][j-1];\n            else\n                dp[i][j] = 1 + min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]});\n        }\n    }\n    return dp[m][n];\n}",
+            v2: "// Using 2 rows only\nint editDistance(string s1, string s2) {\n    int m = s1.size(), n = s2.size();\n    vector<int> prev(n + 1), curr(n + 1);\n    iota(prev.begin(), prev.end(), 0);\n    for (int i = 1; i <= m; i++) {\n        curr[0] = i;\n        for (int j = 1; j <= n; j++) {\n            if (s1[i-1] == s2[j-1]) curr[j] = prev[j-1];\n            else curr[j] = 1 + min({prev[j], curr[j-1], prev[j-1]});\n        }\n        prev = curr;\n    }\n    return prev[n];\n}"
+        }
+    };
 
-function onInput() {
-  document.getElementById('err').textContent = '';
-}
+    let t1 = '', t2 = '', steps = [], cur = 0, timer = null, currentMainTab = 'theory';
 
-function rebuild() {
-  const v1 = document.getElementById('in1').value.trim();
-  const v2 = document.getElementById('in2').value.trim();
-  const err = document.getElementById('err');
-  if (!v1 || !v2) { err.textContent = 'Both fields are required.'; return; }
-  if (v1.length > 12 || v2.length > 12) { err.textContent = 'Max 12 characters.'; return; }
-  err.textContent = '';
-  t1 = v1; t2 = v2;
-  steps = buildSteps();
-  cur = 0;
-  render();
-}
-
-function buildSteps() {
-  const n = t1.length, m = t2.length;
-  const _steps = [];
-  const dp = Array.from({length: n+1}, (_,i) =>
-    Array.from({length: m+1}, (_,j) => i===0 ? j : (j===0 ? i : 0))
-  );
-
-  _steps.push({ i:-1, j:-1, n, m, dp: dp.map(r=>[...r]), action:'start', src:null,
-    msg: 'Base cases initialized: <code>dp[i][0]=i</code> (deletion) and <code>dp[0][j]=j</code> (insertion).' });
-
-  for (let i = 1; i <= n; i++) {
-    for (let j = 1; j <= m; j++) {
-      const isMatch = t1[i-1] === t2[j-1];
-      const rep  = dp[i-1][j-1] + (isMatch ? 0 : 1);
-      const del_ = dp[i-1][j]   + 1;
-      const ins  = dp[i][j-1]   + 1;
-      dp[i][j] = Math.min(rep, del_, ins);
-
-      let action, src;
-      if (isMatch)                            { action='match';   src='diag'; }
-      else if (rep <= del_ && rep <= ins)     { action='replace'; src='diag'; }
-      else if (del_ <= ins)                   { action='delete';  src='top';  }
-      else                                    { action='insert';  src='left'; }
-
-      const opLine = isMatch
-        ? `<span class="op-badge badge-match">match</span> dp[${i-1}][${j-1}] + 0 = ${dp[i][j]}`
-        : `<span class="op-badge badge-rep">rep</span>${rep} | <span class="op-badge badge-del">del</span>${del_} | <span class="op-badge badge-ins">ins</span>${ins} > min = ${dp[i][j]}`;
-
-      _steps.push({ i, j, n, m, dp: dp.map(r=>[...r]), action, src,
-        msg: `Comparing <b>'${t1[i-1]}'</b> and <b>'${t2[j-1]}'</b><br>${opLine}<br><b>dp[${i}][${j}] = ${dp[i][j]}</b>` });
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        renderContextControls();
     }
-  }
-  _steps.push({ i:n, j:m, n, m, dp: dp.map(r=>[...r]), action:'done', src:null,
-    msg: `<b>Calculation complete.</b> The Levenshtein distance is <b>${dp[n][m]}</b>.` });
-  return _steps;
-}
 
-function renderStrDisplay(s) {
-  if (s.i < 1) { document.getElementById('str-display').innerHTML = 'Waiting for input...'; return; }
-  const ci = s.i-1, cj = s.j-1, isMat = s.action==='match';
-  let h1='', h2='';
-  for (let k=0;k<t1.length;k++) {
-    const cls = k===ci ? (isMat?'ch ch-match':'ch ch-cur') : 'ch';
-    h1 += `<span class="${cls}">${t1[k]}</span>`;
-  }
-  for (let k=0;k<t2.length;k++) {
-    const cls = k===cj ? (isMat?'ch ch-match':'ch ch-cur') : 'ch';
-    h2 += `<span class="${cls}">${t2[k]}</span>`;
-  }
-  document.getElementById('str-display').innerHTML = `T1: ${h1} &nbsp; | &nbsp; T2: ${h2}`;
-}
-
-function render() {
-  const s = steps[cur];
-  const {n, m} = s;
-  document.getElementById('ctr').textContent = `step ${cur} / ${steps.length-1}`;
-  document.getElementById('resv').textContent = s.action==='done' ? s.dp[n][m] : (cur===0?'�':'...');
-  document.getElementById('info').innerHTML = s.msg;
-  renderStrDisplay(s);
-
-  let html = '<table><tr><th></th><th>""</th>';
-  for (let j=0;j<m;j++) html+=`<th>${t2[j]}</th>`;
-  html+='</tr>';
-
-  for (let i=0;i<=n;i++) {
-    const rl = i===0 ? '""' : t1[i-1];
-    html+=`<tr><td class="rlbl">${rl}</td>`;
-    for (let j=0;j<=m;j++) {
-      const isBase = i===0||j===0;
-      const isFilled = isBase||(cur>0&&(i<s.i||(i===s.i&&j<=s.j)));
-      const val = s.dp[i][j];
-      let cls='cell';
-      if (isFilled) cls+=' filled';
-      if (s.i>0&&s.j>0&&s.action!=='start') {
-        if (i===s.i&&j===s.j) {
-          if      (s.action==='match')   cls+=' match';
-          else if (s.action==='replace') cls+=' op-rep cur';
-          else if (s.action==='delete')  cls+=' op-del cur';
-          else if (s.action==='insert')  cls+=' op-ins cur';
-          else cls+=' cur';
-        } else if (s.src==='diag'&&i===s.i-1&&j===s.j-1) { cls+=s.action==='match'?' match':' op-rep'; }
-          else if (s.src==='top' &&i===s.i-1&&j===s.j)   { cls+=' op-del'; }
-          else if (s.src==='left'&&i===s.i  &&j===s.j-1) { cls+=' op-ins'; }
-        if (i===s.i&&j!==s.j) cls+=' hi';
-        if (j===s.j&&i!==s.i) cls+=' hi';
-      }
-      html+=`<td class="${cls}">${isFilled?val:''}</td>`;
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active');
+                updateContent(item);
+            };
+            panel.appendChild(b);
+        });
+        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
     }
-    html+='</tr>';
-  }
-  html+='</table>';
-  document.getElementById('tbl').innerHTML = html;
-}
 
-function go(dir)  { const nx=cur+dir; if(nx>=0&&nx<steps.length){cur=nx;render();} }
-function jumpEnd(){ cur=steps.length-1; render(); }
-function resetAll(){ cur=0; render(); }
+    function updateContent(key) {
+        const display = document.getElementById(currentMainTab + '-display');
+        if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
+        else {
+            display.textContent = db[currentMainTab][key];
+            Prism.highlightElement(display);
+        }
+    }
 
-steps = buildSteps();
-render();
+    function rebuild() {
+        t1 = document.getElementById('in1').value.trim();
+        t2 = document.getElementById('in2').value.trim();
+        steps = buildSteps();
+        cur = 0; render();
+    }
+
+    function buildSteps() {
+        const n = t1.length, m = t2.length;
+        const _steps = [];
+        const dp = Array.from({length: n+1}, () => Array(m+1).fill(0));
+
+        _steps.push({ i:0, j:0, dp: dp.map(r=>[...r]), msg: 'Initialize DP table.' });
+
+        for (let i = 0; i <= n; i++) dp[i][0] = i;
+        for (let j = 0; j <= m; j++) dp[0][j] = j;
+        _steps.push({ i:0, j:0, dp: dp.map(r=>[...r]), msg: 'Fill first row and column with index values (base cases).' });
+
+        for (let i = 1; i <= n; i++) {
+            for (let j = 1; j <= m; j++) {
+                let src = [], action = '';
+                if (t1[i-1] === t2[j-1]) {
+                    dp[i][j] = dp[i-1][j-1];
+                    src = [{r: i-1, c: j-1}];
+                    action = 'match';
+                } else {
+                    dp[i][j] = 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+                    src = [{r: i-1, c: j}, {r: i, c: j-1}, {r: i-1, c: j-1}];
+                    action = 'diff';
+                }
+                _steps.push({ 
+                    i, j, dp: dp.map(r=>[...r]), src, action,
+                    msg: action === 'match' 
+                        ? `Characters <b>'${t1[i-1]}'</b> match! Copy value from diagonal: <b>${dp[i][j]}</b>`
+                        : `Characters differ. Take 1 + min(top, left, diagonal) = <b>${dp[i][j]}</b>`
+                });
+            }
+        }
+        _steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), msg: `<b>Finished!</b> The Edit Distance is <b>${dp[n][m]}</b>.` });
+        return _steps;
+    }
+
+    function render() {
+        const s = steps[cur];
+        const n = t1.length, m = t2.length;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        document.getElementById('info').innerHTML = s.msg;
+
+        let html = '<table><tr><th></th><th>""</th>';
+        for (let j=0; j<m; j++) html += `<th>${t2[j]}</th>`;
+        html += '</tr>';
+
+        for (let i=0; i<=n; i++) {
+            html += `<tr><td class="rlbl">${i===0 ? '""' : t1[i-1]}</td>`;
+            for (let j=0; j<=m; j++) {
+                const isFilled = (i===0 || j===0 || (cur > 0 && (i < s.i || (i === s.i && j <= s.j))));
+                let cls = 'cell';
+                if (isFilled) cls += ' filled';
+                if (i === s.i && j === s.j) cls += ' cur';
+                if (s.src && s.src.some(p => p.r === i && p.c === j)) {
+                    cls += (s.action === 'match' ? ' match' : ' source');
+                }
+                html += `<td class="${cls}">${isFilled ? s.dp[i][j] : ''}</td>`;
+            }
+            html += '</tr>';
+        }
+        document.getElementById('tbl').innerHTML = html + '</table>';
+    }
+
+    function go(dir) {
+        if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); }
+        else if (timer) toggleAuto();
+    }
+
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 350); }
+    }
+
+    function resetAll() { cur = 0; render(); if(timer) toggleAuto(); }
+
+    renderContextControls();
+    rebuild();
 </script>
 </body>
 </html>
