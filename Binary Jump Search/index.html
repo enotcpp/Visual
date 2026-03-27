@@ -2,208 +2,266 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AlgoView | Binary Jump Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Jump Search | AlgoView</title>
     <style>
         :root {
-            --bg-main: #1a1a1c;
-            --bg-card: #242426;
-            --bg-input: #2d2d30;
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --border: #3e3e42;
-            --current-pos: #f1c40f; /* From */
-            --jump-target: #1d9e75; /* From + J */
+            --border: #313136;
+            --code-bg: #0d0d0f;
+            --current-pos: #f1c40f; 
+            --jump-target: #1d9e75; 
             --failed-target: #e74c3c; 
         }
 
         body { 
-            margin: 0; padding: 2rem; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg-main); color: var(--text-main); 
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-main); color: var(--text-main); 
         }
         
-        .wrap { max-width: 900px; margin: 0 auto; }
-        
-        .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+        /* ВИЗУАЛИЗАТОР */
+        .visualizer-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { font-size: 22px; margin-top: 0; margin-bottom: 25px; }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; flex-wrap: wrap; }
+        .inputs label { font-size: 13px; color: var(--text-secondary); }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
-            color: var(--text-main); padding: 10px; border-radius: 8px; font-size: 14px;
+            color: white; padding: 10px; border-radius: 8px; outline: none;
         }
-        
+
         button {
-            padding: 10px 20px; border-radius: 8px; border: none;
-            background: var(--accent); color: white; font-weight: 600; cursor: pointer;
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
         }
-        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button.primary { background: var(--accent); color: white; border: none; }
 
-        .info-box {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 20px; min-height: 80px; margin-bottom: 60px;
-            border-left: 4px solid var(--accent);
-        }
-
-        .viz-area { position: relative; margin: 80px 0; }
+        .viz-area { position: relative; margin: 60px 0; min-height: 100px; }
         .array-row { display: flex; justify-content: center; gap: 8px; }
 
         .cell {
-            width: 50px; height: 50px; border-radius: 10px;
-            border: 1px solid var(--border); background: var(--bg-card);
+            width: 48px; height: 48px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--bg-main);
             display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; position: relative;
+            font-size: 16px; font-weight: bold; position: relative;
             transition: all 0.3s ease;
         }
-
-        /* Labels for pointers */
-        .ptr {
-            position: absolute; top: -45px; left: 50%;
-            transform: translateX(-50%);
-            padding: 2px 8px; border-radius: 4px;
-            font-size: 12px; font-weight: bold; color: white;
-            white-space: nowrap;
-        }
-
         .cell.from { border: 3px solid var(--current-pos); color: var(--current-pos); }
         .cell.target { border: 3px solid var(--jump-target); background: rgba(29, 158, 117, 0.1); }
-        .cell.checking { border: 2px solid var(--accent); transform: translateY(-5px); }
-        .cell.found { background: var(--jump-target); color: white; border-color: white; }
+        .cell.found { background: var(--jump-target); color: white; border-color: white; box-shadow: 0 0 15px var(--jump-target); }
 
-        .jump-arc {
-            position: absolute; height: 30px; border: 2px dashed var(--accent);
-            border-bottom: none; border-radius: 50% 50% 0 0;
-            top: -40px; transition: all 0.4s ease;
+        .ptr {
+            position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+            padding: 2px 6px; border-radius: 4px; font-size: 10px; color: white; white-space: nowrap;
         }
 
-        .ctrls { display: flex; align-items: center; gap: 10px; margin-top: 40px; }
-        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
+        /* ИНФО-ПАНЕЛЬ */
+        .lab-info {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+        }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn {
+            background: none; border: none; padding: 18px 25px; color: var(--text-secondary);
+            font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; letter-spacing: 0.5px;
+        }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn {
+            font-size: 10px; padding: 4px 8px; background: transparent; 
+            border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer;
+        }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
-    <div class="inputs">
-        <label>Array:</label>
-        <input id="in-arr" type="text" value="2, 5, 8, 12, 16, 23, 38, 45, 56, 72, 91" style="width: 300px;">
-        <label>Target:</label>
-        <input id="in-target" type="number" value="23" style="width: 80px;">
-        <button onclick="rebuild()">Start Search</button>
+    <div class="visualizer-section">
+        <h1>⚡ Binary Jump Search</h1>
+        <div class="inputs">
+            <label>Array:</label>
+            <input id="in-arr" type="text" value="2, 5, 8, 12, 16, 23, 38, 45, 56, 72, 91" style="width: 280px;">
+            <label>Target:</label>
+            <input id="in-target" type="number" value="23" style="width: 60px;">
+            <button onclick="rebuild()" class="primary">Start Search</button>
+        </div>
+
+        <div id="info" style="min-height: 40px; color: var(--text-secondary); font-size: 14px;">Ready.</div>
+        
+        <div class="viz-area">
+            <div id="array-row" class="array-row"></div>
+        </div>
+
+        <div class="inputs" style="margin-top: 40px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)">Next Step →</button>
+            <button onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
     </div>
 
-    <div class="info-box" id="info">Ready to search.</div>
-    
-    <div class="viz-area">
-        <div id="array-row" class="array-row"></div>
-    </div>
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
 
-    <div class="ctrls">
-        <button onclick="go(-1)" class="secondary">< Back</button>
-        <button onclick="go(1)">Next Step ></button>
-        <button onclick="resetAll()" class="secondary">Reset</button>
-        <span class="ctr-lbl" id="ctr"></span>
+        <div id="theory" class="tab-content active">
+            <div id="theory-display"></div>
+        </div>
+        <div id="python" class="tab-content">
+            <pre><code id="python-display"></code></pre>
+        </div>
+        <div id="cpp" class="tab-content">
+            <pre><code id="cpp-display"></code></pre>
+        </div>
     </div>
 </div>
 
 <script>
-let steps = [], cur = 0;
-
-function rebuild() {
-    const arr = document.getElementById('in-arr').value.split(',').map(x => parseInt(x.trim())).sort((a,b) => a-b);
-    const target = parseInt(document.getElementById('in-target').value);
-    steps = buildJumpSteps(arr, target);
-    cur = 0;
-    render();
-}
-
-function buildJumpSteps(ar, value) {
-    let _steps = [];
-    let from = 0;
-    let size = ar.length;
-
-    _steps.push({ 
-        arr: ar, from: 0, j: null, msg: `Initial state. Searching for <b>${value}</b>. Start from index 0.` 
-    });
-
-    // Main loop: j = size/2, size/4, ... 1
-    for (let j = Math.floor(size / 2); j >= 1; j = Math.floor(j / 2)) {
-        _steps.push({ 
-            arr: ar, from: from, j: j, 
-            msg: `Jump size <b>j = ${j}</b>. Trying to jump from index ${from}.` 
-        });
-
-        while (from + j < size && value >= ar[from + j]) {
-            _steps.push({ 
-                arr: ar, from: from, j: j, targetIdx: from + j, 
-                msg: `Checking index ${from + j} (${ar[from + j]}). It's ≤ target, so we jump!` 
-            });
-            from += j;
-            _steps.push({ 
-                arr: ar, from: from, j: j, 
-                msg: `New base position: <b>index ${from}</b>.` 
-            });
+    // --- DATABASE ---
+    const db = {
+        theory: {
+            EN: "<h3>Jump Search (Binary version)</h3><p>Jump search finds an element in a sorted array by jumping forward by a fixed step, then reducing that step (binary-like) when the target is overshot.</p>",
+            DE: "<h3>Sprungsuche</h3><p>Die Sprungsuche findet ein Element in einem sortierten Array, indem sie mit einer festen Schrittweite vorwärts springt und diese Schrittweite reduziert, sobald das Ziel überschritten wurde.</p>",
+            UKR: "<h3>Пошук стрибками</h3><p>Алгоритм перестрибує блоки елементів, поступово зменшуючи розмір стрибка (аналогічно бінарному пошуку), коли знаходить межу, де знаходиться ціль.</p>",
+            RU: "<h3>Поиск прыжками</h3><p>Алгоритм перепрыгивает блоки элементов, постепенно уменьшая размер прыжка (аналогично бинарному поиску), когда находит границу, за которой находится цель.</p>"
+        },
+        python: {
+            v1: "def jump_search(arr, x):\n    n = len(arr)\n    step = n // 2\n    # Main jumping logic...\n    return -1",
+            v2: "# Recursive variation\ndef jump_search_rec(arr, x, step, pos):\n    ..."
+        },
+        cpp: {
+            v1: "int jumpSearch(int arr[], int n, int x) {\n    int step = n / 2;\n    int pos = 0;\n    // Logic...\n}",
+            v2: "/* Optimized version for large arrays */\n..."
         }
-        
-        if (from + j < size) {
-            _steps.push({ 
-                arr: ar, from: from, j: j, targetIdx: from + j, failed: true,
-                msg: `Checking ${from + j} (${ar[from + j]}). It's > target. Can't jump, reducing <b>j</b>.` 
+    };
+
+    let currentMainTab = 'theory';
+
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
+
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel');
+        panel.innerHTML = '';
+
+        if (currentMainTab === 'theory') {
+            ['EN', 'DE', 'UKR', 'RU'].forEach(lang => {
+                const b = document.createElement('button');
+                b.className = 'sub-btn' + (lang === 'EN' ? ' active' : '');
+                b.textContent = lang;
+                b.onclick = () => {
+                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                    b.classList.add('active');
+                    document.getElementById('theory-display').innerHTML = db.theory[lang];
+                };
+                panel.appendChild(b);
             });
+            document.getElementById('theory-display').innerHTML = db.theory['EN'];
+        } else {
+            ['v1', 'v2'].forEach(ver => {
+                const b = document.createElement('button');
+                b.className = 'sub-btn' + (ver === 'v1' ? ' active' : '');
+                b.textContent = ver;
+                b.onclick = () => {
+                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                    b.classList.add('active');
+                    document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][ver];
+                };
+                panel.appendChild(b);
+            });
+            document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab]['v1'];
         }
     }
 
-    const found = (size > 0 && ar[from] === value);
-    _steps.push({ 
-        arr: ar, from: from, foundIdx: found ? from : null,
-        msg: found ? `<b>Success!</b> Found ${value} at index ${from}.` : `<b>Not found.</b> Closest element is ${ar[from]}.`
-    });
+    // --- VISUALIZATION LOGIC (Your Code) ---
+    let steps = [], cur = 0;
 
-    return _steps;
-}
+    function rebuild() {
+        const arrInput = document.getElementById('in-arr').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)).sort((a,b) => a-b);
+        const target = parseInt(document.getElementById('in-target').value);
+        steps = buildJumpSteps(arrInput, target);
+        cur = 0; render();
+    }
 
-function render() {
-    const s = steps[cur];
-    const container = document.getElementById('array-row');
-    container.innerHTML = '';
-    document.getElementById('info').innerHTML = s.msg;
-    document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+    function buildJumpSteps(ar, value) {
+        let _steps = [];
+        let from = 0, size = ar.length;
+        _steps.push({ arr: ar, from: 0, j: null, msg: `Start search for <b>${value}</b> at index 0.` });
 
-    s.arr.forEach((val, idx) => {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.textContent = val;
-
-        if (idx === s.from) {
-            cell.classList.add('from');
-            const ptr = document.createElement('div');
-            ptr.className = 'ptr';
-            ptr.style.background = 'var(--current-pos)';
-            ptr.textContent = 'from';
-            cell.appendChild(ptr);
+        for (let j = Math.floor(size / 2); j >= 1; j = Math.floor(j / 2)) {
+            _steps.push({ arr: ar, from: from, j: j, msg: `Current jump size <b>j = ${j}</b>.` });
+            while (from + j < size && value >= ar[from + j]) {
+                _steps.push({ arr: ar, from: from, j: j, targetIdx: from + j, msg: `Index ${from+j} (${ar[from+j]}) ≤ target. Jump!` });
+                from += j;
+                _steps.push({ arr: ar, from: from, j: j, msg: `New base position: <b>index ${from}</b>.` });
+            }
+            if (from + j < size) {
+                _steps.push({ arr: ar, from: from, j: j, targetIdx: from + j, failed: true, msg: `Index ${from+j} is too large. Reduce jump step.` });
+            }
         }
+        const found = (size > 0 && ar[from] === value);
+        _steps.push({ arr: ar, from: from, foundIdx: found ? from : null, msg: found ? `Found at index ${from}!` : `Not found.` });
+        return _steps;
+    }
 
-        if (idx === s.targetIdx) {
-            cell.classList.add('target');
-            if (s.failed) cell.style.borderColor = 'var(--failed-target)';
-            const ptr = document.createElement('div');
-            ptr.className = 'ptr';
-            ptr.style.background = s.failed ? 'var(--failed-target)' : 'var(--jump-target)';
-            ptr.textContent = s.failed ? 'too far' : 'from + j';
-            cell.appendChild(ptr);
-        }
+    function render() {
+        const s = steps[cur];
+        const container = document.getElementById('array-row');
+        container.innerHTML = '';
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
 
-        if (idx === s.foundIdx) cell.classList.add('found');
+        s.arr.forEach((val, idx) => {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.textContent = val;
+            if (idx === s.from) {
+                cell.classList.add('from');
+                cell.innerHTML += `<div class="ptr" style="background:var(--current-pos)">from</div>`;
+            }
+            if (idx === s.targetIdx) {
+                cell.classList.add('target');
+                if (s.failed) cell.style.borderColor = 'var(--failed-target)';
+                cell.innerHTML += `<div class="ptr" style="background:${s.failed ? 'var(--failed-target)' : 'var(--jump-target)'}">${s.failed ? 'too far' : 'from + j'}</div>`;
+            }
+            if (idx === s.foundIdx) cell.classList.add('found');
+            container.appendChild(cell);
+        });
+    }
 
-        container.appendChild(cell);
-    });
-}
+    function go(dir) { if(cur+dir >= 0 && cur+dir < steps.length) { cur += dir; render(); } }
+    function resetAll() { cur = 0; render(); }
 
-function go(dir) {
-    const nx = cur + dir;
-    if(nx >= 0 && nx < steps.length) { cur = nx; render(); }
-}
-
-function resetAll() { cur = 0; render(); }
-
-rebuild();
+    renderContextControls();
+    rebuild();
 </script>
 </body>
 </html>
