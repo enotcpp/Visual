@@ -2,9 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>List of algorithms</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>Library of Algorithms</title>
     <style>
-        /* Темная тема в стиле чата / OneNote Modern */
         :root {
             --bg-main: #1a1a1c;
             --bg-card: #242426;
@@ -32,6 +35,13 @@
             letter-spacing: -0.5px;
         }
 
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
         ul { 
             list-style: none; 
             padding: 0; 
@@ -39,8 +49,15 @@
             max-width: 600px;
         }
 
-        li { 
-            margin: 12px 0; 
+        li { margin: 12px 0; }
+
+        .category {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin: 30px 0 10px 10px;
+            letter-spacing: 1.5px;
+            font-weight: 700;
         }
 
         a { 
@@ -66,28 +83,17 @@
         }
 
         a span {
-            margin-right: 12px;
+            margin-right: 15px;
             font-size: 20px;
-        }
-
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 40px;
-        }
-        
-        /* Разделитель категорий */
-        .category {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            margin: 25px 0 10px 10px;
-            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
         }
     </style>
 </head>
 <body>
-    <h1>📚 Library of algorithms</h1>
+    <h1>📚 Library of Algorithms</h1>
     <div class="subtitle">Interactive visualizations for data structures and algorithms</div>
     
     <ul>
@@ -132,4 +138,3 @@
     </ul>
 </body>
 </html>
-
