@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AlgoView | Bubble Sort</title>
+    <style>
+        :root {
+            --bg-main: #1a1a1c;
+            --bg-card: #242426;
+            --bg-input: #2d2d30;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-secondary: #1d9e75;
+            --border: #3e3e42;
+            --marking: #e67e22;
+        }
+
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+        .inputs { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 10px; border-radius: 8px; font-size: 14px; width: 250px;
+        }
+        
+        button {
+            padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer;
+            transition: all 0.2s;
+        }
+        button.primary { background: var(--accent); color: white; border: none; }
+        button:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+        .info-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; min-height: 80px; margin-bottom: 50px;
+            border-left: 4px solid var(--accent); line-height: 1.6;
+        }
+
+        .sort-area { 
+            display: flex; justify-content: center; align-items: flex-end; 
+            gap: 10px; margin: 60px 0; height: 150px; 
+        }
+
+        .cell {
+            width: 50px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            padding-bottom: 10px; font-size: 16px; font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        /* Высота ячейки зависит от значения (визуальный столбец) */
+        .cell-bar {
+            width: 100%; background: var(--accent); opacity: 0.3;
+            position: absolute; bottom: 0; border-radius: 0 0 7px 7px;
+            transition: height 0.3s ease;
+        }
+
+        .cell.active { border-color: var(--marking); transform: translateY(-10px); z-index: 2; box-shadow: 0 10px 20px rgba(230, 126, 34, 0.2); }
+        .cell.sorted { background: var(--accent-secondary); border-color: #fff; color: white; }
+        .cell.sorted .cell-bar { background: white; opacity: 0.2; }
+
+        .ctrls { display: flex; align-items: center; gap: 12px; margin-top: 40px; }
+        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <h1>🫧 AlgoView | Bubble Sort</h1>
+    <div class="inputs">
+        <label>Array:</label>
+        <input id="arr-input" type="text" value="45, 12, 8, 32, 19, 5">
+        <button onclick="rebuild()" class="primary">Reset & Load</button>
+    </div>
+
+    <div class="info-box" id="info">Press "Next Step" to start sorting.</div>
+
+    <div class="sort-area" id="sort-area"></div>
+
+    <div class="ctrls">
+        <button onclick="go(-1)">← Back</button>
+        <button onclick="go(1)" class="primary">Next Step →</button>
+        <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+        <span class="ctr-lbl" id="ctr"></span>
+    </div>
+</div>
+
+<script>
+let arr = [];
+let steps = [];
+let cur = 0;
+let timer = null;
+
+function rebuild() {
+    arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+    initBubbleSort();
+}
+
+function initBubbleSort() {
+    steps = [];
+    let tempArr = [...arr];
+    let n = tempArr.length;
+    let sortedIndices = [];
+
+    steps.push({ 
+        arr: [...tempArr], active: [], sorted: [], 
+        msg: "Starting Bubble Sort. We compare adjacent elements." 
+    });
+
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+            // Шаг 1: Сравнение
+            steps.push({ 
+                arr: [...tempArr], active: [j, j + 1], sorted: [...sortedIndices], 
+                msg: `Comparing <b>${tempArr[j]}</b> and <b>${tempArr[j+1]}</b>.` 
+            });
+
+            if (tempArr[j] > tempArr[j + 1]) {
+                // Шаг 2: Обмен
+                [tempArr[j], tempArr[j + 1]] = [tempArr[j + 1], tempArr[j]];
+                steps.push({ 
+                    arr: [...tempArr], active: [j, j + 1], sorted: [...sortedIndices], 
+                    msg: `<b>${tempArr[j+1]} > ${tempArr[j]}</b>. Swapping them.` 
+                });
+            }
+        }
+        // Элемент в конце теперь отсортирован
+        sortedIndices.push(n - 1 - i);
+        steps.push({ 
+            arr: [...tempArr], active: [], sorted: [...sortedIndices], 
+            msg: `Element <b>${tempArr[n-1-i]}</b> is now in its final position.` 
+        });
+    }
+    
+    // Финальный штрих: всё отсортировано
+    sortedIndices.push(0);
+    steps.push({ 
+        arr: [...tempArr], active: [], sorted: [...sortedIndices], 
+        msg: "<b>Sorting complete!</b> All elements are in order." 
+    });
+
+    cur = 0;
+    render();
+}
+
+function render() {
+    const s = steps[cur];
+    const container = document.getElementById('sort-area');
+    document.getElementById('info').innerHTML = s.msg;
+    document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+    
+    container.innerHTML = '';
+    const maxVal = Math.max(...arr);
+
+    s.arr.forEach((val, i) => {
+        const div = document.createElement('div');
+        div.className = 'cell';
+        if (s.active.includes(i)) div.classList.add('active');
+        if (s.sorted.includes(i)) div.classList.add('sorted');
+
+        // Визуальный столбец
+        const barHeight = (val / maxVal) * 100;
+        div.innerHTML = `<div class="cell-bar" style="height: ${barHeight}%"></div>${val}`;
+        div.style.height = `${60 + (val/maxVal)*80}px`;
+
+        container.appendChild(div);
+    });
+}
+
+function go(dir) { 
+    if (cur+dir >= 0 && cur+dir < steps.length) { 
+        cur+=dir; render(); 
+    } else if (timer) {
+        toggleAuto();
+    }
+}
+
+function toggleAuto() {
+    const btn = document.getElementById('auto-btn');
+    if (timer) {
+        clearInterval(timer);
+        timer = null;
+        btn.textContent = "Auto Play";
+    } else {
+        btn.textContent = "Stop";
+        timer = setInterval(() => go(1), 600);
+    }
+}
+
+rebuild();
+</script>
+</body>
+</html>
