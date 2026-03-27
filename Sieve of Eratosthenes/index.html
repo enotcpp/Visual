@@ -2,221 +2,250 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sieve of Eratosthenes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sieve of Eratosthenes | AlgoView</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
     <style>
         :root {
-            --bg-main: #1a1a1c;
-            --bg-card: #242426;
-            --bg-input: #2d2d30;
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
+            --accent-soft: rgba(127, 119, 221, 0.1);
             --accent-secondary: #1d9e75;
-            --border: #3e3e42;
-            --discard: #36363a;
-            --active-prime: #7f77dd;
+            --border: #313136;
+            --code-bg: #0d0d0f;
             --marking: #e67e22;
         }
 
         body { 
-            margin: 0; padding: 2rem 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg-main); color: var(--text-main); 
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-main); color: var(--text-main); 
         }
         
-        .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+        /* VISUALIZER SECTION */
+        .visualizer-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { font-size: 22px; margin: 0 0 25px 0; display: flex; align-items: center; gap: 10px; }
+
         .inputs { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
-            color: white; padding: 10px; border-radius: 8px; font-size: 14px; width: 80px;
+            color: white; padding: 10px 15px; border-radius: 8px; width: 100px; outline: none;
         }
-        
+
         button {
-            padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer;
-            transition: all 0.2s;
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
         }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
         button.primary { background: var(--accent); color: white; border: none; }
-        button:hover { border-color: var(--accent); transform: translateY(-1px); }
 
-        .info-box {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 20px; min-height: 80px; margin-bottom: 30px;
-            border-left: 4px solid var(--accent); line-height: 1.6;
-        }
-
+        /* Grid for Sieve */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
             gap: 8px;
-            margin-bottom: 40px;
+            margin: 30px 0;
         }
-
-        .cell {
-            aspect-ratio: 1/1;
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 8px;
+        .num-box {
+            height: 45px; border-radius: 8px; border: 1px solid var(--border);
             display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: 600; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: bold; background: var(--bg-main); transition: all 0.3s;
         }
+        .num-box.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); transform: scale(1.1); z-index: 2; }
+        .num-box.prime { background: var(--accent-secondary); border-color: transparent; color: white; }
+        .num-box.composite { opacity: 0.3; background: #333; text-decoration: line-through; }
 
-        .cell.prime-active { background: var(--active-prime); color: white; transform: scale(1.1); z-index: 2; box-shadow: 0 0 15px rgba(127, 119, 221, 0.4); }
-        .cell.marking { background: var(--marking); color: white; transform: scale(0.95); }
-        .cell.discarded { opacity: 0.2; transform: scale(0.85); background: var(--discard); text-decoration: line-through; }
-        
-        /* Зеленая подсветка для уже подтвержденных простых чисел */
-        .cell.is-prime-final { 
-            background: var(--accent-secondary) !important; 
-            color: white !important; 
-            opacity: 1 !important; 
-            transform: scale(1.05); 
-            box-shadow: 0 0 10px rgba(29, 158, 117, 0.4); 
+        /* LAB INFO SECTION */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn {
+            background: none; border: none; padding: 18px 25px; color: var(--text-secondary);
+            font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer;
         }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
 
-        .limit-marker { color: var(--marking); font-weight: bold; }
-        .ctrls { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
-        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn {
+            font-size: 10px; padding: 4px 8px; background: transparent; 
+            border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer;
+        }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+
+        /* Настройка Prism */
+        pre[class*="language-"] {
+            margin: 0;
+            border-radius: 10px;
+            background: var(--code-bg) !important;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
 <div class="wrap">
-    <h1>Sieve of Eratosthenes</h1>
-    <div class="inputs">
-        <label>Find primes up to:</label>
-        <input id="n-input" type="number" value="30" max="200">
-        <button onclick="rebuild()" class="primary">Generate Grid</button>
+    <div class="visualizer-section">
+        <h1>🧬 Sieve of Eratosthenes</h1>
+        
+        <div class="inputs">
+            <label>Limit (n):</label>
+            <input id="n-input" type="number" value="30" min="2" max="100">
+            <button onclick="rebuild()" class="primary">Apply</button>
+        </div>
+
+        <div id="info" style="min-height: 50px; color: var(--text-secondary); font-size: 14px; border-left: 3px solid var(--accent); padding-left: 15px; margin-bottom: 20px;">
+            Ready to start.
+        </div>
+
+        <div class="grid" id="grid"></div>
+
+        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
     </div>
 
-    <div class="info-box" id="info">Welcome! Set a limit and start the sieve.</div>
-    <div class="grid" id="grid"></div>
-
-    <div class="ctrls">
-        <button onclick="go(-1)">← Back</button>
-        <button onclick="go(1)" class="primary">Next Step →</button>
-        <button onclick="resetAll()">Reset</button>
-        <span class="ctr-lbl" id="ctr"></span>
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code class="language-python" id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp" id="cpp-display"></code></pre></div>
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
 <script>
-let n = 0;
-let steps = [];
-let cur = 0;
+    const db = {
+        theory: {
+            EN: "<h3>Sieve of Eratosthenes</h3><p>An ancient algorithm for finding all prime numbers up to any given limit. It works by iteratively marking as composite the multiples of each prime, starting from 2.</p>",
+            RU: "<h3>Решето Эратосфена</h3><p>Древний алгоритм для поиска всех простых чисел до заданного предела. Он работает путем последовательного вычеркивания чисел, кратных каждому найденному простому числу, начиная с 2.</p>"
+        },
+        python: {
+            v1: "def sieve(n):\n    primes = [True for _ in range(n+1)]\n    p = 2\n    while (p * p <= n):\n        if (primes[p] == True):\n            for i in range(p * p, n+1, p):\n                primes[i] = False\n        p += 1\n    return [p for p in range(2, n+1) if primes[p]]",
+            v2: "# Optimized version\ndef fast_sieve(n):\n    if n < 2: return []\n    s = list(range(n + 1))\n    s[1] = 0\n    for i in range(2, int(n**0.5) + 1):\n        if s[i]:\n            s[i*i : n+1 : i] = [0] * len(range(i*i, n+1, i))\n    return [x for x in s if x]"
+        },
+        cpp: {
+            v1: "void sieve(int n) {\n    vector<bool> prime(n + 1, true);\n    for (int p = 2; p * p <= n; p++) {\n        if (prime[p] == true) {\n            for (int i = p * p; i <= n; i += p)\n                prime[i] = false;\n        }\n    }\n}",
+            v2: "// Using bitset for memory efficiency\nbitset<1000001> Sieve;\nvoid sieve(int n) {\n    Sieve.set();\n    Sieve[0] = Sieve[1] = 0;\n    // ... rest of logic\n}"
+        }
+    };
 
-function rebuild() {
-    n = parseInt(document.getElementById('n-input').value);
-    if (n > 200) n = 200;
-    initSieve();
-}
+    let currentMainTab = 'theory', n = 30, steps = [], cur = 0, timer = null;
 
-function initSieve() {
-    steps = [];
-    let isPrime = new Array(n + 1).fill(true);
-    let confirmed = []; // Числа, уже признанные простыми
-    isPrime[0] = isPrime[1] = false;
-    
-    let limit = Math.floor(Math.sqrt(n));
-    
-    steps.push({ 
-        type: 'init', 
-        states: [...isPrime], 
-        confirmed: [],
-        msg: `Sieve initialized. Checking up to <span class="limit-marker">√${n} ≈ ${limit}</span>.` 
-    });
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
 
-    for (let p = 2; p <= n; p++) {
-        if (isPrime[p]) {
-            if (p <= limit) {
-                // Нашли простое число и собираемся вычеркивать кратные
-                steps.push({ 
-                    type: 'prime-found', 
-                    p: p, 
-                    states: [...isPrime], 
-                    confirmed: [...confirmed],
-                    msg: `<b>${p}</b> is prime. Marking its multiples...` 
-                });
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active');
+                updateCode(item);
+            };
+            panel.appendChild(b);
+        });
+        updateCode('v1');
+    }
 
+    function updateCode(key) {
+        const display = document.getElementById(currentMainTab + '-display');
+        if (currentMainTab === 'theory') {
+            display.innerHTML = db.theory[key === 'v1' ? 'EN' : key];
+        } else {
+            display.textContent = db[currentMainTab][key];
+            Prism.highlightElement(display); // ПЕРЕКРАСКА КОДА
+        }
+    }
+
+    function rebuild() {
+        n = parseInt(document.getElementById('n-input').value) || 30;
+        initSteps();
+    }
+
+    function initSteps() {
+        steps = [];
+        let isPrime = new Array(n + 1).fill(true);
+        isPrime[0] = isPrime[1] = false;
+        
+        steps.push({ isPrime: [...isPrime], active: null, msg: "Initial state: assume all numbers ≥ 2 are prime." });
+
+        for (let p = 2; p * p <= n; p++) {
+            if (isPrime[p]) {
+                steps.push({ isPrime: [...isPrime], active: p, msg: `<b>${p}</b> is prime. Now marking its multiples.` });
                 for (let i = p * p; i <= n; i += p) {
                     isPrime[i] = false;
-                    steps.push({ 
-                        type: 'marking', 
-                        p: p, 
-                        m: i, 
-                        states: [...isPrime], 
-                        confirmed: [...confirmed],
-                        msg: `Marking <b>${i}</b> as composite.` 
-                    });
+                    steps.push({ isPrime: [...isPrime], active: i, msg: `Marking <b>${i}</b> as composite (multiple of ${p}).` });
                 }
-                confirmed.push(p); // Теперь p точно подтверждено
-            } else {
-                // Число больше корня — оно подтверждается автоматически
-                confirmed.push(p);
-                steps.push({ 
-                    type: 'prime-skip', 
-                    p: p, 
-                    states: [...isPrime], 
-                    confirmed: [...confirmed],
-                    msg: `<b>${p} > √${n}</b>. Already confirmed as prime.` 
-                });
             }
+        }
+        steps.push({ isPrime: [...isPrime], active: null, done: true, msg: "Algorithm finished. Colored cells are prime numbers." });
+        cur = 0; render();
+    }
+
+    function render() {
+        const s = steps[cur];
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length - 1}`;
+
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        for (let i = 2; i <= n; i++) {
+            let cls = 'num-box';
+            if (i === s.active) cls += ' active';
+            else if (s.done && s.isPrime[i]) cls += ' prime';
+            else if (!s.isPrime[i]) cls += ' composite';
+            grid.innerHTML += `<div class="${cls}">${i}</div>`;
         }
     }
 
-    steps.push({ 
-        type: 'final', 
-        states: [...isPrime], 
-        confirmed: [...confirmed],
-        msg: `<b>Finished!</b> All highlighted numbers are prime.` 
-    });
-
-    cur = 0;
-    render();
-}
-
-function render() {
-    const s = steps[cur];
-    const grid = document.getElementById('grid');
-    document.getElementById('info').innerHTML = s.msg;
-    document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
-    
-    grid.innerHTML = '';
-    for (let i = 2; i <= n; i++) {
-        const div = document.createElement('div');
-        div.className = 'cell';
-        div.textContent = i;
-
-        // 1. Сначала проверяем, подтверждено ли число как простое на данном шаге
-        if (s.confirmed.includes(i)) {
-            div.classList.add('is-prime-final');
-        } 
-        
-        // 2. Затем накладываем состояния процесса
-        if (s.type === 'final') {
-            if (s.states[i]) div.classList.add('is-prime-final');
-            else div.classList.add('discarded');
-        } else {
-            // Если число вычеркнуто
-            if (!s.states[i] && (s.type !== 'marking' || i !== s.m)) {
-                div.classList.add('discarded');
-            }
-            // Активное простое (фиолетовое)
-            if ((s.type === 'prime-found' || s.type === 'marking' || s.type === 'prime-skip') && i === s.p) {
-                div.classList.add('prime-active');
-            }
-            // Текущий множитель (оранжевый)
-            if (s.type === 'marking' && i === s.m) {
-                div.classList.add('marking');
-            }
-        }
-        grid.appendChild(div);
+    function go(dir) {
+        if (cur+dir >= 0 && cur+dir < steps.length) { cur += dir; render(); }
+        else if (timer) toggleAuto();
     }
-}
 
-function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
-function resetAll() { cur=0; render(); }
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 400); }
+    }
 
-rebuild();
+    renderContextControls();
+    rebuild();
 </script>
 </body>
 </html>
