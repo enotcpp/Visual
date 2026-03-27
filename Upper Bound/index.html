@@ -11,7 +11,7 @@
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --accent-secondary: #1d9e75;
+            --accent-secondary: #1d9e75; /* Зеленый для результата */
             --border: #3e3e42;
             --range-border: #4a4a4d;
         }
@@ -52,11 +52,6 @@
             border: none;
         }
 
-        button.primary:hover {
-            background: #8e87e5;
-            box-shadow: 0 4px 12px rgba(127, 119, 221, 0.3);
-        }
-
         .info-box {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 12px; padding: 20px; min-height: 80px; margin-bottom: 50px;
@@ -83,17 +78,20 @@
             box-shadow: 0 0 0 2px var(--range-border);
         }
 
+        /* Чтобы результат не тускнел */
         .cell.out { opacity: 0.2; transform: scale(0.9); }
+        
         .cell.mid-active { border: 3px solid #e67e22; color: #e67e22; }
 
-        /* ИСПРАВЛЕННЫЙ СТИЛЬ: Финальная клетка (ответ) теперь яркая */
+        /* ИСПРАВЛЕННЫЙ ЯРКИЙ ЗЕЛЕНЫЙ РЕЗУЛЬТАТ */
         .cell.ans { 
-            background: var(--accent); 
-            border-color: white; 
-            color: white;
-            transform: translateY(-4px);
-            box-shadow: 0 6px 15px rgba(127, 119, 221, 0.4);
-            z-index: 2;
+            background: var(--accent-secondary) !important; 
+            border-color: #fff !important; 
+            color: white !important;
+            opacity: 1 !important; /* Отменяем тусклость */
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(29, 158, 117, 0.6);
+            z-index: 5;
         }
 
         .ptr {
@@ -115,10 +113,6 @@
 
 <div class="wrap">
     <h1>🎯 AlgoView | Upper Bound</h1>
-    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
-        Finds the first element <b>strictly greater (>)</b> than target.
-    </p>
-    
     <div class="inputs">
         <input id="arr-input" type="text" value="1, 2, 4, 4, 4, 6, 7" style="width: 250px;">
         <label>Target:</label>
@@ -155,7 +149,7 @@ function init() {
     let l = 0, r = arr.length - 1;
     let ans = arr.length;
 
-    steps.push({ l, r, m: null, ans: null, msg: "Upper Bound starts. Searching for the first element <b>> " + target + "</b>." });
+    steps.push({ l, r, m: null, ans: null, msg: "Initial range L to R." });
 
     while (l <= r) {
         let m = Math.floor((l + r) / 2);
@@ -164,15 +158,14 @@ function init() {
         if (arr[m] > target) {
             ans = m; 
             r = m - 1;
-            steps.push({ l, r, m: null, ans, msg: `<b>${arr[m]} > ${target}</b>. This element is greater. Mark as potential answer and look <b>left</b>.` });
+            steps.push({ l, r, m: null, ans, msg: `<b>${arr[m]} > ${target}</b>. Look left.` });
         } else {
             l = m + 1;
-            steps.push({ l, r, m: null, ans: ans < arr.length ? ans : null, msg: `<b>${arr[m]} ≤ ${target}</b>. Target is too small or equal. Look <b>right</b>.` });
+            steps.push({ l, r, m: null, ans: ans < arr.length ? ans : null, msg: `<b>${arr[m]} ≤ ${target}</b>. Look right.` });
         }
     }
     
-    steps.push({ l: -1, r: -1, m: null, ans, isFinal: true, msg: ans < arr.length ? `<b>Finished!</b> The first element strictly greater than ${target} is at index <b>${ans}</b>.` : "<b>Finished!</b> No element greater than target found." });
-    
+    steps.push({ l: -1, r: -1, m: null, ans, isFinal: true, msg: ans < arr.length ? `<b>Finished!</b> Index: <b>${ans}</b>.` : "Not found." });
     cur = 0;
     render();
 }
@@ -188,11 +181,13 @@ function render() {
         const div = document.createElement('div');
         div.className = 'cell';
         
+        // Клетка подсвечивается как ans, если индекс совпадает с текущим найденным ans
+        if (i === s.ans) div.classList.add('ans');
+        
         if (i >= s.l && i <= s.r) div.classList.add('in-range');
-        else div.classList.add('out');
+        else if (!s.isFinal || i !== s.ans) div.classList.add('out');
         
         if (i === s.m) div.classList.add('mid-active');
-        if (i === s.ans) div.classList.add('ans');
         
         div.textContent = val;
 
