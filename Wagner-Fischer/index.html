@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Edit Distance | AlgoView Lab</title>
+    <title>Edit Distance Visualizer | AlgoView Lab</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     
@@ -18,6 +18,7 @@
             --code-bg: #0d0d0f;
         }
 
+        * { box-sizing: border-box; }
         body { 
             margin: 0; padding: 2rem 0; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
@@ -26,33 +27,34 @@
         
         .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
         
-        /* VISUALIZER CONTROLS */
-        .visualizer-section {
+        /* VISUALIZER SECTION */
+        .visualizer-card {
             background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            border-radius: 20px; padding: 30px; margin-bottom: 30px;
         }
 
         .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
-            color: var(--text-main); padding: 8px 12px; border-radius: 8px; width: 120px; 
+            color: var(--text-main); padding: 8px 12px; border-radius: 8px; width: 130px; 
+            font-family: monospace;
         }
         
         button {
-            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer;
+            padding: 10px 18px; border-radius: 8px; border: none;
+            background: var(--accent); color: white; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s; font-size: 14px;
         }
-        button.primary { background: var(--accent); color: white; border: none; }
-        button.secondary { background: var(--bg-input); opacity: 0.8; }
+        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button:hover { opacity: 0.9; }
 
         .info-box {
             background: var(--bg-main); border-left: 4px solid var(--accent);
-            padding: 16px; min-height: 80px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;
+            padding: 16px; min-height: 85px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;
         }
         .info-box b { color: var(--accent); }
 
-        /* ORIGINAL COLOR LOGIC */
-        .legend { display: flex; gap: 15px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; }
+        .legend { display: flex; gap: 15px; flex-wrap: wrap; font-size: 11px; color: var(--text-secondary); margin-bottom: 20px; }
         .leg { display: flex; align-items: center; gap: 6px; }
         .ldot { width: 14px; height: 14px; border-radius: 4px; }
 
@@ -61,35 +63,35 @@
         .ch-cur { background: #3c3489; color: white; }
         .ch-match { background: #085041; color: white; }
 
-        /* TABLE */
+        /* TABLE LOGIC */
         .tbl-wrap { overflow-x: auto; margin-bottom: 25px; }
         table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
-        th, .rlbl { font-size: 13px; color: var(--text-secondary); min-width: 45px; text-align: center; }
+        th, .rlbl { font-size: 13px; color: var(--text-secondary); min-width: 48px; text-align: center; }
 
         .cell {
-            width: 45px; height: 45px; border-radius: 8px; border: 1px solid var(--border);
+            width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--border);
             background: var(--bg-card); text-align: center; font-size: 16px; transition: all .2s;
         }
         .cell.filled { background: var(--bg-input); color: var(--text-main); }
-        .cell.cur { background: #3c3489; border: 2px solid #7f77dd; color: white; font-weight: bold; }
+        .cell.cur { background: #3c3489 !important; border: 2px solid #7f77dd !important; color: white !important; font-weight: bold; }
         .cell.match { background: #085041; border: 2px solid #1d9e75; color: white; }
         .cell.op-rep { background: #633806; border: 1.5px solid #ba7517; color: white; }
         .cell.op-del { background: #712b13; border: 1.5px solid #993c1d; color: white; }
         .cell.op-ins { background: #0c447c; border: 1.5px solid #185fa5; color: white; }
         .cell.hi { border-color: #5c5c63; }
 
-        .op-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-right: 5px; }
+        .op-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-right: 5px; color: white; }
         .badge-match { background: #1d9e75; } .badge-rep { background: #ba7517; } .badge-del { background: #993c1d; } .badge-ins { background: #185fa5; }
 
-        /* TABS SECTION */
+        /* LAB TABS */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; padding: 15px 20px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
         .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
         .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
         .sub-btn.active { border-color: var(--accent); color: var(--accent); }
-        .tab-content { display: none; padding: 25px; }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
         pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; }
     </style>
@@ -97,11 +99,11 @@
 <body>
 
 <div class="wrap">
-    <div class="visualizer-section">
+    <div class="visualizer-card">
         <div class="inputs">
             <input id="in1" type="text" value="adbdcd" maxlength="12">
             <input id="in2" type="text" value="abc" maxlength="12">
-            <button onclick="rebuild()" class="primary">Apply</button>
+            <button onclick="rebuild()">Apply</button>
         </div>
 
         <div class="legend">
@@ -118,8 +120,8 @@
         <div class="tbl-wrap" id="tbl"></div>
 
         <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
-            <button class="secondary" onclick="go(-1)">← Back</button>
-            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button class="secondary" onclick="go(-1)">< Back</button>
+            <button onclick="go(1)">Next Step ></button>
             <button id="auto-btn" class="secondary" onclick="toggleAuto()">Auto Play</button>
             <button class="secondary" onclick="resetAll()">Reset</button>
             <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
@@ -146,12 +148,12 @@
 <script>
     const db = {
         theory: {
-            EN: "<h3>Edit Distance</h3><p>Calculates the minimum number of edits (insertion, deletion, substitution) to transform one string into another.</p>",
-            RU: "<h3>Расстояние Левенштейна</h3><p>Минимальное количество операций (вставка, удаление, замена) для превращения одной строки в другую.</p>"
+            EN: "<h3>Edit Distance</h3><p>Also known as Levenshtein distance. It defines the minimum number of single-character edits (insertions, deletions or substitutions) required to change one word into the other.</p>",
+            RU: "<h3>Расстояние Левенштейна</h3><p>Это минимальное количество операций вставки одного символа, удаления одного символа и замены одного символа на другой, необходимых для превращения одной строки в другую.</p>"
         },
         python: {
             v1: "def edit_dist(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0]*(n+1) for _ in range(m+1)]\n    for i in range(m+1): dp[i][0] = i\n    for j in range(n+1): dp[0][j] = j\n    for i in range(1, m+1):\n        for j in range(1, n+1):\n            if s1[i-1] == s2[j-1]:\n                dp[i][j] = dp[i-1][j-1]\n            else:\n                dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])\n    return dp[m][n]",
-            v2: "def dist_optimized(s1, s2):\n    # Space complexity: O(min(m, n))\n    if len(s1) < len(s2): s1, s2 = s2, s1\n    prev = list(range(len(s2) + 1))\n    for i, c1 in enumerate(s1):\n        curr = [i + 1]\n        for j, c2 in enumerate(s2):\n            curr.append(prev[j] if c1 == c2 else 1 + min(prev[j], prev[j+1], curr[-1]))\n        prev = curr\n    return prev[-1]"
+            v2: "def dist_optimized(s1, s2):\n    if len(s1) < len(s2): s1, s2 = s2, s1\n    prev = list(range(len(s2) + 1))\n    for i, c1 in enumerate(s1):\n        curr = [i + 1]\n        for j, c2 in enumerate(s2):\n            curr.append(prev[j] if c1 == c2 else 1 + min(prev[j], prev[j+1], curr[-1]))\n        prev = curr\n    return prev[-1]"
         },
         cpp: {
             v1: "int editDistance(string s1, string s2) {\n    int m = s1.size(), n = s2.size();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1));\n    for(int i=0; i<=m; i++) dp[i][0] = i;\n    for(int j=0; j<=n; j++) dp[0][j] = j;\n    for(int i=1; i<=m; i++) {\n        for(int j=1; j<=n; j++) {\n            if(s1[i-1] == s2[j-1]) dp[i][j] = dp[i-1][j-1];\n            else dp[i][j] = 1 + min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]});\n        }\n    }\n    return dp[m][n];\n}",
@@ -225,18 +227,17 @@
                 _steps.push({ i, j, dp: dp.map(r=>[...r]), action, src, msg: `Comparing <b>'${t1[i-1]}'</b> and <b>'${t2[j-1]}'</b><br>${opLine}<br><b>dp[${i}][${j}] = ${dp[i][j]}</b>` });
             }
         }
-        _steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), action:'done', msg: `<b>Complete!</b> Distance is <b>${dp[n][m]}</b>.` });
+        _steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), action:'done', msg: `<b>Calculation complete.</b> The Levenshtein distance is <b>${dp[n][m]}</b>.` });
         return _steps;
     }
 
     function render() {
         const s = steps[cur], n = t1.length, m = t2.length;
         document.getElementById('info').innerHTML = s.msg;
-        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        document.getElementById('ctr').textContent = `step ${cur}/${steps.length-1}`;
         
-        // String display
         const sd = document.getElementById('str-display');
-        if (s.i < 1) sd.innerHTML = 'Waiting...';
+        if (s.i < 1) sd.innerHTML = 'Waiting for input...';
         else {
             let h1='', h2='';
             for(let k=0;k<n;k++) h1+=`<span class="${k===s.i-1?(s.action==='match'?'ch ch-match':'ch ch-cur'):'ch'}">${t1[k]}</span>`;
@@ -244,26 +245,29 @@
             sd.innerHTML = `T1: ${h1} | T2: ${h2}`;
         }
 
-        // Table
         let html = '<table><tr><th></th><th>""</th>';
         for(let j=0;j<m;j++) html+=`<th>${t2[j]}</th>`;
         html+='</tr>';
         for(let i=0; i<=n; i++){
             html+=`<tr><td class="rlbl">${i===0?'""':t1[i-1]}</td>`;
             for(let j=0; j<=m; j++){
-                const isFilled = i===0||j===0||(cur>0 && (i<s.i || (i===s.i && j<=s.j)));
+                const isBase = i===0||j===0;
+                const isFilled = isBase||(cur>0 && (i<s.i || (i===s.i && j<=s.j)));
                 let cls = 'cell';
                 if(isFilled) cls+=' filled';
-                if(s.i>0 && s.j>0 && s.action!=='start'){
+                
+                if(s.i >= 0 && s.j >= 0 && s.action !== 'start'){
                     if(i===s.i && j===s.j){
                         if(s.action==='match') cls+=' match';
                         else if(s.action==='replace') cls+=' op-rep cur';
                         else if(s.action==='delete') cls+=' op-del cur';
                         else if(s.action==='insert') cls+=' op-ins cur';
-                    } else if(s.src==='diag'&&i===s.i-1&&j===s.j-1) cls+=s.action==='match'?' match':' op-rep';
-                    else if(s.src==='top'&&i===s.i-1&&j===s.j) cls+=' op-del';
-                    else if(s.src==='left'&&i===s.i&&j===s.j-1) cls+=' op-ins';
-                    if((i===s.i&&j!==s.j)||(j===s.j&&i!==s.i)) cls+=' hi';
+                        else cls += ' cur'; // Для финального шага 'done'
+                    } else if(s.src==='diag' && i===s.i-1 && j===s.j-1) cls+=s.action==='match'?' match':' op-rep';
+                    else if(s.src==='top' && i===s.i-1 && j===s.j) cls+=' op-del';
+                    else if(s.src==='left' && i===s.i && j===s.j-1) cls+=' op-ins';
+                    
+                    if((i===s.i && j!==s.j) || (j===s.j && i!==s.i)) cls+=' hi';
                 }
                 html+=`<td class="${cls}">${isFilled?s.dp[i][j]:''}</td>`;
             }
