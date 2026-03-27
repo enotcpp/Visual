@@ -2,220 +2,268 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
-    <title>AlgoView | Library</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlgoView | Lab Dashboard</title>
     <style>
         :root {
-            --bg-main: #1a1a1c;
-            --bg-card: #242426;
+            --bg-main: #0f0f11;
+            --bg-card: #1a1a1c;
+            --bg-hover: #242426;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --border: #3e3e42;
-            --logo-gradient: linear-gradient(135deg, #7f77dd 0%, #4facfe 100%);
+            --accent-gradient: linear-gradient(135deg, #7f77dd 0%, #4facfe 100%);
+            --border: #2d2d30;
         }
 
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            padding: 60px 20px; 
+            font-family: 'Inter', -apple-system, sans-serif; 
             background: var(--bg-main); 
             color: var(--text-main);
             margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding-bottom: 100px;
+        }
+
+        /* Обновленное Стильное Лого */
+        header {
+            padding: 60px 20px;
+            text-align: center;
+            background: radial-gradient(circle at top, #1e1e22 0%, var(--bg-main) 70%);
         }
 
         .logo {
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 5px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 15px;
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            cursor: default;
         }
-        .logo-icon {
-            width: 30px;
-            height: 30px;
-            background: var(--logo-gradient);
-            border-radius: 8px;
+
+        .logo-box {
+            width: 50px;
+            height: 50px;
+            background: var(--accent-gradient);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 18px;
+            font-size: 28px;
+            box-shadow: 0 10px 20px rgba(127, 119, 221, 0.3);
+            animation: pulse 3s infinite;
         }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 10px 30px rgba(127, 119, 221, 0.5); }
+            100% { transform: scale(1); }
+        }
+
         .logo-text span {
-            background: var(--logo-gradient);
+            background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 50px;
-            text-align: center;
-            opacity: 0.8;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
-        ul { 
-            list-style: none; 
-            padding: 0; 
-            width: 100%;
-            max-width: 600px;
-        }
-
-        li { margin: 12px 0; }
-
-        .category {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            margin: 35px 0 12px 10px;
-            letter-spacing: 2px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .category::after {
-            content: "";
-            height: 1px;
-            flex-grow: 1;
-            background: var(--border);
-        }
-
-        a { 
-            text-decoration: none; 
-            color: var(--text-main); 
-            font-size: 16px; 
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            padding: 18px 24px;
-            background: var(--bg-card);
+        /* Секции-Аккордеоны */
+        .category-wrapper {
+            margin-bottom: 15px;
             border: 1px solid var(--border);
             border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            background: var(--bg-card);
         }
 
-        a:hover { 
-            transform: translateY(-4px) scale(1.01); 
-            border-color: var(--accent);
-            background: #2d2d30;
-            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+        .category-header {
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.3s;
+            user-select: none;
         }
 
-        a span.icon {
-            margin-right: 15px;
-            font-size: 20px;
+        .category-header:hover { background: var(--bg-hover); }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        .category-icon {
+            font-size: 18px;
+            transition: transform 0.3s;
+        }
+
+        /* Список алгоритмов внутри */
+        .algo-list {
+            display: none;
+            padding: 10px 15px 20px;
+            border-top: 1px solid var(--border);
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .category-wrapper.active .algo-list { display: grid; }
+        .category-wrapper.active .category-icon { transform: rotate(180deg); }
+
+        .algo-item {
+            text-decoration: none;
+            color: var(--text-main);
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .algo-item:hover {
+            background: var(--bg-hover);
+            transform: translateX(8px);
+        }
+
+        .algo-icon-circle {
+            width: 36px;
+            height: 36px;
             background: #2d2d30;
-            width: 40px;
-            height: 40px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 10px;
-            border: 1px solid var(--border);
+            font-size: 18px;
         }
 
-        .count {
-            margin-left: auto;
-            font-size: 12px;
-            color: var(--text-secondary);
-            background: var(--border);
+        .algo-details { flex-grow: 1; }
+        .algo-name { font-weight: 600; font-size: 15px; }
+        .algo-complexity { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+        .tag-pill {
+            font-size: 10px;
             padding: 2px 8px;
-            border-radius: 20px;
+            border-radius: 10px;
+            background: var(--border);
+            color: var(--text-secondary);
         }
+
     </style>
 </head>
 <body>
 
-    <div class="logo">
-        <div class="logo-icon">V</div>
-        <div class="logo-text">Algo<span>View</span></div>
+    <header>
+        <div class="logo">
+            <div class="logo-box">A</div>
+            <div class="logo-text">Algo<span>View</span></div>
+        </div>
+        <p style="color: var(--text-secondary); margin-top: 15px;">Interactive Algorithm Laboratory v2.0</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="category-wrapper active">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <div class="category-title">🔍 Searching Algorithms</div>
+                <div class="category-icon">▼</div>
+            </div>
+            <div class="algo-list">
+                <a href="Binary Search/index.html" class="algo-item">
+                    <div class="algo-icon-circle">🔍</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Binary Search</div>
+                        <div class="algo-complexity">Time: O(log N)</div>
+                    </div>
+                    <span class="tag-pill">Sorted Array</span>
+                </a>
+                <a href="Lower Bound/index.html" class="algo-item">
+                    <div class="algo-icon-circle">🎯</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Lower Bound</div>
+                        <div class="algo-complexity">First element ≥ target</div>
+                    </div>
+                </a>
+                <a href="Upper Bound/index.html" class="algo-item">
+                    <div class="algo-icon-circle">🎯</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Upper Bound</div>
+                        <div class="algo-complexity">First element > target</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-wrapper">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <div class="category-title">🧬 Number Theory</div>
+                <div class="category-icon">▼</div>
+            </div>
+            <div class="algo-list">
+                <a href="Sieve/index.html" class="algo-item">
+                    <div class="algo-icon-circle">🧬</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Sieve of Eratosthenes</div>
+                        <div class="algo-complexity">Finding primes up to N</div>
+                    </div>
+                    <span class="tag-pill">O(N log log N)</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-wrapper">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <div class="category-title">📊 Sorting</div>
+                <div class="category-icon">▼</div>
+            </div>
+            <div class="algo-list">
+                <a href="Bubble Sort/index.html" class="algo-item">
+                    <div class="algo-icon-circle">🔵</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Bubble Sort</div>
+                        <div class="algo-complexity">Time: O(N²)</div>
+                    </div>
+                    <span class="tag-pill">Stable</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-wrapper">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <div class="category-title">📉 Dynamic Programming</div>
+                <div class="category-icon">▼</div>
+            </div>
+            <div class="algo-list">
+                <a href="LCS/index.html" class="algo-item">
+                    <div class="algo-icon-circle">📉</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Longest Common Subsequence</div>
+                        <div class="algo-complexity">2D Table approach</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
     </div>
-    <div class="subtitle">Interactive algorithms laboratory</div>
-    
-    <ul>
-        <div class="category">Searching</div>        
-        <li>
-            <a href="Binary Search/index.html">
-                <span class="icon">🔍</span> Binary Search
-            </a>
-        </li>
-        <li>
-            <a href="Binary Jump Search/index.html">
-                <span class="icon">🦘</span> Binary Jump Search
-            </a>
-        </li>
-        <li>
-            <a href="Lower Bound/index.html">
-                <span class="icon">🎯</span> Lower Bound
-            </a>
-        </li>
-        <li>
-            <a href="Upper Bound/index.html">
-                <span class="icon">🎯</span> Upper Bound
-            </a>
-        </li>
-        
-        <div class="category">Sorting</div>
-        <li>
-            <a href="Bubble Sort/index.html">
-                <span class="icon">🔵</span> Bubble Sort
-                <div class="count">O(N²)</div>
-            </a>
-        </li>
-        
-        <div class="category">Dynamic Programming</div>
-        <li>
-            <a href="Longest Common Subsequence/index.html">
-                <span class="icon">📉</span> Longest Common Subsequence
-            </a>
-        </li>        
-        <li>
-            <a href="Wagner-Fischer/index.html">
-                <span class="icon">📉</span> Edit Distance
-            </a>
-        </li>
-        <li>
-            <a href="Longest Arithmetic Subsequence/index.html">
-                <span class="icon">🧬</span> Longest Arithmetic Subsequence
-            </a>
-        </li>
-        <li>
-            <a href="Climbing Stairs/index.html">
-                <span class="icon">🪜</span> Climbing Stairs
-            </a>
-        </li>
-        <li>
-            <a href="Minimum Path Sum/index.html">
-                <span class="icon">🛣️</span> Minimum Path Sum
-            </a>
-        </li>
 
-        <div class="category">Number Theory</div>
-        <li>
-            <a href="Sieve of Eratosthenes/index.html">
-                <span class="icon">🧬</span> Sieve of Eratosthenes
-                <div class="count">O(N log log N)</div>
-            </a>
-        </li>        
-
-        <div class="category">Combinatorics</div>
-        <li>
-            <a href="Narayana/index.html">
-                <span class="icon">🔄</span> Narayana's Permutation
-                <div class="count">Next Lex Order</div>
-            </a>
-        </li>        
-    </ul>
-    
+    <script>
+        function toggleCategory(header) {
+            const wrapper = header.parentElement;
+            wrapper.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>
