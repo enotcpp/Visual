@@ -59,7 +59,7 @@
         .leg { display: flex; align-items: center; gap: 6px; }
         .ldot { width: 14px; height: 14px; border-radius: 4px; }
 
-        /* TABLE LOGIC */
+        /* TABLE LOGIC - Полное восстановление оригинала */
         .tbl-wrap { overflow-x: auto; margin-bottom: 25px; }
         table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
         th, .rlbl { font-size: 13px; color: var(--text-secondary); min-width: 48px; text-align: center; }
@@ -67,7 +67,7 @@
         .cell {
             width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--border);
             background: var(--bg-card); text-align: center; font-size: 16px; transition: all .2s;
-            color: var(--text-secondary);
+            color: var(--text-secondary); vertical-align: middle;
         }
         .cell.filled { background: var(--bg-input); color: var(--text-main); }
         .cell.cur { border: 2.5px solid var(--accent) !important; color: white !important; transform: scale(1.05); z-index: 2; }
@@ -93,7 +93,9 @@
 <div class="wrap">
     <div class="visualizer-card">
         <div class="inputs">
+            <label>Str 1</label>
             <input id="in1" type="text" value="ABCBDEB" maxlength="12">
+            <label>Str 2</label>
             <input id="in2" type="text" value="ACE" maxlength="12">
             <button onclick="rebuild()">Apply</button>
         </div>
@@ -116,6 +118,7 @@
             <button class="secondary" onclick="resetAll()">Reset</button>
             <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
         </div>
+        <div class="res" style="margin-top: 20px;">LCS Length: <span class="res-val" id="resv" style="font-size: 24px; font-weight: bold; color: var(--accent-secondary); margin-left: 10px;">0</span></div>
     </div>
 
     <div class="lab-info">
@@ -138,16 +141,16 @@
 <script>
     const db = {
         theory: {
-            EN: "<h3>Longest Common Subsequence</h3><p>The LCS problem is to find the longest subsequence common to all sequences in a set of sequences. Unlike substrings, subsequences are not required to occupy consecutive positions within the original sequences.</p>",
-            RU: "<h3>Наибольшая общая подпоследовательность</h3><p>Задача поиска подпоследовательности, имеющейся во всех рассматриваемых последовательностях и имеющей максимальную длину. В отличие от подстрок, подпоследовательности не обязаны занимать последовательные позиции.</p>"
+            EN: "<h3>Longest Common Subsequence</h3><p>Finds the longest subsequence present in all given sequences. Subsequences are not required to occupy consecutive positions.</p>",
+            RU: "<h3>Наибольшая общая подпоследовательность</h3><p>Задача поиска подпоследовательности максимальной длины, которая является общей для обеих строк.</p>"
         },
         python: {
-            v1: "def lcs(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    \n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i-1] == s2[j-1]:\n                dp[i][j] = dp[i-1][j-1] + 1\n            else:\n                dp[i][j] = max(dp[i-1][j], dp[i][j-1])\n    return dp[m][n]",
-            v2: "# Space optimized version O(min(N,M))\ndef lcs_small(s1, s2):\n    if len(s1) < len(s2): s1, s2 = s2, s1\n    dp = [0] * (len(s2) + 1)\n    for char1 in s1:\n        prev = 0\n        for j, char2 in enumerate(s2):\n            temp = dp[j+1]\n            if char1 == char2:\n                dp[j+1] = prev + 1\n            else:\n                dp[j+1] = max(dp[j+1], dp[j])\n            prev = temp\n    return dp[-1]"
+            v1: "def lcs(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i-1] == s2[j-1]:\n                dp[i][j] = dp[i-1][j-1] + 1\n            else:\n                dp[i][j] = max(dp[i-1][j], dp[i][j-1])\n    return dp[m][n]",
+            v2: "def lcs_opt(s1, s2):\n    # Space optimized O(min(N,M))\n    if len(s1) < len(s2): s1, s2 = s2, s1\n    dp = [0] * (len(s2) + 1)\n    for char1 in s1:\n        prev = 0\n        for j, char2 in enumerate(s2):\n            temp = dp[j+1]\n            dp[j+1] = prev + 1 if char1 == char2 else max(dp[j+1], dp[j])\n            prev = temp\n    return dp[-1]"
         },
         cpp: {
-            v1: "int lcs(string s1, string s2) {\n    int m = s1.size(), n = s2.size();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));\n    \n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1[i-1] == s2[j-1])\n                dp[i][j] = dp[i-1][j-1] + 1;\n            else\n                dp[i][j] = max(dp[i-1][j], dp[i][j-1]);\n        }\n    }\n    return dp[m][n];\n}",
-            v2: "int lcs_optimized(string s1, string s2) {\n    int n = s1.size(), m = s2.size();\n    if (n < m) return lcs_optimized(s2, s1);\n    vector<int> dp(m + 1, 0);\n    for (int i = 1; i <= n; i++) {\n        int prev = 0;\n        for (int j = 1; j <= m; j++) {\n            int temp = dp[j];\n            if (s1[i-1] == s2[j-1]) dp[j] = prev + 1;\n            else dp[j] = max(dp[j], dp[j-1]);\n            prev = temp;\n        }\n    }\n    return dp[m];\n}"
+            v1: "int lcs(string s1, string s2) {\n    int m = s1.size(), n = s2.size();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1[i-1] == s2[j-1]) dp[i][j] = dp[i-1][j-1] + 1;\n            else dp[i][j] = max(dp[i-1][j], dp[i][j-1]);\n        }\n    }\n    return dp[m][n];\n}",
+            v2: "int lcs_fast(string s1, string s2) {\n    int n = s1.size(), m = s2.size();\n    vector<int> dp(m + 1, 0);\n    for (int i = 1; i <= n; i++) {\n        int prev = 0;\n        for (int j = 1; j <= m; j++) {\n            int temp = dp[j];\n            if (s1[i-1] == s2[j-1]) dp[j] = prev + 1;\n            else dp[j] = max(dp[j], dp[j-1]);\n            prev = temp;\n        }\n    }\n    return dp[m];\n}"
         }
     };
 
@@ -245,12 +248,19 @@
         for (let i=0; i<=n; i++) {
             html += `<tr><td class="rlbl">${i===0 ? '""' : t1[i-1]}</td>`;
             for (let j=0; j<=m; j++) {
+                // Логика заполнения из оригинала
                 const isFilled = (i===0 || j===0 || (cur > 0 && (i < s.i || (i === s.i && j <= s.j))));
                 let cls = 'cell';
                 if (isFilled) cls += ' filled';
+                
+                // Оригинальные стили выделения
                 if (i === s.i && j === s.j && s.action !== 'done') cls += ' cur';
-                if (s.src && s.src.some(p => p.r === i && p.c === j)) cls += (s.action === 'match' ? ' match' : ' source');
-                if (s.path && s.path.some(p => p.r === i && p.c === j)) cls += ' path';
+                if (s.src && s.src.some(p => p.r === i && p.c === j)) {
+                    cls += (s.action === 'match' ? ' match' : ' source');
+                }
+                if (s.path && s.path.some(p => p.r === i && p.c === j)) {
+                    cls += ' path';
+                }
                 
                 html += `<td class="${cls}">${isFilled ? s.dp[i][j] : ''}</td>`;
             }
