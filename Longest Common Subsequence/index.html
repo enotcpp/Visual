@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LCS Visualizer</title>
+    <style>
+        :root {
+            --bg-main: #1a1a1c;
+            --bg-card: #242426;
+            --bg-input: #2d2d30;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-secondary: #1d9e75;
+            --border: #3e3e42;
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+        
+        .inputs { display: flex; gap: 12px; margin: 0 0 20px; align-items: center; flex-wrap: wrap; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-main); padding: 8px 12px; border-radius: 8px;
+            width: 140px; font-family: monospace; 
+        }
+        
+        button {
+            padding: 10px 20px; border-radius: 8px; border: none;
+            background: var(--accent); color: white; font-weight: 600;
+            cursor: pointer; transition: opacity 0.2s; font-size: 14px;
+        }
+        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+
+        .info-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px; font-size: 14px; min-height: 80px; margin: 0 0 20px;
+        }
+        .info-box b { color: var(--accent-secondary); }
+
+        .legend { display: flex; gap: 15px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); margin: 0 0 20px; }
+        .leg { display: flex; align-items: center; gap: 6px; }
+        .ldot { width: 14px; height: 14px; border-radius: 4px; }
+
+        .tbl-wrap { overflow-x: auto; margin: 0 0 20px; }
+        table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
+        th, .rlbl { font-size: 13px; color: var(--text-secondary); padding: 5px; min-width: 48px; }
+
+        .cell {
+            width: 48px; height: 48px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-card);
+            text-align: center; font-size: 16px; color: var(--text-secondary);
+            transition: all .2s;
+        }
+        .cell.filled { background: var(--bg-input); color: var(--text-main); }
+        .cell.cur    { border: 2.5px solid var(--accent); color: white; transform: scale(1.05); z-index: 2; }
+        .cell.match  { background: #085041; border-color: var(--accent-secondary); color: white; }
+        .cell.source { background: #3c3489; border-color: #7f77dd; }
+        .cell.path   { background: #1d9e75; border-color: #fff; color: white; box-shadow: 0 0 10px var(--accent-secondary); }
+
+        .ctrls { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
+        .res { font-size: 15px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; align-items: center; gap: 10px; }
+        .res-val { font-size: 24px; font-weight: bold; color: var(--accent-secondary); }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="inputs">
+    <label>Str 1</label>
+    <input id="in1" type="text" value="ABCBDEB" maxlength="12">
+    <label>Str 2</label>
+    <input id="in2" type="text" value="ACE" maxlength="12">
+    <button onclick="rebuild()">Apply</button>
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="ldot" style="background:transparent;border:2.5px solid var(--accent)"></div>current</div>
+    <div class="leg"><div class="ldot" style="background:#085041"></div>char match</div>
+    <div class="leg"><div class="ldot" style="background:#3c3489"></div>src (max)</div>
+    <div class="leg"><div class="ldot" style="background:#1d9e75"></div>lcs path</div>
+  </div>
+
+  <div class="info-box" id="info">Ready.</div>
+  
+  <div class="tbl-wrap"><div id="tbl"></div></div>
+
+  <div class="ctrls">
+    <button class="secondary" onclick="go(-1)">< Back</button>
+    <button onclick="go(1)">Next Step ></button>
+    <button class="secondary" onclick="resetAll()">Reset</button>
+    <span class="ctr-lbl" id="ctr"></span>
+  </div>
+  
+  <div class="res">LCS Length: <span class="res-val" id="resv">0</span></div>
+</div>
+
+<script>
+let t1 = 'ABCBDAB', t2 = 'BDCABA';
+let steps = [], cur = 0;
+
+function rebuild() {
+    t1 = document.getElementById('in1').value.trim();
+    t2 = document.getElementById('in2').value.trim();
+    steps = buildSteps();
+    cur = 0;
+    render();
+}
+
+function buildSteps() {
+    const n = t1.length, m = t2.length;
+    const _steps = [];
+    const dp = Array.from({length: n+1}, () => Array(m+1).fill(0));
+
+    _steps.push({ i:0, j:0, dp: dp.map(r=>[...r]), msg: 'Initialize DP table with zeros.' });
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            let src = [], action = '';
+            if (t1[i-1] === t2[j-1]) {
+                dp[i][j] = dp[i-1][j-1] + 1;
+                src = [{r: i-1, c: j-1}];
+                action = 'match';
+            } else {
+                dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+                if (dp[i-1][j] >= dp[i][j-1]) src.push({r: i-1, c: j});
+                if (dp[i][j-1] >= dp[i-1][j]) src.push({r: i, c: j-1});
+                action = 'move';
+            }
+            _steps.push({ 
+                i, j, dp: dp.map(r=>[...r]), src, action,
+                msg: action === 'match' 
+                    ? `Match found: <b>'${t1[i-1]}'</b>. Length = dp[i-1][j-1] + 1 = <b>${dp[i][j]}</b>`
+                    : `No match. Taking max of neighbors: <b>${dp[i][j]}</b>`
+            });
+        }
+    }
+
+    // Backtrack to find LCS path
+    let path = [];
+    let r = n, c = m;
+    while (r > 0 && c > 0) {
+        if (t1[r-1] === t2[c-1]) {
+            path.push({r, c});
+            r--; c--;
+        } else if (dp[r-1][c] >= dp[r][c-1]) r--;
+        else c--;
+    }
+    _steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), path, action:'done', msg: '<b>LCS found!</b>' });
+
+    return _steps;
+}
+
+function render() {
+    const s = steps[cur];
+    const n = t1.length, m = t2.length;
+    document.getElementById('ctr').textContent = `step ${cur} / ${steps.length-1}`;
+    document.getElementById('resv').textContent = s.dp[n][m];
+    document.getElementById('info').innerHTML = s.msg;
+
+    let html = '<table><tr><th></th><th>""</th>';
+    for (let j=0; j<m; j++) html += `<th>${t2[j]}</th>`;
+    html += '</tr>';
+
+    for (let i=0; i<=n; i++) {
+        html += `<tr><td class="rlbl">${i===0 ? '""' : t1[i-1]}</td>`;
+        for (let j=0; j<=m; j++) {
+            const isFilled = (i===0 || j===0 || (cur > 0 && (i < s.i || (i === s.i && j <= s.j))));
+            let cls = 'cell';
+            if (isFilled) cls += ' filled';
+            if (i === s.i && j === s.j) cls += ' cur';
+            if (s.src && s.src.some(p => p.r === i && p.c === j)) cls += (s.action === 'match' ? ' match' : ' source');
+            if (s.path && s.path.some(p => p.r === i && p.c === j)) cls += ' path';
+            
+            html += `<td class="${cls}">${isFilled ? s.dp[i][j] : ''}</td>`;
+        }
+        html += '</tr>';
+    }
+    document.getElementById('tbl').innerHTML = html;
+}
+
+function go(dir) { const nx = cur + dir; if(nx>=0 && nx<steps.length){ cur=nx; render(); } }
+function resetAll() { cur=0; render(); }
+
+rebuild();
+</script>
+</body>
+</html>
