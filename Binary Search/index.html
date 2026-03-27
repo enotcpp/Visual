@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Binary Search Visualizer - Fixed</title>
+    <style>
+        :root {
+            --bg-main: #1a1a1c;
+            --bg-card: #242426;
+            --bg-input: #2d2d30;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-secondary: #1d9e75;
+            --border: #3e3e42;
+            --range-border: #4a4a4d; /* Светло-серая рамка */
+        }
+
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+        
+        .inputs { display: flex; gap: 10px; margin-bottom: 30px; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 8px; border-radius: 6px; 
+        }
+        
+        button {
+            padding: 8px 16px; border-radius: 6px; border: none;
+            background: var(--accent); color: white; cursor: pointer;
+        }
+
+        .info-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 15px; min-height: 70px; margin-bottom: 50px;
+        }
+
+        .search-area {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 60px 0;
+            padding: 20px;
+        }
+
+        .cell {
+            width: 55px; height: 55px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: bold;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        /* Светло-серое выделение диапазона */
+        .cell.in-range {
+            border-color: var(--range-border);
+            background: #2a2a2d;
+            box-shadow: 0 0 0 2px var(--range-border); /* "Рамочка" вокруг активных */
+        }
+
+        .cell.out { opacity: 0.2; }
+        .cell.mid-active { border: 2px solid #e67e22; }
+        .cell.match { background: var(--accent-secondary); border-color: white; }
+
+        /* Буквы-указатели */
+        .ptr {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            z-index: 10;
+        }
+        .ptr-l { top: -35px; background: var(--accent); }
+        .ptr-r { top: -35px; background: #555; }
+        /* Если L и R совпали, смещаем R чуть выше */
+        .ptr-r.overlap { top: -55px; } 
+        .ptr-m { bottom: -35px; background: #e67e22; }
+
+        .ctrls { display: flex; align-items: center; gap: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <h2>Binary Search</h2>
+    <div class="inputs">
+        <input id="arr-input" type="text" value="1, 2, 3, 4, 5, 6" style="width: 200px;">
+        <input id="target-input" type="number" value="5" style="width: 50px;">
+        <button onclick="rebuild()">Update</button>
+    </div>
+
+    <div class="info-box" id="info">Ready.</div>
+
+    <div class="search-area" id="search-area"></div>
+
+    <div class="ctrls">
+        <button onclick="go(-1)">← Back</button>
+        <button onclick="go(1)" style="background: var(--accent)">Next Step →</button>
+        <button onclick="resetAll()">Reset</button>
+    </div>
+</div>
+
+<script>
+let arr = [1, 2, 3, 4, 5, 6];
+let target = 5;
+let steps = [];
+let cur = 0;
+
+function rebuild() {
+    arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)).sort((a,b)=>a-b);
+    target = parseInt(document.getElementById('target-input').value);
+    init();
+}
+
+function init() {
+    steps = [];
+    let l = 0, r = arr.length - 1;
+    steps.push({ l, r, m: null, msg: "Initial search range." });
+
+    while (l <= r) {
+        let m = Math.floor((l + r) / 2);
+        steps.push({ l, r, m, msg: `Check middle: arr[${m}] = ${arr[m]}` });
+
+        if (arr[m] === target) {
+            steps.push({ l, r, m, msg: "Target found!", found: true });
+            break;
+        }
+        if (arr[m] < target) {
+            l = m + 1;
+            steps.push({ l, r, m: null, msg: `Value too small. Move L to ${l}` });
+        } else {
+            r = m - 1;
+            steps.push({ l, r, m: null, msg: `Value too large. Move R to ${r}` });
+        }
+    }
+    cur = 0;
+    render();
+}
+
+function render() {
+    const s = steps[cur];
+    const container = document.getElementById('search-area');
+    document.getElementById('info').innerHTML = s.msg;
+    
+    container.innerHTML = '';
+    arr.forEach((val, i) => {
+        const div = document.createElement('div');
+        div.className = 'cell';
+        
+        // Логика светло-серой рамочки
+        if (i >= s.l && i <= s.r) div.classList.add('in-range');
+        else div.classList.add('out');
+        
+        if (i === s.m) div.classList.add('mid-active');
+        if (s.found && i === s.m) div.classList.add('match');
+        
+        div.textContent = val;
+
+        // Добавляем буквы прямо ВНУТРЬ ячейки (relative)
+        if (i === s.l) div.innerHTML += `<div class="ptr ptr-l">L</div>`;
+        if (i === s.r) {
+            const isOverlap = (s.l === s.r);
+            div.innerHTML += `<div class="ptr ptr-r ${isOverlap ? 'overlap' : ''}">R</div>`;
+        }
+        if (i === s.m) div.innerHTML += `<div class="ptr ptr-m">M</div>`;
+
+        container.appendChild(div);
+    });
+}
+
+function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
+function resetAll() { cur=0; render(); }
+
+rebuild();
+</script>
+</body>
+</html>
