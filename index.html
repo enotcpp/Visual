@@ -2,32 +2,98 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Моя Библиотека Алгоритмов</title>
+    <title>List of algorithms</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; color: #333; }
-        h1 { color: #2c3e50; }
-        ul { list-style: none; padding: 0; }
-        li { margin: 10px 0; }
+        /* Темная тема в стиле чата / OneNote Modern */
+        :root {
+            --bg-main: #1a1a1c;
+            --bg-card: #242426;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --border: #3e3e42;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            padding: 40px 20px; 
+            background: var(--bg-main); 
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { 
+            color: var(--text-main); 
+            margin-bottom: 30px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        ul { 
+            list-style: none; 
+            padding: 0; 
+            width: 100%;
+            max-width: 600px;
+        }
+
+        li { 
+            margin: 15px 0; 
+        }
+
         a { 
             text-decoration: none; 
-            color: #3498db; 
-            font-size: 18px; 
-            font-weight: bold;
-            display: inline-block;
-            padding: 10px 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: 0.2s;
+            color: var(--text-main); 
+            font-size: 16px; 
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        a:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); background: #ebf5fb; }
+
+        a:hover { 
+            transform: translateY(-3px); 
+            border-color: var(--accent);
+            background: #2d2d30;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Иконка или эмодзи внутри ссылки */
+        a span {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        /* Подзаголовок для порядка */
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
     </style>
 </head>
 <body>
-    <h1>📚 Визуализация Алгоритмов</h1>
+    <h1>📚 Algorithm Library</h1>
+    <div class="subtitle">Interactive visualizations for data structures and algorithms</div>
+    
     <ul>
-        <li><a href="Wagner-Fischer/index.html">📉 Алгоритм Вагнера-Фишера</a></li>
-        <li><a href="1027.Longest Arithmetic Subsequence/index.html">🧬 1027. Longest Arithmetic Subsequence</a></li>
+        <li>
+            <a href="Wagner-Fischer/index.html">
+                <span>📉</span> Wagner–Fischer Algorithm (Edit Distance)
+            </a>
+        </li>
+        <li>
+            <a href="1027.Longest Arithmetic Subsequence/index.html">
+                <span>🧬</span> 1027. Longest Arithmetic Subsequence
+            </a>
+        </li>
     </ul>
 </body>
 </html>
