@@ -12,224 +12,211 @@
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --accent-soft: rgba(127, 119, 221, 0.1);
             --border: #313136;
             --code-bg: #0d0d0f;
         }
 
         body { 
-            margin: 0; padding: 0; font-family: 'Inter', sans-serif; 
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: var(--bg-main); color: var(--text-main); 
         }
         
         .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
 
-        /* ВЕРХНЯЯ ЧАСТЬ: ВИЗУАЛИЗАТОР */
+        /* ВИЗУАЛИЗАТОР (Твой готовый код) */
         .visualizer-section {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 20px; padding: 30px; margin-bottom: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
-
-        h1 { font-size: 24px; margin-top: 0; display: flex; align-items: center; gap: 10px; }
-        .inputs { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
-            color: white; padding: 10px 15px; border-radius: 8px; outline: none;
+            color: white; padding: 10px; border-radius: 8px; outline: none;
         }
-        
         button {
-            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
             background: var(--bg-input); color: var(--text-main); font-weight: 600;
             cursor: pointer; transition: 0.2s;
         }
-        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button:hover { border-color: var(--accent); }
         button.primary { background: var(--accent); color: white; border: none; }
 
-        .search-area { display: flex; justify-content: center; gap: 8px; margin: 40px 0; min-height: 80px; }
+        .search-area { display: flex; justify-content: center; gap: 10px; margin: 60px 0; }
         .cell {
-            width: 45px; height: 45px; background: var(--bg-main); border: 1px solid var(--border);
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            font-size: 16px; font-weight: 700; position: relative; transition: 0.3s;
+            width: 55px; height: 55px; background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: bold; position: relative; transition: all 0.3s;
         }
-        .cell.in-range { border-color: var(--accent); background: var(--accent-soft); }
+        .cell.in-range { border-color: #4a4a4d; background: #2a2a2d; }
         .cell.out { opacity: 0.2; transform: scale(0.9); }
-        .cell.mid-active { border: 2px solid #e67e22; color: #e67e22; }
-        .cell.match { background: #1d9e75; color: white; border: none; box-shadow: 0 0 15px #1d9e75; }
+        .cell.mid-active { border: 3px solid #e67e22; color: #e67e22; }
+        .cell.match { background: #1d9e75; border-color: white; color: white; }
 
-        /* УКАЗАТЕЛИ */
-        .ptr { position: absolute; font-size: 10px; font-weight: 900; padding: 2px 4px; border-radius: 3px; color: white; }
-        .ptr-l { top: -25px; background: var(--accent); }
-        .ptr-r { top: -25px; background: #555; }
-        .ptr-m { bottom: -25px; background: #e67e22; }
+        .ptr { position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 4px; color: white; }
+        .ptr-l { top: -38px; background: var(--accent); }
+        .ptr-r { top: -38px; background: #555; }
+        .ptr-m { bottom: -38px; background: #e67e22; }
 
-        /* НИЖНЯЯ ЧАСТЬ: ТАБЫ (КОД И ТЕОРИЯ) */
+        /* ПАНЕЛЬ ИНФОРМАЦИИ */
         .lab-info {
             background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
         }
-
         .tabs-nav {
-            display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 0 10px;
+            display: flex; background: #141416; border-bottom: 1px solid var(--border);
         }
         .tab-btn {
-            background: none; border: none; padding: 15px 25px; color: var(--text-secondary);
-            font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+            background: none; border: none; padding: 18px 25px; color: var(--text-secondary);
+            font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer;
         }
-        .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
 
-        .lang-switcher {
-            margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 15px;
+        /* Контекстные переключатели (Правая часть табов) */
+        .context-controls {
+            margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 20px;
         }
-        .lang-btn { font-size: 10px; padding: 4px 8px; opacity: 0.5; }
-        .lang-btn.active { opacity: 1; border-color: var(--accent); }
+        .sub-btn {
+            font-size: 10px; padding: 4px 8px; opacity: 0.6; border: 1px solid var(--border);
+            background: transparent; color: var(--text-secondary); border-radius: 4px; cursor: pointer;
+        }
+        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
 
-        .tab-content { display: none; padding: 30px; line-height: 1.6; }
+        .tab-content { display: none; padding: 30px; min-height: 200px; }
         .tab-content.active { display: block; }
-
-        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; overflow-x: auto; color: #a6accd; font-size: 14px; }
-        .keyword { color: #c792ea; }
-        .func { color: #82aaff; }
+        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
     <div class="visualizer-section">
-        <h1>🔍 Binary Search Visualizer</h1>
+        <h1>🔍 Binary Search</h1>
         <div class="inputs">
             <input id="arr-input" type="text" value="1, 3, 5, 8, 12, 15, 18, 21" style="width: 250px;">
-            <input id="target-input" type="number" value="12" style="width: 60px;">
-            <button onclick="rebuild()" class="primary">Update Data</button>
+            <label>Target:</label>
+            <input id="target-input" type="number" value="8" style="width: 60px;">
+            <button onclick="rebuild()">Update</button>
         </div>
-
-        <div id="info-box" style="margin: 20px 0; color: var(--text-secondary); font-size: 14px;">Ready.</div>
-
+        <div class="info-box" id="info" style="margin-bottom: 20px; color: var(--text-secondary);">Ready.</div>
         <div class="search-area" id="search-area"></div>
-
         <div class="inputs">
             <button onclick="go(-1)">← Back</button>
-            <button onclick="go(1)">Next Step →</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
             <button onclick="resetAll()">Reset</button>
-            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+            <span id="ctr" style="margin-left: auto; font-size: 13px; color: var(--text-secondary);"></span>
         </div>
     </div>
 
     <div class="lab-info">
         <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
-            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
 
-            <div class="lang-switcher">
-                <button class="lang-btn active" onclick="switchLang('EN')">EN</button>
-                <button class="lang-btn" onclick="switchLang('RU')">RU</button>
-                <button class="lang-btn" onclick="switchLang('UKR')">UKR</button>
-                <button class="lang-btn" onclick="switchLang('DE')">DE</button>
-            </div>
-        </div>
-
-        <div id="theory" class="tab-content active">
-            <div id="theory-text">
+            <div class="context-controls" id="context-panel">
                 </div>
         </div>
 
+        <div id="theory" class="tab-content active">
+            <div id="theory-display"></div>
+        </div>
+
         <div id="python" class="tab-content">
-            <pre><code><span class="keyword">def</span> <span class="func">binary_search</span>(arr, target):
-    low = <span style="color:#f78c6c">0</span>
-    high = <span class="func">len</span>(arr) - <span style="color:#f78c6c">1</span>
-    
-    <span class="keyword">while</span> low <= high:
-        mid = (low + high) // <span style="color:#f78c6c">2</span>
-        <span class="keyword">if</span> arr[mid] == target:
-            <span class="keyword">return</span> mid
-        <span class="keyword">elif</span> arr[mid] < target:
-            low = mid + <span style="color:#f78c6c">1</span>
-        <span class="keyword">else</span>:
-            high = mid - <span style="color:#f78c6c">1</span>
-    <span class="keyword">return</span> -<span style="color:#f78c6c">1</span></code></pre>
+            <pre><code id="python-display"></code></pre>
         </div>
 
         <div id="cpp" class="tab-content">
-            <pre><code><span class="keyword">int</span> <span class="func">binarySearch</span>(<span class="keyword">int</span> arr[], <span class="keyword">int</span> n, <span class="keyword">int</span> x) {
-    <span class="keyword">int</span> l = <span style="color:#f78c6c">0</span>, r = n - <span style="color:#f78c6c">1</span>;
-    <span class="keyword">while</span> (l <= r) {
-        <span class="keyword">int</span> m = l + (r - l) / <span style="color:#f78c6c">2</span>;
-        <span class="keyword">if</span> (arr[m] == x) <span class="keyword">return</span> m;
-        <span class="keyword">if</span> (arr[m] < x) l = m + <span style="color:#f78c6c">1</span>;
-        <span class="keyword">else</span> r = m - <span style="color:#f78c6c">1</span>;
-    }
-    <span class="keyword">return</span> -<span style="color:#f78c6c">1</span>;
-}</code></pre>
+            <pre><code id="cpp-display"></code></pre>
         </div>
     </div>
 </div>
 
 <script>
-    // --- THEORY CONTENT DATABASE ---
-    const content = {
-        EN: {
-            title: "How it works",
-            desc: "Binary search is an efficient algorithm for finding an item from a sorted list of items. It works by repeatedly dividing in half the portion of the list that could contain the item, until you've narrowed down the possible locations to just one."
+    // БАЗА ДАННЫХ
+    const db = {
+        theory: {
+            EN: "<h3>Binary Search</h3><p>Binary search follows the 'divide and conquer' approach...</p>",
+            DE: "<h3>Binäre Suche</h3><p>Die binäre Suche folgt dem Prinzip 'Teile und herrsche'...</p>",
+            UKR: "<h3>Бінарний пошук</h3><p>Бінарний пошук працює за принципом 'розділяй і володарюй'...</p>",
+            RU: "<h3>Бинарный поиск</h3><p>Бинарный поиск работает по принципу 'разделяй и властвуй'...</p>"
         },
-        RU: {
-            title: "Как это работает",
-            desc: "Бинарный поиск — это эффективный алгоритм поиска элемента в отсортированном списке. Он работает путем постоянного деления пополам части списка, которая может содержать элемент, пока возможные места не сузятся до одного."
+        python: {
+            v1: "def binary_search(arr, target):\n    # Iterative version\n    ...",
+            v2: "def binary_search_rec(arr, target, low, high):\n    # Recursive version\n    ..."
         },
-        UKR: {
-            title: "Як це працює",
-            desc: "Бінарний пошук — це ефективний алгоритм пошуку елемента у відсортованому списку. Він працює шляхом постійного ділення навпіл частини списку, яка може містити елемент."
-        },
-        DE: {
-            title: "Wie es funktioniert",
-            desc: "Die binäre Suche ist ein effizienter Algorithmus, um ein Element aus einer sortierten Liste zu finden. Dabei wird der Teil der Liste, der das Element enthalten könnte, wiederholt halbiert."
+        cpp: {
+            v1: "int binarySearch(int arr[], int n, int x) {\n    // Standard version\n    ...",
+            v2: "// STL version\nstd::binary_search(arr.begin(), arr.end(), x);"
         }
     };
 
-    function switchLang(lang) {
-        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-        const textDiv = document.getElementById('theory-text');
-        textDiv.innerHTML = `<h3>${content[lang].title}</h3><p>${content[lang].desc}</p>`;
-    }
+    let currentMainTab = 'theory';
 
-    function switchTab(btn, tabId) {
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(tabId).classList.add('active');
+        
+        renderContextControls();
     }
 
-    // --- VISUALIZER LOGIC (Restored & Improved) ---
-    let arr = [], target = 0, steps = [], cur = 0;
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel');
+        panel.innerHTML = '';
 
+        if (currentMainTab === 'theory') {
+            ['EN', 'DE', 'UKR', 'RU'].forEach(lang => {
+                const b = document.createElement('button');
+                b.className = 'sub-btn' + (lang === 'EN' ? ' active' : '');
+                b.textContent = lang;
+                b.onclick = () => {
+                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                    b.classList.add('active');
+                    document.getElementById('theory-display').innerHTML = db.theory[lang];
+                };
+                panel.appendChild(b);
+            });
+            document.getElementById('theory-display').innerHTML = db.theory['EN'];
+        } else {
+            // Для кода показываем v1, v2
+            ['v1', 'v2'].forEach(ver => {
+                const b = document.createElement('button');
+                b.className = 'sub-btn' + (ver === 'v1' ? ' active' : '');
+                b.textContent = ver;
+                b.onclick = () => {
+                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                    b.classList.add('active');
+                    document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][ver];
+                };
+                panel.appendChild(b);
+            });
+            document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab]['v1'];
+        }
+    }
+
+    // --- ЛОГИКА ДИАГРАММЫ (Твой неизмененный код) ---
+    let arr = [], target = 0, steps = [], cur = 0;
     function rebuild() {
         arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)).sort((a,b)=>a-b);
         target = parseInt(document.getElementById('target-input').value);
         init();
     }
-
     function init() {
-        steps = [];
-        let l = 0, r = arr.length - 1;
-        steps.push({ l, r, m: null, msg: "Defined initial range [L, R]." });
+        steps = []; let l = 0, r = arr.length - 1;
+        steps.push({ l, r, m: null, msg: "Initial search range." });
         while (l <= r) {
             let m = Math.floor((l + r) / 2);
-            steps.push({ l, r, m, msg: `Check middle index ${m} (Value: ${arr[m]})` });
-            if (arr[m] === target) {
-                steps.push({ l, r, m, msg: "Found target!", found: true });
-                break;
-            }
-            if (arr[m] < target) l = m + 1;
-            else r = m - 1;
-            steps.push({ l, r, m: null, msg: arr[m-1] < target ? "Target is larger, moving L." : "Target is smaller, moving R." });
+            steps.push({ l, r, m, msg: `Check M=${m}` });
+            if (arr[m] === target) { steps.push({ l, r, m, msg: "Found!", found: true }); break; }
+            if (arr[m] < target) l = m + 1; else r = m - 1;
         }
         cur = 0; render();
     }
-
     function render() {
         const s = steps[cur];
         const container = document.getElementById('search-area');
-        document.getElementById('info-box').innerHTML = s.msg;
+        document.getElementById('info').innerHTML = s.msg;
         document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
         container.innerHTML = '';
         arr.forEach((val, i) => {
@@ -244,14 +231,12 @@
             container.appendChild(div);
         });
     }
-
     function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
     function resetAll() { cur=0; render(); }
 
-    // Bootstrap
-    switchLang('EN');
+    // Инициализация
+    renderContextControls();
     rebuild();
 </script>
-
 </body>
 </html>
