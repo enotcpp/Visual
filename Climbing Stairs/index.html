@@ -2,230 +2,260 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>70. Climbing Stairs Visualizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climbing Stairs | AlgoView Lab</title>
     <style>
         :root {
-            --bg-main: #1a1a1c;
-            --bg-card: #242426;
-            --bg-input: #2d2d30;
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
+            --accent-soft: rgba(127, 119, 221, 0.1);
             --accent-secondary: #1d9e75;
-            --border: #3e3e42;
+            --border: #313136;
+            --code-bg: #0d0d0f;
         }
 
-        * { box-sizing: border-box; }
         body { 
-            margin: 0; padding: 2rem 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg-main); color: var(--text-main); 
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-main); color: var(--text-main); 
         }
         
-        .wrap { max-width: 800px; margin: 0 auto; padding: 0 20px; }
-        
-        .inputs { display: flex; gap: 12px; margin: 0 0 20px; align-items: center; }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+        /* VISUALIZER SECTION */
+        .visualizer-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { font-size: 22px; margin: 0 0 25px 0; }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; }
         .inputs label { font-size: 14px; color: var(--text-secondary); }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
-            color: var(--text-main); padding: 10px 14px; border-radius: 8px;
-            width: 80px; font-size: 16px; font-weight: bold;
+            color: white; padding: 10px; border-radius: 8px; width: 70px; outline: none;
         }
-        
+
         button {
-            padding: 12px 24px; border-radius: 8px; border: none;
-            background: var(--accent); color: white; font-weight: 600;
-            cursor: pointer; transition: opacity 0.2s; font-size: 14px;
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
         }
-        button:hover { opacity: 0.9; }
-        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button.primary { background: var(--accent); color: white; border: none; }
 
-        .info-box {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 16px; font-size: 15px; line-height: 1.6;
-            min-height: 90px; margin: 0 0 25px;
-        }
-        .info-box b { color: var(--accent); }
-
-        /* ������������ �������� */
+        /* Stairs Visualization */
         .stairs-container {
             display: flex; align-items: flex-end; justify-content: center;
-            gap: 10px; margin-bottom: 30px; height: 220px; padding-bottom: 10px;
+            gap: 10px; margin: 40px 0; height: 200px;
         }
         .step {
-            width: 60px; background: var(--bg-card); border: 1px solid var(--border);
+            width: 55px; background: var(--bg-main); border: 1px solid var(--border);
             border-radius: 8px 8px 4px 4px; display: flex; flex-direction: column;
             align-items: center; justify-content: flex-end; padding-bottom: 10px;
             transition: all 0.3s ease; position: relative;
         }
-        .step-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
-        .step-val { font-size: 18px; font-weight: bold; color: var(--text-main); }
-        
-        .step.active { border: 2px solid var(--accent); background: #3c3489; box-shadow: 0 0 15px rgba(127, 119, 221, 0.3); }
-        .step.prev { border: 1.5px solid var(--accent-secondary); background: #085041; }
-        
-        /* ������� DP */
-        .tbl-wrap { overflow-x: auto; margin: 0 0 25px; }
+        .step-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+        .step-val { font-size: 16px; font-weight: bold; }
+        .step.active { border: 2px solid var(--accent); background: var(--accent-soft); transform: scale(1.05); }
+        .step.prev { border: 1.5px solid var(--accent-secondary); background: rgba(29, 158, 117, 0.1); }
+
+        /* DP Table */
+        .tbl-wrap { overflow-x: auto; margin-bottom: 30px; }
         table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
-        th { font-size: 12px; color: var(--text-secondary); padding: 5px; }
+        th { font-size: 11px; color: var(--text-secondary); padding-bottom: 5px; }
         .cell {
-            width: 60px; height: 50px; border-radius: 10px;
-            border: 1px solid var(--border); background: var(--bg-card);
-            text-align: center; font-size: 18px; color: var(--text-secondary);
+            width: 50px; height: 45px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-main); text-align: center; font-size: 16px;
         }
-        .cell.filled { background: var(--bg-input); color: var(--text-main); }
+        .cell.filled { color: var(--text-main); background: var(--bg-input); }
         .cell.current { border: 2px solid var(--accent); color: var(--accent); font-weight: bold; }
 
-        .ctrls { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
-        
-        .res { font-size: 16px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; align-items: center; gap: 10px; }
-        .res-val { font-size: 26px; font-weight: bold; color: var(--accent-secondary); }
+        /* LAB INFO SECTION */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn {
+            background: none; border: none; padding: 18px 25px; color: var(--text-secondary);
+            font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer;
+        }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn {
+            font-size: 10px; padding: 4px 8px; background: transparent; 
+            border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer;
+        }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
-    <h1>Staircase DP Visualizer</h1>
-    
-    <div class="inputs">
-        <label>Number of stairs (n):</label>
-        <input id="n-input" type="number" value="3" min="1" max="10">
-        <button onclick="rebuild()">Apply</button>
+    <div class="visualizer-section">
+        <h1>🪜 Climbing Stairs (Dynamic Programming)</h1>
+        
+        <div class="inputs">
+            <label>Number of stairs (n):</label>
+            <input id="n-input" type="number" value="5" min="1" max="10">
+            <button onclick="rebuild()" class="primary">Apply</button>
+        </div>
+
+        <div id="info" style="min-height: 60px; color: var(--text-secondary); font-size: 14px; border-left: 3px solid var(--accent); padding-left: 15px;">
+            Ready to solve.
+        </div>
+
+        <div class="stairs-container" id="stairs"></div>
+        <div class="tbl-wrap" id="tbl-container"></div>
+
+        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
     </div>
 
-    <div class="info-box" id="info">Set <b>n</b> and click "Next Step" to start.</div>
-
-    <div class="stairs-container" id="stairs"></div>
-
-    <div class="tbl-wrap" id="tbl-container"></div>
-
-    <div class="ctrls">
-        <button class="secondary" onclick="go(-1)">< Back</button>
-        <button onclick="go(1)">Next Step ></button>
-        <button class="secondary" onclick="resetAll()">Reset</button>
-        <span class="ctr-lbl" id="ctr"></span>
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code id="cpp-display"></code></pre></div>
     </div>
-    
-    <div class="res">Ways to reach the top: <span class="res-val" id="resv">�</span></div>
 </div>
 
 <script>
-let n = 3;
-let steps = [];
-let cur = 0;
+    // --- DATABASE (Theory & Code) ---
+    const db = {
+        theory: {
+            EN: "<h3>Climbing Stairs</h3><p>You are climbing a staircase. It takes <b>n</b> steps to reach the top. Each time you can either climb <b>1</b> or <b>2</b> steps. In how many distinct ways can you climb to the top?</p><p>This is a classic DP problem where <i>dp[i] = dp[i-1] + dp[i-2]</i>, which is the Fibonacci sequence logic.</p>",
+            DE: "<h3>Treppensteigen</h3><p>Sie steigen eine Treppe mit <b>n</b> Stufen hinauf. Sie können jeweils <b>1</b> oder <b>2</b> Stufen gehen. Wie viele verschiedene Möglichkeiten gibt es, die Spitze zu erreichen?</p>",
+            UKR: "<h3>Сходинки</h3><p>Ви піднімаєтеся сходами з <b>n</b> сходинок. Кожного разу ви можете зробити крок на <b>1</b> або <b>2</b> сходинки. Скількома способами можна дійти до вершини?</p>",
+            RU: "<h3>Лестница</h3><p>Вы поднимаетесь по лестнице из <b>n</b> ступеней. За один раз вы можете подняться на <b>1</b> или <b>2</b> ступени. Сколькими способами можно добраться до вершины?</p>"
+        },
+        python: {
+            v1: "def climbStairs(n):\n    if n <= 2: return n\n    dp = [0] * (n + 1)\n    dp[1], dp[2] = 1, 2\n    for i in range(3, n + 1):\n        dp[i] = dp[i-1] + dp[i-2]\n    return dp[n]",
+            v2: "# Space Optimized O(1)\ndef climbStairs(n):\n    a, b = 1, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a"
+        },
+        cpp: {
+            v1: "int climbStairs(int n) {\n    vector<int> dp(n + 1);\n    dp[0] = 1; dp[1] = 1;\n    for(int i=2; i<=n; i++)\n        dp[i] = dp[i-1] + dp[i-2];\n    return dp[n];\n}",
+            v2: "// Using simple variables\nint climbStairs(int n) {\n    int prev2 = 1, prev1 = 1;\n    for(int i=2; i<=n; i++) {\n        int curr = prev1 + prev2;\n        prev2 = prev1;\n        prev1 = curr;\n    }\n    return prev1;\n}"
+        }
+    };
 
-function rebuild() {
-    const val = parseInt(document.getElementById('n-input').value);
-    if (isNaN(val) || val < 1) return;
-    n = Math.min(val, 10); // ��������� ��� ������� ������������
-    document.getElementById('n-input').value = n;
-    init();
-}
-
-function init() {
-    steps = buildSteps();
-    cur = 0;
-    render();
-}
-
-function buildSteps() {
-    let _steps = [];
-    let dp = new Array(n + 1).fill(0);
-    
-    // ��������� ���������
-    _steps.push({
-        idx: 0, dp: [...dp],
-        msg: "<b>Base Case:</b> There is <b>1</b> way to stay at the ground (Step 0).",
-        highlight: [0], prev: []
-    });
-    dp[0] = 1;
-
-    if (n >= 1) {
-        _steps.push({
-            idx: 1, dp: [...dp],
-            msg: "<b>Base Case:</b> To reach Step 1, you can only take one 1-step. Total <b>1</b> way.",
-            highlight: [1], prev: []
-        });
-        dp[1] = 1;
+    // --- TABS LOGIC ---
+    let currentMainTab = 'theory';
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        renderContextControls();
     }
 
-    // ���������� DP
-    for (let i = 2; i <= n; i++) {
-        _steps.push({
-            idx: i, dp: [...dp],
-            msg: `Calculating Step ${i}.<br>Ways = (Ways to Step ${i-1}) + (Ways to Step ${i-2}).`,
-            highlight: [i], prev: [i-1, i-2]
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel');
+        panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'DE', 'UKR', 'RU'] : ['v1', 'v2'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active');
+                if(currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[item];
+                else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][item];
+            };
+            panel.appendChild(b);
         });
-        dp[i] = dp[i-1] + dp[i-2];
-        _steps.push({
-            idx: i, dp: [...dp],
-            msg: `<b>dp[${i}] = ${dp[i-1]} + ${dp[i-2]} = ${dp[i]}</b>.`,
-            highlight: [i], prev: [i-1, i-2]
-        });
+        if(currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory['EN'];
+        else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab]['v1'];
     }
 
-    _steps.push({
-        idx: n, dp: [...dp],
-        msg: `<b>Done!</b> You can reach the top in <b>${dp[n]}</b> different ways.`,
-        highlight: [n], prev: [], done: true
-    });
+    // --- CORE VISUALIZATION (Your Logic) ---
+    let n = 5, steps = [], cur = 0, timer = null;
 
-    return _steps;
-}
+    function rebuild() {
+        const val = parseInt(document.getElementById('n-input').value);
+        n = Math.min(Math.max(val || 1, 1), 10);
+        document.getElementById('n-input').value = n;
+        initSteps();
+    }
 
-function render() {
-    const s = steps[cur];
-    document.getElementById('ctr').textContent = `step ${cur} / ${steps.length - 1}`;
-    document.getElementById('info').innerHTML = s.msg;
-    document.getElementById('resv').textContent = s.done ? s.dp[n] : '...';
-
-    // ������ ��������
-    const stairsCont = document.getElementById('stairs');
-    stairsCont.innerHTML = '';
-    for (let i = 0; i <= n; i++) {
-        const h = 40 + (i * 15); // ������ ���������
-        let cls = 'step';
-        if (s.highlight.includes(i)) cls += ' active';
-        if (s.prev.includes(i)) cls += ' prev';
+    function initSteps() {
+        steps = []; let dp = new Array(n + 1).fill(0);
         
-        stairsCont.innerHTML += `
-            <div class="${cls}" style="height: ${h}px">
-                <div class="step-label">i=${i}</div>
-                <div class="step-val">${s.dp[i] || (s.highlight.includes(i) ? '?' : '')}</div>
-            </div>
-        `;
+        // Твои описания шагов
+        steps.push({ idx: 0, dp: [...dp], highlight: [0], prev: [], msg: "<b>Base Case:</b> There is <b>1</b> way to stay at the ground (Step 0)." });
+        dp[0] = 1;
+
+        if (n >= 1) {
+            steps.push({ idx: 1, dp: [...dp], highlight: [1], prev: [], msg: "<b>Base Case:</b> To reach Step 1, you can only take one 1-step. Total <b>1</b> way." });
+            dp[1] = 1;
+        }
+
+        for (let i = 2; i <= n; i++) {
+            steps.push({ idx: i, dp: [...dp], highlight: [i], prev: [i-1, i-2], msg: `Calculating Step ${i}.<br>Ways = (Ways to Step ${i-1}) + (Ways to Step ${i-2}).` });
+            dp[i] = dp[i-1] + dp[i-2];
+            steps.push({ idx: i, dp: [...dp], highlight: [i], prev: [i-1, i-2], msg: `<b>dp[${i}] = ${dp[i-1]} + ${dp[i-2]} = ${dp[i]}</b>.` });
+        }
+
+        steps.push({ idx: n, dp: [...dp], highlight: [n], prev: [], done: true, msg: `<b>Done!</b> You can reach the top in <b>${dp[n]}</b> different ways.` });
+        cur = 0; render();
     }
 
-    const tblCont = document.getElementById('tbl-container');
-    let tblHtml = '<table><tr>';
-    for (let i = 0; i <= n; i++) tblHtml += `<th>dp[${i}]</th>`;
-    tblHtml += '</tr><tr>';
-    for (let i = 0; i <= n; i++) {
-        let cls = 'cell';
-        if (s.dp[i] > 0) cls += ' filled';
-        if (s.highlight.includes(i)) cls += ' current';
-        tblHtml += `<td class="${cls}">${s.dp[i] || ''}</td>`;
+    function render() {
+        const s = steps[cur];
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+
+        // Stairs
+        const stairsCont = document.getElementById('stairs');
+        stairsCont.innerHTML = '';
+        for (let i = 0; i <= n; i++) {
+            const h = 40 + (i * 14);
+            let cls = 'step' + (s.highlight.includes(i) ? ' active' : '') + (s.prev.includes(i) ? ' prev' : '');
+            stairsCont.innerHTML += `<div class="${cls}" style="height: ${h}px"><div class="step-label">i=${i}</div><div class="step-val">${s.dp[i] || (s.highlight.includes(i) ? '?' : '')}</div></div>`;
+        }
+
+        // Table
+        const tblCont = document.getElementById('tbl-container');
+        let html = '<table><tr>';
+        for (let i = 0; i <= n; i++) html += `<th>dp[${i}]</th>`;
+        html += '</tr><tr>';
+        for (let i = 0; i <= n; i++) {
+            let cls = 'cell' + (s.dp[i] > 0 ? ' filled' : '') + (s.highlight.includes(i) ? ' current' : '');
+            html += `<td class="${cls}">${s.dp[i] || ''}</td>`;
+        }
+        tblCont.innerHTML = html + '</tr></table>';
     }
-    tblHtml += '</tr></table>';
-    tblCont.innerHTML = tblHtml;
-}
 
-function go(dir) {
-    const nx = cur + dir;
-    if (nx >= 0 && nx < steps.length) {
-        cur = nx;
-        render();
+    function go(dir) {
+        if (cur+dir >= 0 && cur+dir < steps.length) { cur += dir; render(); }
+        else if (timer) toggleAuto();
     }
-}
 
-function resetAll() { cur = 0; render(); }
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 800); }
+    }
 
-init();
+    renderContextControls();
+    rebuild();
 </script>
-
 </body>
 </html>
