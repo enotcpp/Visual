@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>70. Climbing Stairs Visualizer</title>
+    <style>
+        :root {
+            --bg-main: #1a1a1c;
+            --bg-card: #242426;
+            --bg-input: #2d2d30;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-secondary: #1d9e75;
+            --border: #3e3e42;
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+        
+        .inputs { display: flex; gap: 12px; margin: 0 0 20px; align-items: center; }
+        .inputs label { font-size: 14px; color: var(--text-secondary); }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-main); padding: 10px 14px; border-radius: 8px;
+            width: 80px; font-size: 16px; font-weight: bold;
+        }
+        
+        button {
+            padding: 12px 24px; border-radius: 8px; border: none;
+            background: var(--accent); color: white; font-weight: 600;
+            cursor: pointer; transition: opacity 0.2s; font-size: 14px;
+        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+
+        .info-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px; font-size: 15px; line-height: 1.6;
+            min-height: 90px; margin: 0 0 25px;
+        }
+        .info-box b { color: var(--accent); }
+
+        /* ������������ �������� */
+        .stairs-container {
+            display: flex; align-items: flex-end; justify-content: center;
+            gap: 10px; margin-bottom: 30px; height: 220px; padding-bottom: 10px;
+        }
+        .step {
+            width: 60px; background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px 8px 4px 4px; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-end; padding-bottom: 10px;
+            transition: all 0.3s ease; position: relative;
+        }
+        .step-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+        .step-val { font-size: 18px; font-weight: bold; color: var(--text-main); }
+        
+        .step.active { border: 2px solid var(--accent); background: #3c3489; box-shadow: 0 0 15px rgba(127, 119, 221, 0.3); }
+        .step.prev { border: 1.5px solid var(--accent-secondary); background: #085041; }
+        
+        /* ������� DP */
+        .tbl-wrap { overflow-x: auto; margin: 0 0 25px; }
+        table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
+        th { font-size: 12px; color: var(--text-secondary); padding: 5px; }
+        .cell {
+            width: 60px; height: 50px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--bg-card);
+            text-align: center; font-size: 18px; color: var(--text-secondary);
+        }
+        .cell.filled { background: var(--bg-input); color: var(--text-main); }
+        .cell.current { border: 2px solid var(--accent); color: var(--accent); font-weight: bold; }
+
+        .ctrls { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
+        
+        .res { font-size: 16px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; align-items: center; gap: 10px; }
+        .res-val { font-size: 26px; font-weight: bold; color: var(--accent-secondary); }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <h1>Staircase DP Visualizer</h1>
+    
+    <div class="inputs">
+        <label>Number of stairs (n):</label>
+        <input id="n-input" type="number" value="3" min="1" max="10">
+        <button onclick="rebuild()">Apply</button>
+    </div>
+
+    <div class="info-box" id="info">Set <b>n</b> and click "Next Step" to start.</div>
+
+    <div class="stairs-container" id="stairs"></div>
+
+    <div class="tbl-wrap" id="tbl-container"></div>
+
+    <div class="ctrls">
+        <button class="secondary" onclick="go(-1)">< Back</button>
+        <button onclick="go(1)">Next Step ></button>
+        <button class="secondary" onclick="resetAll()">Reset</button>
+        <span class="ctr-lbl" id="ctr"></span>
+    </div>
+    
+    <div class="res">Ways to reach the top: <span class="res-val" id="resv">�</span></div>
+</div>
+
+<script>
+let n = 3;
+let steps = [];
+let cur = 0;
+
+function rebuild() {
+    const val = parseInt(document.getElementById('n-input').value);
+    if (isNaN(val) || val < 1) return;
+    n = Math.min(val, 10); // ��������� ��� ������� ������������
+    document.getElementById('n-input').value = n;
+    init();
+}
+
+function init() {
+    steps = buildSteps();
+    cur = 0;
+    render();
+}
+
+function buildSteps() {
+    let _steps = [];
+    let dp = new Array(n + 1).fill(0);
+    
+    // ��������� ���������
+    _steps.push({
+        idx: 0, dp: [...dp],
+        msg: "<b>Base Case:</b> There is <b>1</b> way to stay at the ground (Step 0).",
+        highlight: [0], prev: []
+    });
+    dp[0] = 1;
+
+    if (n >= 1) {
+        _steps.push({
+            idx: 1, dp: [...dp],
+            msg: "<b>Base Case:</b> To reach Step 1, you can only take one 1-step. Total <b>1</b> way.",
+            highlight: [1], prev: []
+        });
+        dp[1] = 1;
+    }
+
+    // ���������� DP
+    for (let i = 2; i <= n; i++) {
+        _steps.push({
+            idx: i, dp: [...dp],
+            msg: `Calculating Step ${i}.<br>Ways = (Ways to Step ${i-1}) + (Ways to Step ${i-2}).`,
+            highlight: [i], prev: [i-1, i-2]
+        });
+        dp[i] = dp[i-1] + dp[i-2];
+        _steps.push({
+            idx: i, dp: [...dp],
+            msg: `<b>dp[${i}] = ${dp[i-1]} + ${dp[i-2]} = ${dp[i]}</b>.`,
+            highlight: [i], prev: [i-1, i-2]
+        });
+    }
+
+    _steps.push({
+        idx: n, dp: [...dp],
+        msg: `<b>Done!</b> You can reach the top in <b>${dp[n]}</b> different ways.`,
+        highlight: [n], prev: [], done: true
+    });
+
+    return _steps;
+}
+
+function render() {
+    const s = steps[cur];
+    document.getElementById('ctr').textContent = `step ${cur} / ${steps.length - 1}`;
+    document.getElementById('info').innerHTML = s.msg;
+    document.getElementById('resv').textContent = s.done ? s.dp[n] : '...';
+
+    // ������ ��������
+    const stairsCont = document.getElementById('stairs');
+    stairsCont.innerHTML = '';
+    for (let i = 0; i <= n; i++) {
+        const h = 40 + (i * 15); // ������ ���������
+        let cls = 'step';
+        if (s.highlight.includes(i)) cls += ' active';
+        if (s.prev.includes(i)) cls += ' prev';
+        
+        stairsCont.innerHTML += `
+            <div class="${cls}" style="height: ${h}px">
+                <div class="step-label">i=${i}</div>
+                <div class="step-val">${s.dp[i] || (s.highlight.includes(i) ? '?' : '')}</div>
+            </div>
+        `;
+    }
+
+    const tblCont = document.getElementById('tbl-container');
+    let tblHtml = '<table><tr>';
+    for (let i = 0; i <= n; i++) tblHtml += `<th>dp[${i}]</th>`;
+    tblHtml += '</tr><tr>';
+    for (let i = 0; i <= n; i++) {
+        let cls = 'cell';
+        if (s.dp[i] > 0) cls += ' filled';
+        if (s.highlight.includes(i)) cls += ' current';
+        tblHtml += `<td class="${cls}">${s.dp[i] || ''}</td>`;
+    }
+    tblHtml += '</tr></table>';
+    tblCont.innerHTML = tblHtml;
+}
+
+function go(dir) {
+    const nx = cur + dir;
+    if (nx >= 0 && nx < steps.length) {
+        cur = nx;
+        render();
+    }
+}
+
+function resetAll() { cur = 0; render(); }
+
+init();
+</script>
+
+</body>
+</html>
