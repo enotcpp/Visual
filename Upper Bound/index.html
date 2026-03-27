@@ -11,7 +11,7 @@
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --accent-secondary: #1d9e75; /* Зеленый для результата */
+            --accent-secondary: #1d9e75; /* Тот самый зеленый */
             --border: #3e3e42;
             --range-border: #4a4a4d;
         }
@@ -23,34 +23,19 @@
         }
         
         .wrap { max-width: 800px; margin: 0 auto; padding: 0 20px; }
-        
         .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
             color: white; padding: 10px; border-radius: 8px; font-size: 14px;
-            outline: none; transition: border-color 0.2s;
+            outline: none;
         }
-        .inputs input:focus { border-color: var(--accent); }
         
         button {
             padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--bg-input); color: var(--text-main); 
-            font-weight: 600; cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer;
         }
 
-        button:hover {
-            border-color: var(--accent);
-            transform: translateY(-1px);
-            background: #36363a;
-        }
-
-        button.primary {
-            background: var(--accent);
-            color: white;
-            border: none;
-        }
+        button.primary { background: var(--accent); color: white; border: none; }
 
         .info-box {
             background: var(--bg-card); border: 1px solid var(--border);
@@ -58,10 +43,7 @@
             border-left: 4px solid var(--accent);
         }
 
-        .search-area {
-            display: flex; justify-content: center; gap: 10px;
-            margin: 60px 0; padding: 20px;
-        }
+        .search-area { display: flex; justify-content: center; gap: 10px; margin: 60px 0; padding: 20px; }
 
         .cell {
             width: 55px; height: 55px;
@@ -72,37 +54,28 @@
             transition: all 0.3s ease;
         }
 
-        .cell.in-range {
-            border-color: var(--range-border);
-            background: #2a2a2d;
-            box-shadow: 0 0 0 2px var(--range-border);
-        }
-
-        /* Чтобы результат не тускнел */
+        .cell.in-range { border-color: var(--range-border); background: #2a2a2d; }
         .cell.out { opacity: 0.2; transform: scale(0.9); }
-        
         .cell.mid-active { border: 3px solid #e67e22; color: #e67e22; }
 
-        /* ИСПРАВЛЕННЫЙ ЯРКИЙ ЗЕЛЕНЫЙ РЕЗУЛЬТАТ */
-        .cell.ans { 
+        /* ЯРКАЯ ПОДСВЕТКА ТОЛЬКО ДЛЯ ФИНАЛА */
+        .cell.final-ans { 
             background: var(--accent-secondary) !important; 
             border-color: #fff !important; 
             color: white !important;
-            opacity: 1 !important; /* Отменяем тусклость */
+            opacity: 1 !important;
             transform: scale(1.1);
             box-shadow: 0 0 20px rgba(29, 158, 117, 0.6);
-            z-index: 5;
+            z-index: 10;
         }
 
         .ptr {
             position: absolute; left: 50%; transform: translateX(-50%);
             font-size: 11px; font-weight: 800; padding: 2px 6px;
             border-radius: 4px; color: white; z-index: 10;
-            text-transform: uppercase;
         }
         .ptr-l { top: -38px; background: var(--accent); }
         .ptr-r { top: -38px; background: #555; }
-        .ptr-r.overlap { top: -58px; } 
         .ptr-m { bottom: -38px; background: #e67e22; }
 
         .ctrls { display: flex; align-items: center; gap: 12px; margin-top: 40px; }
@@ -121,7 +94,6 @@
     </div>
 
     <div class="info-box" id="info">Ready to start.</div>
-
     <div class="search-area" id="search-area"></div>
 
     <div class="ctrls">
@@ -153,19 +125,20 @@ function init() {
 
     while (l <= r) {
         let m = Math.floor((l + r) / 2);
-        steps.push({ l, r, m, ans: ans < arr.length ? ans : null, msg: `Check middle: arr[${m}] = ${arr[m]}.` });
+        steps.push({ l, r, m, ans: null, msg: `Check middle: arr[${m}] = ${arr[m]}.` });
 
         if (arr[m] > target) {
             ans = m; 
             r = m - 1;
-            steps.push({ l, r, m: null, ans, msg: `<b>${arr[m]} > ${target}</b>. Look left.` });
+            steps.push({ l, r, m: null, ans, msg: `<b>${arr[m]} > ${target}</b>. Potential answer is at ${m}, looking left.` });
         } else {
             l = m + 1;
             steps.push({ l, r, m: null, ans: ans < arr.length ? ans : null, msg: `<b>${arr[m]} ≤ ${target}</b>. Look right.` });
         }
     }
     
-    steps.push({ l: -1, r: -1, m: null, ans, isFinal: true, msg: ans < arr.length ? `<b>Finished!</b> Index: <b>${ans}</b>.` : "Not found." });
+    // Помечаем последний шаг как итоговый
+    steps.push({ l: -1, r: -1, m: null, ans, isFinal: true, msg: `<b>Finished!</b> Target upper bound found at index <b>${ans}</b>.` });
     cur = 0;
     render();
 }
@@ -181,21 +154,23 @@ function render() {
         const div = document.createElement('div');
         div.className = 'cell';
         
-        // Клетка подсвечивается как ans, если индекс совпадает с текущим найденным ans
-        if (i === s.ans) div.classList.add('ans');
+        // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Подсвечиваем зеленым только если это финальный шаг (isFinal)
+        if (s.isFinal && i === s.ans) {
+            div.classList.add('final-ans');
+        } else if (i === s.ans && !s.isFinal) {
+            // В процессе поиска можно оставить слабую обводку или ничего
+            div.style.borderColor = "var(--accent-secondary)";
+        }
         
         if (i >= s.l && i <= s.r) div.classList.add('in-range');
-        else if (!s.isFinal || i !== s.ans) div.classList.add('out');
+        else if (!div.classList.contains('final-ans')) div.classList.add('out');
         
         if (i === s.m) div.classList.add('mid-active');
         
         div.textContent = val;
 
         if (i === s.l) div.innerHTML += `<div class="ptr ptr-l">L</div>`;
-        if (i === s.r) {
-            const isOverlap = (s.l === s.r);
-            div.innerHTML += `<div class="ptr ptr-r ${isOverlap ? 'overlap' : ''}">R</div>`;
-        }
+        if (i === s.r) div.innerHTML += `<div class="ptr ptr-r">R</div>`;
         if (i === s.m) div.innerHTML += `<div class="ptr ptr-m">M</div>`;
 
         container.appendChild(div);
