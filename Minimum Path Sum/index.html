@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>64. Minimum Path Sum (Fixed Grid)</title>
+    <title>Minimum Path Sum | AlgoView Lab</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
     <style>
         :root {
             --bg-main: #1a1a1c;
@@ -16,6 +16,7 @@
             --accent: #7f77dd;
             --accent-secondary: #1d9e75;
             --border: #3e3e42;
+            --code-bg: #0d0d0f;
         }
 
         * { box-sizing: border-box; }
@@ -27,7 +28,11 @@
         
         .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
         
-        h1 { font-size: 24px; margin-bottom: 20px; }
+        /* VISUALIZER SECTION */
+        .visualizer-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 30px;
+        }
 
         .inputs { display: flex; gap: 15px; margin-bottom: 25px; align-items: flex-end; }
         .inputs textarea { 
@@ -37,32 +42,27 @@
         }
         
         button {
-            padding: 12px 24px; border-radius: 8px; border: none;
-            background: var(--accent); color: white; font-weight: 600;
-            cursor: pointer; transition: 0.2s; font-size: 14px;
+            padding: 10px 18px; border-radius: 8px; border: none;
+            background: var(--accent); color: white; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s; font-size: 14px;
         }
-        button:hover { opacity: 0.9; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button:hover { opacity: 0.9; }
 
         .info-box {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 16px; font-size: 15px; line-height: 1.6;
-            min-height: 90px; margin-bottom: 25px; border-left: 4px solid var(--accent);
+            background: var(--bg-main); border-left: 4px solid var(--accent);
+            padding: 16px; min-height: 85px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;
         }
+        .info-box b { color: var(--accent); }
 
-        /* КОНТЕЙНЕР ДЛЯ СЕТКИ */
+        /* GRID LOGIC */
         .grid-wrapper {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-            overflow-x: auto;
-            padding: 10px;
+            display: flex; justify-content: center; margin-bottom: 30px;
+            overflow-x: auto; padding: 10px;
         }
 
-        /* САМА СЕТКА (CSS GRID) */
         #grid-main {
             display: grid;
-            /* Количество колонок задается через JS переменную --cols */
             grid-template-columns: repeat(var(--cols, 3), 75px);
             gap: 12px;
         }
@@ -77,7 +77,6 @@
         .grid-val { font-size: 11px; color: var(--text-secondary); position: absolute; top: 6px; right: 8px; }
         .dp-val { font-size: 22px; font-weight: bold; color: var(--text-main); }
         
-        /* Состояния ячеек */
         .cell.filled { background: var(--bg-input); }
         .cell.active { 
             border: 3px solid var(--accent); 
@@ -89,150 +88,191 @@
         .cell.source { border: 2.5px solid var(--accent-secondary); background: #085041; }
         .cell.path { background: #5c54c7; border-color: #fff; box-shadow: 0 0 15px var(--accent); }
 
-        .ctrls { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
-        
-        .res { font-size: 16px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; align-items: center; gap: 12px; }
-        .res-val { font-size: 28px; font-weight: bold; color: var(--accent-secondary); }
+        /* LAB TABS */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
-    <h1>64. Minimum Path Sum (Horizontal Scan)</h1>
-    
-    <div class="inputs">
-        <textarea id="grid-input">1,3,1
+    <div class="visualizer-card">
+        <div class="inputs">
+            <textarea id="grid-input">1,3,1
 1,5,1
 4,2,1</textarea>
-        <button onclick="rebuild()">Update Grid</button>
+            <button onclick="rebuild()">Update Grid</button>
+        </div>
+
+        <div class="info-box" id="info">Press "Next Step" to start.</div>
+
+        <div class="grid-wrapper">
+            <div id="grid-main"></div>
+        </div>
+
+        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+            <button class="secondary" onclick="go(-1)">< Back</button>
+            <button onclick="go(1)">Next Step ></button>
+            <button class="secondary" onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 15px;">
+            Minimum Path Sum: <span id="resv" style="font-size: 28px; font-weight: bold; color: var(--accent-secondary); margin-left: 10px;">—</span>
+        </div>
     </div>
 
-    <div class="info-box" id="info">Press "Next Step" to calculate the path horizontally (row by row).</div>
-
-    <div class="grid-wrapper">
-        <div id="grid-main"></div>
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code class="language-python" id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp" id="cpp-display"></code></pre></div>
     </div>
-
-    <div class="ctrls">
-        <button class="secondary" onclick="go(-1)">← Back</button>
-        <button onclick="go(1)">Next Step →</button>
-        <button class="secondary" onclick="resetAll()">Reset</button>
-        <span class="ctr-lbl" id="ctr"></span>
-    </div>
-    
-    <div class="res">Minimum Sum: <span class="res-val" id="resv">—</span></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
 <script>
-let grid = [[1,3,1],[1,5,1],[4,2,1]];
-let steps = [];
-let cur = 0;
-
-function rebuild() {
-    const text = document.getElementById('grid-input').value.trim();
-    const rows = text.split('\n');
-    try {
-        const newGrid = rows.map(r => r.split(',').map(v => parseInt(v.trim())).filter(v => !isNaN(v)));
-        if (newGrid.length > 0 && newGrid[0].length > 0) {
-            grid = newGrid;
-            init();
+    const db = {
+        theory: {
+            EN: "<h3>Minimum Path Sum</h3><p>Given a grid filled with non-negative numbers, find a path from top left to bottom right which minimizes the sum of all numbers along its path. You can only move either down or right.</p>",
+            RU: "<h3>Минимальная сумма пути</h3><p>Найти путь от левого верхнего до правого нижнего угла сетки, сумма чисел на котором минимальна. Перемещаться можно только вниз или вправо.</p>"
+        },
+        python: {
+            v1: "def minPathSum(grid):\n    R, C = len(grid), len(grid[0])\n    dp = [[0]*C for _ in range(R)]\n    \n    for r in range(R):\n        for c in range(C):\n            if r == 0 and c == 0:\n                dp[r][c] = grid[0][0]\n            elif r == 0:\n                dp[r][c] = dp[r][c-1] + grid[r][c]\n            elif c == 0:\n                dp[r][c] = dp[r-1][c] + grid[r][c]\n            else:\n                dp[r][c] = min(dp[r-1][c], dp[r][c-1]) + grid[r][c]\n    return dp[-1][-1]",
+            v2: "def minPathSum_opt(grid):\n    # Space Optimized O(C)\n    C = len(grid[0])\n    dp = [float('inf')] * C\n    dp[0] = 0\n    for row in grid:\n        for c in range(C):\n            if c == 0: dp[c] += row[c]\n            else: dp[c] = min(dp[c], dp[c-1]) + row[c]\n    return dp[-1]"
+        },
+        cpp: {
+            v1: "int minPathSum(vector<vector<int>>& grid) {\n    int R = grid.size(), C = grid[0].size();\n    for(int i=0; i<R; i++) {\n        for(int j=0; j<C; j++) {\n            if(i==0 && j==0) continue;\n            if(i==0) grid[i][j] += grid[i][j-1];\n            else if(j==0) grid[i][j] += grid[i-1][j];\n            else grid[i][j] += min(grid[i-1][j], grid[i][j-1]);\n        }\n    }\n    return grid[R-1][C-1];\n}",
+            v2: "// In-place modification used in v1. \n// Time: O(R*C), Space: O(1)"
         }
-    } catch(e) { alert("Format: numbers separated by commas."); }
-}
+    };
 
-function init() {
-    steps = buildSteps();
-    cur = 0;
-    render();
-}
+    let grid = [[1,3,1],[1,5,1],[4,2,1]], steps = [], cur = 0, currentMainTab = 'theory';
 
-function buildSteps() {
-    const R = grid.length;
-    const C = grid[0].length;
-    let _steps = [];
-    let dp = Array.from({length: R}, () => Array(C).fill(null));
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
 
-    _steps.push({ r:-1, c:-1, dp: dp.map(row=>[...row]), sources:[], msg: "Ready. We will process the grid <b>row by row</b>." });
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active'); updateContent(item);
+            };
+            panel.appendChild(b);
+        });
+        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
+    }
 
-    for (let r = 0; r < R; r++) {
-        for (let c = 0; c < C; c++) {
-            let sources = [];
-            if (r === 0 && c === 0) {
-                dp[r][c] = grid[r][c];
+    function updateContent(key) {
+        const display = document.getElementById(currentMainTab + '-display');
+        if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
+        else {
+            display.textContent = db[currentMainTab][key];
+            Prism.highlightElement(display);
+        }
+    }
+
+    function rebuild() {
+        const text = document.getElementById('grid-input').value.trim();
+        const rows = text.split('\n');
+        try {
+            const newGrid = rows.map(r => r.split(',').map(v => parseInt(v.trim())).filter(v => !isNaN(v)));
+            if (newGrid.length > 0 && newGrid[0].length > 0) {
+                grid = newGrid; init();
+            }
+        } catch(e) { alert("Format: numbers separated by commas."); }
+    }
+
+    function init() { steps = buildSteps(); cur = 0; render(); }
+
+    function buildSteps() {
+        const R = grid.length, C = grid[0].length;
+        let _steps = [];
+        let dp = Array.from({length: R}, () => Array(C).fill(null));
+        _steps.push({ r:-1, c:-1, dp: dp.map(row=>[...row]), sources:[], msg: "Ready. Processing row by row." });
+
+        for (let r = 0; r < R; r++) {
+            for (let c = 0; c < C; c++) {
+                let sources = [];
+                if (r === 0 && c === 0) {
+                    dp[r][c] = grid[r][c];
+                } else {
+                    let fromTop = r > 0 ? dp[r-1][c] : Infinity;
+                    let fromLeft = c > 0 ? dp[r][c-1] : Infinity;
+                    if (r > 0) sources.push({r: r-1, c});
+                    if (c > 0) sources.push({r, c: c-1});
+                    dp[r][c] = grid[r][c] + Math.min(fromTop, fromLeft);
+                }
                 _steps.push({ r, c, dp: dp.map(row=>[...row]), sources, 
-                    msg: `Row 0, Col 0: Base case. Sum = <b>${dp[r][c]}</b>` });
-            } else {
-                let fromTop = r > 0 ? dp[r-1][c] : Infinity;
-                let fromLeft = c > 0 ? dp[r][c-1] : Infinity;
-                if (r > 0) sources.push({r: r-1, c});
-                if (c > 0) sources.push({r, c: c-1});
-
-                dp[r][c] = grid[r][c] + Math.min(fromTop, fromLeft);
-                
-                let detail = (r > 0 && c > 0) 
-                    ? `Min(Top:${fromTop}, Left:${fromLeft}) = ${Math.min(fromTop, fromLeft)}`
-                    : (r > 0 ? `Only Top: ${fromTop}` : `Only Left: ${fromLeft}`);
-
-                _steps.push({ r, c, dp: dp.map(row=>[...row]), sources, 
-                    msg: `Position [${r},${c}]: ${grid[r][c]} + ${detail} = <b>${dp[r][c]}</b>` });
+                    msg: `Position [${r},${c}]: Added <b>${grid[r][c]}</b> to min neighbor. Sum = <b>${dp[r][c]}</b>` });
             }
         }
-    }
 
-    let path = [];
-    let cr = R - 1, cc = C - 1;
-    while (cr >= 0 && cc >= 0) {
-        path.push({r: cr, c: cc});
-        if (cr === 0 && cc === 0) break;
-        if (cr === 0) cc--;
-        else if (cc === 0) cr--;
-        else (dp[cr-1][cc] < dp[cr][cc-1]) ? cr-- : cc--;
-    }
-
-    _steps.push({ r: R-1, c: C-1, dp: dp.map(row=>[...row]), sources:[], path, done: true,
-        msg: `<b>Calculation complete!</b> The minimum path is highlighted.` });
-
-    return _steps;
-}
-
-function render() {
-    const s = steps[cur];
-    const R = grid.length;
-    const C = grid[0].length;
-    
-    document.getElementById('ctr').textContent = `step ${cur} / ${steps.length - 1}`;
-    document.getElementById('info').innerHTML = s.msg;
-    document.getElementById('resv').textContent = s.done ? s.dp[R-1][C-1] : '...';
-
-    const viz = document.getElementById('grid-main');
-    
-    // ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ КОЛИЧЕСТВО КОЛОНОК
-    viz.style.setProperty('--cols', C);
-    
-    let html = '';
-    for (let r = 0; r < R; r++) {
-        for (let c = 0; c < C; c++) {
-            let cls = 'cell';
-            if (s.dp[r][c] !== null) cls += ' filled';
-            if (r === s.r && c === s.c) cls += ' active';
-            if (s.sources.some(src => src.r === r && src.c === c)) cls += ' source';
-            if (s.path && s.path.some(p => p.r === r && p.c === c)) cls += ' path';
-            
-            html += `
-                <div class="${cls}">
-                    <div class="grid-val">${grid[r][c]}</div>
-                    <div class="dp-val">${s.dp[r][c] !== null ? s.dp[r][c] : ''}</div>
-                </div>`;
+        let path = [];
+        let cr = R - 1, cc = C - 1;
+        while (cr >= 0 && cc >= 0) {
+            path.push({r: cr, c: cc});
+            if (cr === 0 && cc === 0) break;
+            if (cr === 0) cc--;
+            else if (cc === 0) cr--;
+            else (dp[cr-1][cc] < dp[cr][cc-1]) ? cr-- : cc--;
         }
+        _steps.push({ r: R-1, c: C-1, dp: dp.map(row=>[...row]), sources:[], path, done: true, msg: "<b>Path found!</b> Min Sum is calculated." });
+        return _steps;
     }
-    viz.innerHTML = html;
-}
 
-function go(dir) { const nx = cur + dir; if (nx >= 0 && nx < steps.length) { cur = nx; render(); } }
-function resetAll() { cur = 0; render(); }
+    function render() {
+        const s = steps[cur], R = grid.length, C = grid[0].length;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('resv').textContent = s.done ? s.dp[R-1][C-1] : '...';
+        const viz = document.getElementById('grid-main');
+        viz.style.setProperty('--cols', C);
+        
+        let html = '';
+        for (let r = 0; r < R; r++) {
+            for (let c = 0; c < C; c++) {
+                let cls = 'cell';
+                if (s.dp[r][c] !== null) cls += ' filled';
+                if (r === s.r && c === s.c && !s.done) cls += ' active';
+                if (s.sources.some(src => src.r === r && src.c === c)) cls += ' source';
+                if (s.path && s.path.some(p => p.r === r && p.c === c)) cls += ' path';
+                html += `<div class="${cls}"><div class="grid-val">${grid[r][c]}</div><div class="dp-val">${s.dp[r][c] !== null ? s.dp[r][c] : ''}</div></div>`;
+            }
+        }
+        viz.innerHTML = html;
+    }
 
-init();
+    function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
+    function resetAll() { cur = 0; render(); }
+
+    renderContextControls(); init();
 </script>
 </body>
 </html>
