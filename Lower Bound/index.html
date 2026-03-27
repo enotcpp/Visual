@@ -30,35 +30,30 @@
         
         .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
 
-        /* 1. ДОБАВЛЯЕМ СТИЛИ ДЛЯ ЛОГОТИПА */
-        .logo {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 800;
-            font-size: 14px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--text-main);
-            opacity: 0.8;
-            pointer-events: none;
-        }
-        .logo-box {
-            width: 20px;
-            height: 20px;
-            background: var(--accent);
-            border-radius: 4px;
-        }
-
-        /* 2. ДОБАВЛЯЕМ position: relative, чтобы логотип позиционировался относительно wrap */
+        /* 1. ИЗМЕНЕНИЯ В .WRAP ДЛЯ ПОЗИЦИОНИРОВАНИЯ ЛОГО */
         .wrap { 
             max-width: 850px; 
             margin: 0 auto; 
-            padding: 40px 20px 0; /* Увеличили верхний padding для отступа под лого */
-            position: relative; 
+            padding: 40px 20px 0; /* Увеличили верхний padding, чтобы освободить место */
+            position: relative; /* Чтобы логотип позиционировался внутри wrap */
+        }  
+        
+        /* 2. НОВЫЕ СТИЛИ ДЛЯ ЛОГОТИПА */
+        .logo-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none; /* Чтобы логотип не мешал кликам, если налезет */
+        }
+        .logo-image {
+            height: 24px; /* Настройте высоту по вкусу */
+            display: block;
+        }
+
+        /* 3. ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ЗАГОЛОВКА */
+        .header-area {
+            margin-top: 20px; /* Отступ от логотипа */
+            margin-bottom: 30px;
         }
         
         /* VISUALIZER SECTION */
@@ -140,9 +135,8 @@
 <body>
 
 <div class="wrap">
-    <div class="logo">
-        <div class="logo-box"></div>
-        AlgoView Lab
+<div class="logo-container">
+        <img src="image_0.png" alt="AlgoView Logo" class="logo-image">
     </div>
     <h1>Lower Bound</h1>
     <div class="visualizer-card">
