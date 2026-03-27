@@ -27,7 +27,7 @@
 
         h1 { 
             color: var(--text-main); 
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             font-weight: 600;
             letter-spacing: -0.5px;
         }
@@ -40,7 +40,7 @@
         }
 
         li { 
-            margin: 15px 0; 
+            margin: 12px 0; 
         }
 
         a { 
@@ -65,24 +65,45 @@
             box-shadow: 0 8px 15px rgba(0,0,0,0.2);
         }
 
-        /* Иконка или эмодзи внутри ссылки */
         a span {
             margin-right: 12px;
             font-size: 20px;
         }
 
-        /* Подзаголовок для порядка */
         .subtitle {
             font-size: 14px;
             color: var(--text-secondary);
             margin-bottom: 40px;
+        }
+        
+        /* Разделитель категорий */
+        .category {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin: 25px 0 10px 10px;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
     <h1>📚 Library of algorithms</h1>
     <div class="subtitle">Interactive visualizations for data structures and algorithms</div>
+    
     <ul>
+        <div class="category">Searching</div>
+        <li>
+            <a href="Binary Search/index.html">
+                <span>🔍</span> 704. Binary Search
+            </a>
+        </li>
+        <li>
+            <a href="Jump Search/index.html">
+                <span>🦘</span> Jump Search
+            </a>
+        </li>
+
+        <div class="category">Dynamic Programming</div>
         <li>
             <a href="Longest Common Subsequence/index.html">
                 <span>📉</span> 1143. Longest Common Subsequence
@@ -90,7 +111,7 @@
         </li>        
         <li>
             <a href="Wagner-Fischer/index.html">
-                <span>📉</span> 72. Edit Distance (Wagner–Fischer Algorithm)
+                <span>📉</span> 72. Edit Distance (Wagner–Fischer)
             </a>
         </li>
         <li>
@@ -111,5 +132,3 @@
     </ul>
 </body>
 </html>
-
-
