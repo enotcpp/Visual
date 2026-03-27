@@ -29,6 +29,33 @@
         }
         
         .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
+
+        /* --- LOGO ALGOVIEW --- */
+        .logo {
+            position: absolute;
+            top: 40px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-main);
+            opacity: 0.8;
+        }
+        .logo-box {
+            width: 20px; height: 20px;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        /* -------------------- */
+
+        .wrap { 
+            position: relative; 
+            padding-top: 60px; /* Отступ сверху, чтобы заголовок не налезал на лого */
+        }  
         
         /* VISUALIZER SECTION */
         .visualizer-card {
