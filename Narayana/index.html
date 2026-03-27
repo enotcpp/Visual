@@ -62,7 +62,6 @@
             font-size: 14px; font-weight: 800;
         }
 
-        /* Highlights */
         .cell.pivot { border: 3px solid var(--pivot-color); }
         .cell.suffix-focus { background: var(--suffix-bg); border-color: var(--accent); border-style: dashed; }
         .cell.swapped { background: var(--match-color); color: white; border-color: white; }
@@ -96,9 +95,11 @@
 
 <script>
 let steps = [], cur = 0;
+let lastInitial = ""; // Чтобы корректно работал Reset
 
 function rebuild() {
     const val = document.getElementById('in-arr').value;
+    lastInitial = val;
     const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
     steps = buildSteps(arr);
     cur = 0;
@@ -110,7 +111,7 @@ function buildSteps(arr) {
     let data = [...arr];
     const n = data.length;
 
-    _steps.push({ arr: [...data], msg: "Find the largest index <b>i</b> such that <b>a[i] < a[i + 1]</b>." });
+    _steps.push({ arr: [...data], msg: "Current state. Ready to find the next permutation." });
 
     // 1. Find i
     let i = -1;
@@ -123,7 +124,7 @@ function buildSteps(arr) {
     }
 
     if (i === -1) {
-        _steps.push({ arr: [...data], msg: "No such index exists. This is the last permutation." });
+        _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot found.</b> This is the last lexicographical permutation." });
         return _steps;
     }
 
@@ -132,7 +133,7 @@ function buildSteps(arr) {
     // 2. Find j
     let j = -1;
     for (let k = n - 1; k > i; k--) {
-        _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Find the largest index <b>j</b> greater than i such that <b>a[i] < a[j]</b>.` });
+        _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Find the largest index <b>j</b> such that <b>a[i] < a[j]</b>.` });
         if (data[k] > data[i]) {
             j = k;
             break;
@@ -146,14 +147,14 @@ function buildSteps(arr) {
     [swapped[i], swapped[j]] = [swapped[j], swapped[i]];
     _steps.push({ arr: [...swapped], pivotIdx: j, matchIdx: i, msg: `Swap <b>a[i]</b> with <b>a[j]</b>.` });
 
-    // 4. Highlight Suffix for Reverse
+    // 4. Highlight Suffix
     _steps.push({ 
         arr: [...swapped], 
         suffixRange: [i + 1, n - 1], 
-        msg: `<b>Reverse the suffix</b>: the part of the array from index ${i+1} to the end.` 
+        msg: `<b>Suffix identified</b>: indexes ${i+1} to ${n-1} will be reversed.` 
     });
 
-    // 5. Final Reverse (Back to your first version style)
+    // 5. Final Reverse
     let final = [...swapped];
     let part1 = final.slice(0, i + 1);
     let part2 = final.slice(i + 1).reverse();
@@ -162,7 +163,7 @@ function buildSteps(arr) {
     _steps.push({ 
         arr: [...final], 
         suffixRange: [i + 1, n - 1],
-        msg: "<b>Next permutation found!</b> The suffix has been reversed to achieve the smallest possible value." 
+        msg: "<b>Next permutation found!</b> Click 'Next' to start finding the one after this." 
     });
 
     return _steps;
@@ -191,17 +192,37 @@ function render() {
             lbl.textContent = s.label;
             cell.appendChild(lbl);
         }
-
         container.appendChild(cell);
     });
 }
 
-function go(dir) { const nx = cur + dir; if(nx>=0 && nx<steps.length){ cur=nx; render(); } }
-function resetAll() { cur=0; render(); }
+function go(dir) {
+    if (dir === 1 && cur === steps.length - 1) {
+        // Если мы на последнем шаге и нажимаем "Вперед"
+        const currentArr = steps[cur].arr;
+        // Проверяем, не была ли эта перестановка финальной
+        if (steps[cur].isLast) return; 
+        
+        // Генерируем новые шаги на основе текущего результата
+        steps = buildSteps(currentArr);
+        cur = 0;
+        render();
+        return;
+    }
+    
+    const nx = cur + dir;
+    if(nx >= 0 && nx < steps.length) {
+        cur = nx;
+        render();
+    }
+}
+
+function resetAll() {
+    document.getElementById('in-arr').value = lastInitial;
+    rebuild();
+}
 
 rebuild();
 </script>
 </body>
 </html>
-
-            
