@@ -11,7 +11,7 @@
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --accent-secondary: #1d9e75;
+            --accent-secondary: #1d9e75; /* Тот самый зеленый */
             --border: #3e3e42;
             --range-border: #4a4a4d;
         }
@@ -23,39 +23,19 @@
         }
         
         .wrap { max-width: 800px; margin: 0 auto; padding: 0 20px; }
-        
         .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
             color: white; padding: 10px; border-radius: 8px; font-size: 14px;
-            outline: none; transition: border-color 0.2s;
+            outline: none;
         }
-        .inputs input:focus { border-color: var(--accent); }
         
         button {
             padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--bg-input); color: var(--text-main); 
-            font-weight: 600; cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer;
         }
 
-        button:hover {
-            border-color: var(--accent);
-            transform: translateY(-1px);
-            background: #36363a;
-        }
-
-        button.primary {
-            background: var(--accent);
-            color: white;
-            border: none;
-        }
-
-        button.primary:hover {
-            background: #8e87e5;
-            box-shadow: 0 4px 12px rgba(127, 119, 221, 0.3);
-        }
+        button.primary { background: var(--accent); color: white; border: none; }
 
         .info-box {
             background: var(--bg-card); border: 1px solid var(--border);
@@ -63,10 +43,7 @@
             border-left: 4px solid var(--accent);
         }
 
-        .search-area {
-            display: flex; justify-content: center; gap: 10px;
-            margin: 60px 0; padding: 20px;
-        }
+        .search-area { display: flex; justify-content: center; gap: 10px; margin: 60px 0; padding: 20px; }
 
         .cell {
             width: 55px; height: 55px;
@@ -77,25 +54,28 @@
             transition: all 0.3s ease;
         }
 
-        .cell.in-range {
-            border-color: var(--range-border);
-            background: #2a2a2d;
-            box-shadow: 0 0 0 2px var(--range-border);
-        }
-
+        .cell.in-range { border-color: var(--range-border); background: #2a2a2d; }
         .cell.out { opacity: 0.2; transform: scale(0.9); }
         .cell.mid-active { border: 3px solid #e67e22; color: #e67e22; }
-        .cell.ans { background: var(--accent-secondary); border-color: white; color: white; }
+
+        /* ЯРКАЯ ПОДСВЕТКА ТОЛЬКО ДЛЯ ФИНАЛА */
+        .cell.final-ans { 
+            background: var(--accent-secondary) !important; 
+            border-color: #fff !important; 
+            color: white !important;
+            opacity: 1 !important;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(29, 158, 117, 0.6);
+            z-index: 10;
+        }
 
         .ptr {
             position: absolute; left: 50%; transform: translateX(-50%);
             font-size: 11px; font-weight: 800; padding: 2px 6px;
             border-radius: 4px; color: white; z-index: 10;
-            text-transform: uppercase;
         }
         .ptr-l { top: -38px; background: var(--accent); }
         .ptr-r { top: -38px; background: #555; }
-        .ptr-r.overlap { top: -58px; } 
         .ptr-m { bottom: -38px; background: #e67e22; }
 
         .ctrls { display: flex; align-items: center; gap: 12px; margin-top: 40px; }
@@ -107,18 +87,16 @@
 <div class="wrap">
     <h1>Lower Bound</h1>
     <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
-        Finds the first element <b>≥ target</b>. Unlike Binary Search, it keeps looking left even if it finds a match.
+        Finds the first element <b>≥ target</b>. Keeps looking left to find the first occurrence.
     </p>
-    
     <div class="inputs">
-        <input id="arr-input" type="text" value="1, 3, 3, 3, 5, 8, 8, 10" style="width: 250px;">
+        <input id="arr-input" type="text" value="1, 3, 3, 3, 5, 8, 10" style="width: 250px;">
         <label>Target:</label>
         <input id="target-input" type="number" value="3" style="width: 60px;">
         <button onclick="rebuild()">Update</button>
     </div>
 
     <div class="info-box" id="info">Ready to start.</div>
-
     <div class="search-area" id="search-area"></div>
 
     <div class="ctrls">
@@ -144,26 +122,25 @@ function rebuild() {
 function init() {
     steps = [];
     let l = 0, r = arr.length - 1;
-    let ans = arr.length; // Default if not found
+    let ans = arr.length;
 
     steps.push({ l, r, m: null, ans: null, msg: "Lower Bound starts. Initial range L to R." });
 
     while (l <= r) {
         let m = Math.floor((l + r) / 2);
-        steps.push({ l, r, m, ans: ans < arr.length ? ans : null, msg: `Checking middle: arr[${m}] = ${arr[m]}.` });
+        steps.push({ l, r, m, ans: null, msg: `Check middle: arr[${m}] = ${arr[m]}.` });
 
         if (arr[m] >= target) {
-            ans = m; // Potential answer, but we want the FIRST one
+            ans = m; 
             r = m - 1;
-            steps.push({ l, r, m: null, ans, msg: `<b>${arr[m]} ≥ ${target}</b>. This could be our answer, but let's check further to the <b>left</b>.` });
+            steps.push({ l, r, m: null, ans, msg: `<b>${arr[m]} ≥ ${target}</b>. This could be our answer, but let's check further <b>left</b>.` });
         } else {
             l = m + 1;
-            steps.push({ l, r, m: null, ans: ans < arr.length ? ans : null, msg: `<b>${arr[m]} < ${target}</b>. Target must be to the <b>right</b>. Move L to ${l}.` });
+            steps.push({ l, r, m: null, ans: ans < arr.length ? ans : null, msg: `<b>${arr[m]} < ${target}</b>. Target is to the right.` });
         }
     }
     
     steps.push({ l: -1, r: -1, m: null, ans, isFinal: true, msg: ans < arr.length ? `<b>Finished!</b> The first element ≥ ${target} is at index <b>${ans}</b>.` : "<b>Finished!</b> No element ≥ target found." });
-    
     cur = 0;
     render();
 }
@@ -179,19 +156,23 @@ function render() {
         const div = document.createElement('div');
         div.className = 'cell';
         
+        // Клетка становится ярко-зеленой ТОЛЬКО в самом конце
+        if (s.isFinal && i === s.ans) {
+            div.classList.add('final-ans');
+        } else if (i === s.ans && !s.isFinal) {
+            // В процессе поиска — только легкий контур
+            div.style.borderColor = "var(--accent-secondary)";
+        }
+        
         if (i >= s.l && i <= s.r) div.classList.add('in-range');
-        else div.classList.add('out');
+        else if (!div.classList.contains('final-ans')) div.classList.add('out');
         
         if (i === s.m) div.classList.add('mid-active');
-        if (i === s.ans) div.classList.add('ans');
         
         div.textContent = val;
 
         if (i === s.l) div.innerHTML += `<div class="ptr ptr-l">L</div>`;
-        if (i === s.r) {
-            const isOverlap = (s.l === s.r);
-            div.innerHTML += `<div class="ptr ptr-r ${isOverlap ? 'overlap' : ''}">R</div>`;
-        }
+        if (i === s.r) div.innerHTML += `<div class="ptr ptr-r">R</div>`;
         if (i === s.m) div.innerHTML += `<div class="ptr ptr-m">M</div>`;
 
         container.appendChild(div);
