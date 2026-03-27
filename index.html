@@ -3,87 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlgoView | Lab Dashboard</title>
+    <title>AlgoView | Dashboard</title>
     <style>
         :root {
-            --bg-main: #0f0f11;
-            --bg-card: #1a1a1c;
-            --bg-hover: #242426;
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-hover: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
-            --accent: #7f77dd;
-            --accent-gradient: linear-gradient(135deg, #7f77dd 0%, #4facfe 100%);
-            --border: #2d2d30;
+            --accent: #7f77dd; /* Наш фиолетовый */
+            --border: #313136;
+            --font-stack: 'Inter', -apple-system, system-ui, sans-serif;
         }
 
         body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
+            font-family: var(--font-stack);
             background: var(--bg-main); 
             color: var(--text-main);
             margin: 0;
-            padding-bottom: 100px;
+            padding-bottom: 120px;
         }
 
-        /* Обновленное Стильное Лого */
+        /* ОБНОВЛЕННОЕ СТРОГОЕ СТАТИЧНОЕ ЛОГО */
         header {
-            padding: 60px 20px;
+            padding: 70px 20px;
             text-align: center;
-            background: radial-gradient(circle at top, #1e1e22 0%, var(--bg-main) 70%);
+            border-bottom: 1px solid var(--border);
+            background: radial-gradient(circle at 50% -100px, #2a2a30 0%, var(--bg-main) 70%);
+        }
+
+        .logo-wrap {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
 
         .logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 42px;
+            font-size: 38px;
             font-weight: 900;
-            letter-spacing: -1.5px;
+            letter-spacing: -2px;
             cursor: default;
+            color: var(--text-main);
+        }
+
+        .logo span {
+            color: var(--accent); /* Строгий акцент */
         }
 
         .logo-box {
-            width: 50px;
-            height: 50px;
-            background: var(--accent-gradient);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 28px;
-            box-shadow: 0 10px 20px rgba(127, 119, 221, 0.3);
-            animation: pulse 3s infinite;
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 2px;
+            margin-right: 8px;
+            display: inline-block;
+            vertical-align: baseline;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); box-shadow: 0 10px 30px rgba(127, 119, 221, 0.5); }
-            100% { transform: scale(1); }
-        }
-
-        .logo-text span {
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 10px 0 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+            opacity: 0.9;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 850px;
+            margin: 50px auto 0;
             padding: 0 20px;
         }
 
         /* Секции-Аккордеоны */
         .category-wrapper {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
             border: 1px solid var(--border);
             border-radius: 16px;
             overflow: hidden;
             background: var(--bg-card);
+            transition: all 0.3s ease;
+        }
+
+        .category-wrapper.active {
+            border-color: #444;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         .category-header {
-            padding: 20px 25px;
+            padding: 22px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -101,77 +111,99 @@
             font-size: 14px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             color: var(--text-secondary);
         }
 
         .category-icon {
             font-size: 18px;
             transition: transform 0.3s;
+            color: #555;
         }
 
         /* Список алгоритмов внутри */
         .algo-list {
             display: none;
-            padding: 10px 15px 20px;
+            padding: 10px 15px 25px;
             border-top: 1px solid var(--border);
             grid-template-columns: 1fr;
-            gap: 10px;
+            gap: 12px;
         }
 
         .category-wrapper.active .algo-list { display: grid; }
-        .category-wrapper.active .category-icon { transform: rotate(180deg); }
+        .category-wrapper.active .category-icon { transform: rotate(180deg); color: var(--accent); }
 
-        .algo-item {
-            text-decoration: none;
-            color: var(--text-main);
-            padding: 15px 20px;
+        .algo-card {
+            padding: 18px 25px;
             border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            transition: all 0.2s;
+            gap: 18px;
             background: transparent;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--text-main);
         }
 
-        .algo-item:hover {
+        .algo-card:hover {
             background: var(--bg-hover);
             transform: translateX(8px);
+            border-color: #313136;
         }
 
         .algo-icon-circle {
-            width: 36px;
-            height: 36px;
-            background: #2d2d30;
-            border-radius: 8px;
+            width: 42px;
+            height: 42px;
+            background: #28282c;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
+            border: 1px solid var(--border);
         }
 
         .algo-details { flex-grow: 1; }
-        .algo-name { font-weight: 600; font-size: 15px; }
-        .algo-complexity { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+        .algo-name { font-weight: 700; font-size: 16px; margin-bottom: 2px; }
+        .algo-complexity { font-size: 11px; color: var(--text-secondary); letter-spacing: 0.5px; }
 
-        .tag-pill {
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            background: var(--border);
-            color: var(--text-secondary);
+        /* Кнопки-заглушки для Кода и Описания */
+        .algo-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
         }
 
+        .action-btn {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            background: transparent;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            color: #fff;
+            border-color: var(--text-secondary);
+            background: var(--border);
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">
-            <div class="logo-box">A</div>
-            <div class="logo-text">Algo<span>View</span></div>
+        <div class="logo-wrap">
+            <div class="logo">
+                <div class="logo-box"></div>Algo<span>View</span>
+            </div>
+            <div class="subtitle">Interactive Algorithm Laboratory</div>
         </div>
-        <p style="color: var(--text-secondary); margin-top: 15px;">Interactive Algorithm Laboratory v2.0</p>
     </header>
 
     <div class="container">
@@ -182,26 +214,37 @@
                 <div class="category-icon">▼</div>
             </div>
             <div class="algo-list">
-                <a href="Binary Search/index.html" class="algo-item">
+                <a href="Binary Search/index.html" class="algo-card">
                     <div class="algo-icon-circle">🔍</div>
                     <div class="algo-details">
                         <div class="algo-name">Binary Search</div>
                         <div class="algo-complexity">Time: O(log N)</div>
                     </div>
-                    <span class="tag-pill">Sorted Array</span>
+                    <div class="algo-actions">
+                        <button class="action-btn">Code</button>
+                        <button class="action-btn">Doc</button>
+                    </div>
                 </a>
-                <a href="Lower Bound/index.html" class="algo-item">
+                <a href="Lower Bound/index.html" class="algo-card">
                     <div class="algo-icon-circle">🎯</div>
                     <div class="algo-details">
                         <div class="algo-name">Lower Bound</div>
                         <div class="algo-complexity">First element ≥ target</div>
                     </div>
+                    <div class="algo-actions">
+                        <button class="action-btn">Code</button>
+                        <button class="action-btn">Doc</button>
+                    </div>
                 </a>
-                <a href="Upper Bound/index.html" class="algo-item">
+                <a href="Upper Bound/index.html" class="algo-card">
                     <div class="algo-icon-circle">🎯</div>
                     <div class="algo-details">
                         <div class="algo-name">Upper Bound</div>
                         <div class="algo-complexity">First element > target</div>
+                    </div>
+                    <div class="algo-actions">
+                        <button class="action-btn">Code</button>
+                        <button class="action-btn">Doc</button>
                     </div>
                 </a>
             </div>
@@ -213,13 +256,16 @@
                 <div class="category-icon">▼</div>
             </div>
             <div class="algo-list">
-                <a href="Sieve/index.html" class="algo-item">
+                <a href="Sieve/index.html" class="algo-card">
                     <div class="algo-icon-circle">🧬</div>
                     <div class="algo-details">
                         <div class="algo-name">Sieve of Eratosthenes</div>
                         <div class="algo-complexity">Finding primes up to N</div>
                     </div>
-                    <span class="tag-pill">O(N log log N)</span>
+                    <div class="algo-actions">
+                        <button class="action-btn">Code</button>
+                        <button class="action-btn">Doc</button>
+                    </div>
                 </a>
             </div>
         </div>
@@ -230,13 +276,16 @@
                 <div class="category-icon">▼</div>
             </div>
             <div class="algo-list">
-                <a href="Bubble Sort/index.html" class="algo-item">
+                <a href="Bubble Sort/index.html" class="algo-card">
                     <div class="algo-icon-circle">🔵</div>
                     <div class="algo-details">
                         <div class="algo-name">Bubble Sort</div>
                         <div class="algo-complexity">Time: O(N²)</div>
                     </div>
-                    <span class="tag-pill">Stable</span>
+                    <div class="algo-actions">
+                        <button class="action-btn">Code</button>
+                        <button class="action-btn">Doc</button>
+                    </div>
                 </a>
             </div>
         </div>
@@ -247,11 +296,15 @@
                 <div class="category-icon">▼</div>
             </div>
             <div class="algo-list">
-                <a href="LCS/index.html" class="algo-item">
+                <a href="LCS/index.html" class="algo-card">
                     <div class="algo-icon-circle">📉</div>
                     <div class="algo-details">
                         <div class="algo-name">Longest Common Subsequence</div>
                         <div class="algo-complexity">2D Table approach</div>
+                    </div>
+                    <div class="algo-actions">
+                        <button class="action-btn">Code</button>
+                        <button class="action-btn">Doc</button>
                     </div>
                 </a>
             </div>
@@ -264,6 +317,15 @@
             const wrapper = header.parentElement;
             wrapper.classList.toggle('active');
         }
+
+        // Заглушка, чтобы кнопки внутри ссылки не вызывали переход по href
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                e.stopPropagation(); // Не дает событию всплыть к ссылке
+                alert('Description and Code sections are coming soon!');
+            });
+        });
     </script>
 </body>
 </html>
