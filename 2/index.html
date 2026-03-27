@@ -1,1 +1,199 @@
 
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; padding: 1rem 0; font-family: var(--font-sans); color: var(--color-text-primary); }
+.wrap { max-width: 660px; margin: 0 auto; }
+.meta { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 14px; }
+.info-box {
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  padding: 10px 14px; font-size: 13px; line-height: 1.65;
+  min-height: 58px; margin: 0 0 14px;
+}
+.info-box b { font-weight: 500; }
+.info-box code { background: var(--color-background-tertiary); padding: 1px 5px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; }
+.nums-row { display: flex; gap: 5px; margin: 0 0 14px; flex-wrap: wrap; }
+.nbox {
+  width: 44px; height: 38px; border-radius: 8px;
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 500;
+  transition: background .25s, border-color .25s, color .25s;
+}
+.nbox .nidx { font-size: 10px; font-weight: 400; color: var(--color-text-secondary); line-height: 1; }
+.nbox.hi-i { background: #EEEDFE; border: 1.5px solid #7F77DD; color: #3C3489; }
+.nbox.hi-i .nidx { color: #7F77DD; }
+.nbox.hi-j { background: #E1F5EE; border: 1.5px solid #1D9E75; color: #085041; }
+.nbox.hi-j .nidx { color: #1D9E75; }
+.tbl-wrap { overflow-x: auto; margin: 0 0 14px; }
+table { border-collapse: separate; border-spacing: 5px; font-size: 12px; min-width: 100%; }
+th { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-align: center; padding: 2px 4px 6px; white-space: nowrap; }
+.row-lbl { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-align: right; padding-right: 6px; white-space: nowrap; vertical-align: middle; }
+.cell {
+  width: 46px; height: 40px;
+  border-radius: 7px;
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-secondary);
+  text-align: center; vertical-align: middle;
+  font-size: 12px; color: var(--color-text-secondary);
+  transition: background .25s, color .25s, border-color .25s;
+}
+.cell.has { background: var(--color-background-primary); color: var(--color-text-primary); font-weight: 500; }
+.cell.cur-i { background: #EEEDFE; border: 1.5px solid #AFA9EC; color: #534AB7; }
+.cell.cur-j { background: #E1F5EE; border: 1.5px solid #5DCAA5; color: #085041; }
+.cell.updated { background: #EEEDFE; border: 2px solid #7F77DD; color: #3C3489; font-weight: 700; }
+.ctrls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ctrls button { font-size: 13px; }
+.ctr-lbl { font-size: 12px; color: var(--color-text-secondary); margin-left: 4px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--color-text-secondary); margin: 0 0 14px; }
+.leg { display: flex; align-items: center; gap: 4px; }
+.ldot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.res { font-size: 13px; margin: 10px 0 0; }
+.res-val { font-size: 20px; font-weight: 500; color: #3C3489; }
+.best-seq { font-size: 12px; color: var(--color-text-secondary); margin: 4px 0 0; min-height: 16px; }
+</style>
+<div class="wrap">
+  <p class="meta">nums = [20, 1, 15, 3, 10, 5, 8] &nbsp;·&nbsp; dp[i][d] = длина АП с разностью d, заканчивающейся в nums[i]</p>
+
+  <div class="legend">
+    <div class="leg"><div class="ldot" style="background:#EEEDFE;border:1.5px solid #7F77DD"></div>текущий i</div>
+    <div class="leg"><div class="ldot" style="background:#E1F5EE;border:1.5px solid #1D9E75"></div>текущий j</div>
+    <div class="leg"><div class="ldot" style="background:#EEEDFE;border:2px solid #7F77DD"></div>обновлённая ячейка</div>
+    <div class="leg"><div class="ldot" style="background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary)"></div>заполнено ранее</div>
+  </div>
+
+  <div class="nums-row" id="nums-row"></div>
+  <div class="info-box" id="info">Нажмите «Следующий шаг», чтобы начать.</div>
+  <div class="tbl-wrap"><div id="tbl"></div></div>
+
+  <div class="ctrls">
+    <button onclick="go(-1)">← Назад</button>
+    <button onclick="go(1)">Следующий шаг →</button>
+    <button onclick="jumpEnd()">До конца »</button>
+    <button onclick="resetAll()">Сбросить</button>
+    <span class="ctr-lbl" id="ctr"></span>
+  </div>
+  <div class="res">Максимальная длина: <span class="res-val" id="resv">—</span></div>
+  <div class="best-seq" id="bestseq"></div>
+</div>
+
+<script>
+const nums = [20,1,15,3,10,5,8];
+const n = nums.length;
+
+function allDiffs() {
+  const s = new Set();
+  for (let i=1;i<n;i++) for (let j=0;j<i;j++) s.add(nums[i]-nums[j]);
+  return [...s].sort((a,b)=>a-b);
+}
+const DIFFS = allDiffs();
+const dfmt = d => (d>=0?'+':'')+d;
+
+function buildSteps() {
+  const steps = [];
+  let dp = Array.from({length:n},()=>({}));
+  let res = 1;
+  let bestI = 0, bestD = null;
+
+  steps.push({i:-1,j:-1,diff:null,dp:dp.map(o=>({...o})),res,msg:'Начальное состояние. Таблица пустая, ни одной пары ещё не рассмотрено.',bestI,bestD});
+
+  for (let i=1;i<n;i++){
+    for (let j=0;j<i;j++){
+      const d = nums[i]-nums[j];
+      const prev = dp[j][d] !== undefined ? dp[j][d] : 1;
+      const nv = prev+1;
+      dp = dp.map(o=>({...o}));
+      dp[i] = {...dp[i],[d]: Math.max(dp[i][d]||1, nv)};
+      if (dp[i][d] > res) { res = dp[i][d]; bestI=i; bestD=d; }
+      const prevNote = dp[j][d-0] !== undefined || prev>1
+        ? `dp[${j}][${dfmt(d)}] = ${prev} (цепочка уже была)`
+        : `dp[${j}][${dfmt(d)}] нет → j — первое звено (длина 1)`;
+      steps.push({
+        i,j,diff:d,
+        dp:dp.map(o=>({...o})),
+        res, bestI, bestD,
+        msg:`<b>i=${i}</b> (nums[i]=${nums[i]}),&nbsp; <b>j=${j}</b> (nums[j]=${nums[j]})<br>
+разность d = ${nums[i]}−${nums[j]} = <code>${dfmt(d)}</code><br>
+${prevNote}<br>
+→ <code>dp[${i}][${dfmt(d)}]</code> = ${prev}+1 = <b>${nv}</b>`
+      });
+    }
+  }
+
+  steps.push({i:-1,j:-1,diff:null,dp:dp.map(o=>({...o})),res,bestI,bestD,
+    msg:`<b>Готово.</b> Максимальная длина = <b>${res}</b>`});
+  return steps;
+}
+
+const steps = buildSteps();
+let cur = 0;
+
+function recoverSeq(dp, bi, bd) {
+  const seq = [nums[bi]];
+  let ci = bi, cd = bd;
+  while (true) {
+    let found = false;
+    for (let j=0;j<ci;j++){
+      if (nums[ci]-nums[j]===cd && dp[j][cd] === (dp[ci][cd]||1)-1){
+        seq.unshift(nums[j]); ci=j; found=true; break;
+      }
+    }
+    if (!found) break;
+  }
+  return seq;
+}
+
+function render() {
+  const s = steps[cur];
+  document.getElementById('ctr').textContent = `шаг ${cur} / ${steps.length-1}`;
+  document.getElementById('resv').textContent = cur===0 ? '—' : s.res;
+
+  if (cur > 0 && s.res > 1 && s.bestD !== null) {
+    const seq = recoverSeq(s.dp, s.bestI, s.bestD);
+    document.getElementById('bestseq').textContent = `Лучшая цепочка сейчас: [${seq.join(', ')}]  (шаг ${dfmt(s.bestD)})`;
+  } else {
+    document.getElementById('bestseq').textContent = '';
+  }
+
+  document.getElementById('info').innerHTML = s.msg;
+
+  const nr = document.getElementById('nums-row');
+  nr.innerHTML = nums.map((v,idx)=>{
+    let cls='nbox';
+    if(idx===s.i) cls+=' hi-i';
+    else if(idx===s.j) cls+=' hi-j';
+    return `<div class="${cls}"><span class="nidx">[${idx}]</span>${v}</div>`;
+  }).join('');
+
+  let html = '<table><tr><th></th>';
+  for (const d of DIFFS) html += `<th>${dfmt(d)}</th>`;
+  html += '</tr>';
+
+  for (let i=0;i<n;i++){
+    html += `<tr><td class="row-lbl">i=${i}<br><span style="font-weight:400">(${nums[i]})</span></td>`;
+    for (const d of DIFFS){
+      const val = s.dp[i][d];
+      let cls = 'cell';
+      if (val !== undefined) cls += ' has';
+      if (i===s.i && d===s.diff) cls += ' updated';
+      else if (i===s.i) cls += ' cur-i';
+      else if (i===s.j && d===s.diff) cls += ' cur-j';
+      html += `<td class="${cls}">${val !== undefined ? val : ''}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table>';
+  document.getElementById('tbl').innerHTML = html;
+}
+
+function go(dir){
+  const nx = cur+dir;
+  if(nx>=0 && nx<steps.length){cur=nx; render();}
+}
+function jumpEnd(){ cur=steps.length-1; render(); }
+function resetAll(){ cur=0; render(); }
+
+render();
+</script>
