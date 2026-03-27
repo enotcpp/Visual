@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AlgoView | Sieve of Eratosthenes</title>
+    <style>
+        :root {
+            --bg-main: #1a1a1c;
+            --bg-card: #242426;
+            --bg-input: #2d2d30;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-secondary: #1d9e75;
+            --border: #3e3e42;
+            --discard: #36363a;
+            --active-prime: #7f77dd;
+            --marking: #e67e22;
+        }
+
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+        .inputs { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 10px; border-radius: 8px; font-size: 14px; width: 80px;
+        }
+        
+        button {
+            padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer;
+            transition: all 0.2s;
+        }
+        button.primary { background: var(--accent); color: white; border: none; }
+        button:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+        .info-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; min-height: 80px; margin-bottom: 30px;
+            border-left: 4px solid var(--accent); line-height: 1.6;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+            margin-bottom: 40px;
+        }
+
+        .cell {
+            aspect-ratio: 1/1;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 600; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Состояния */
+        .cell.prime-active { background: var(--active-prime); color: white; transform: scale(1.1); z-index: 2; box-shadow: 0 0 15px rgba(127, 119, 221, 0.4); }
+        .cell.marking { background: var(--marking); color: white; transform: scale(0.95); }
+        .cell.discarded { opacity: 0.2; transform: scale(0.85); background: var(--discard); text-decoration: line-through; }
+        .cell.is-prime-final { background: var(--accent-secondary) !important; color: white !important; opacity: 1 !important; transform: scale(1.05); box-shadow: 0 0 10px rgba(29, 158, 117, 0.4); }
+
+        .limit-marker { color: var(--marking); font-weight: bold; }
+
+        .ctrls { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <h1>🧬 AlgoView | Sieve of Eratosthenes</h1>
+    <div class="inputs">
+        <label>Find primes up to:</label>
+        <input id="n-input" type="number" value="50" max="200">
+        <button onclick="rebuild()" class="primary">Generate Grid</button>
+    </div>
+
+    <div class="info-box" id="info">Welcome! Set a limit and start the sieve.</div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="ctrls">
+        <button onclick="go(-1)">← Back</button>
+        <button onclick="go(1)" class="primary">Next Step →</button>
+        <button onclick="resetAll()">Reset</button>
+        <span class="ctr-lbl" id="ctr"></span>
+    </div>
+</div>
+
+<script>
+let n = 0;
+let steps = [];
+let cur = 0;
+let isPrime = [];
+
+function rebuild() {
+    n = parseInt(document.getElementById('n-input').value);
+    if (n > 200) n = 200; // Ограничение для визуала
+    initSieve();
+}
+
+function initSieve() {
+    steps = [];
+    isPrime = new Array(n + 1).fill(true);
+    isPrime[0] = isPrime[1] = false;
+    
+    let limit = Math.floor(Math.sqrt(n));
+    
+    steps.push({ 
+        type: 'init', 
+        states: [...isPrime], 
+        msg: `Sieve initialized. We only need to check numbers up to <span class="limit-marker">√${n} ≈ ${limit}</span>.` 
+    });
+
+    for (let p = 2; p <= n; p++) {
+        if (isPrime[p]) {
+            if (p <= limit) {
+                steps.push({ 
+                    type: 'prime-found', 
+                    p: p, 
+                    states: [...isPrime], 
+                    msg: `<b>${p}</b> is the next prime. Now mark its multiples starting from <b>${p}*${p}</b>.` 
+                });
+
+                for (let i = p * p; i <= n; i += p) {
+                    let prevStates = [...isPrime];
+                    isPrime[i] = false;
+                    steps.push({ 
+                        type: 'marking', 
+                        p: p, 
+                        m: i, 
+                        states: [...isPrime], 
+                        msg: `Marking <b>${i}</b> as composite (multiple of ${p}).` 
+                    });
+                }
+            } else {
+                // Если p > sqrt(n), мы просто фиксируем, что число простое, но ничего не вычеркиваем
+                steps.push({ 
+                    type: 'prime-skip', 
+                    p: p, 
+                    states: [...isPrime], 
+                    msg: `<b>${p} > √${n}</b>. No need to mark its multiples, they are already out.` 
+                });
+            }
+        }
+    }
+
+    steps.push({ 
+        type: 'final', 
+        states: [...isPrime], 
+        msg: `<b>Finished!</b> All remaining numbers are prime.` 
+    });
+
+    cur = 0;
+    render();
+}
+
+function render() {
+    const s = steps[cur];
+    const grid = document.getElementById('grid');
+    document.getElementById('info').innerHTML = s.msg;
+    document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+    
+    grid.innerHTML = '';
+    for (let i = 2; i <= n; i++) {
+        const div = document.createElement('div');
+        div.className = 'cell';
+        div.textContent = i;
+
+        if (s.type === 'final') {
+            if (s.states[i]) div.classList.add('is-prime-final');
+            else div.classList.add('discarded');
+        } else {
+            if (!s.states[i] && (s.type !== 'marking' || i !== s.m)) div.classList.add('discarded');
+            if (s.type === 'prime-found' && i === s.p) div.classList.add('prime-active');
+            if (s.type === 'marking' && i === s.p) div.classList.add('prime-active');
+            if (s.type === 'marking' && i === s.m) div.classList.add('marking');
+        }
+        grid.appendChild(div);
+    }
+}
+
+function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
+function resetAll() { cur=0; render(); }
+
+rebuild();
+</script>
+</body>
+</html>
