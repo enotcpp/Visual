@@ -3,329 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlgoView | Dashboard</title>
+    <title>AlgoView | Lab Library</title>
     <style>
         :root {
             --bg-main: #141416;
             --bg-card: #1e1e22;
-            --bg-hover: #26262a;
+            --bg-hover: #2d2d30;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd; /* Наш фиолетовый */
-            --border: #313136;
-            --font-stack: 'Inter', -apple-system, system-ui, sans-serif;
+            --accent-glow: rgba(127, 119, 221, 0.3);
+            --border: #2d2d30;
+            --conn-color: #3e3e42; /* Цвет линий-коннекторов */
         }
 
         body { 
-            font-family: var(--font-stack);
-            background: var(--bg-main); 
-            color: var(--text-main);
-            margin: 0;
-            padding-bottom: 120px;
+            font-family: 'Inter', -apple-system, system-ui, sans-serif; 
+            background: var(--bg-main); color: var(--text-main);
+            margin: 0; padding: 30px 20px; /* Сместили выше */
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* ОБНОВЛЕННОЕ СТРОГОЕ СТАТИЧНОЕ ЛОГО */
+        /* КОМПАКТНОЕ ЛОГО (Вариант 1, строгое) */
         header {
-            padding: 70px 20px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-            background: radial-gradient(circle at 50% -100px, #2a2a30 0%, var(--bg-main) 70%);
-        }
-
-        .logo-wrap {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
+            width: 100%; max-width: 650px;
+            display: flex; flex-direction: column; align-items: flex-start;
+            margin-bottom: 20px; /* Меньше отступ */
+            position: relative;
         }
 
         .logo {
-            font-size: 38px;
-            font-weight: 900;
-            letter-spacing: -2px;
-            cursor: default;
-            color: var(--text-main);
+            font-size: 34px; font-weight: 900; letter-spacing: -1.5px;
+            display: flex; align-items: center; gap: 10px; cursor: default;
         }
 
-        .logo span {
-            color: var(--accent); /* Строгий акцент */
+        /* Строгая точка фокусировки (наш маркер) */
+        .logo-marker {
+            width: 14px; height: 14px; background: var(--accent);
+            border-radius: 3px;
         }
 
-        .logo-box {
-            width: 12px;
-            height: 12px;
-            background: var(--accent);
-            border-radius: 2px;
-            margin-right: 8px;
-            display: inline-block;
-            vertical-align: baseline;
-        }
+        .logo-text span { color: var(--accent); }
 
         .subtitle {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin: 10px 0 0;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 500;
-            opacity: 0.9;
+            font-size: 13px; color: var(--text-secondary);
+            margin-top: 5px; text-transform: uppercase; letter-spacing: 1.5px;
+            font-weight: 600; opacity: 0.8;
         }
 
-        .container {
-            max-width: 850px;
-            margin: 50px auto 0;
-            padding: 0 20px;
+        /* ГЛАВНАЯ СХЕМА-КАНВАС */
+        .diagram-container {
+            width: 100%; max-width: 650px;
+            position: relative; padding-left: 50px; /* Место для SVG */
         }
 
-        /* Секции-Аккордеоны */
-        .category-wrapper {
-            margin-bottom: 18px;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            background: var(--bg-card);
-            transition: all 0.3s ease;
+        /* SVG для коннекторов */
+        .connectors {
+            position: absolute; left: 0; top: 0; width: 50px; height: 100%;
+            z-index: 1; pointer-events: none;
         }
 
-        .category-wrapper.active {
-            border-color: #444;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        /* Список в стиле "Схемы" */
+        ul { list-style: none; padding: 0; margin: 0; position: relative; z-index: 2; }
+        li { margin: 10px 0; position: relative; }
+
+        .category {
+            font-size: 11px; text-transform: uppercase; color: var(--text-secondary);
+            margin: 30px 0 10px 10px; letter-spacing: 2px; font-weight: 700;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .category::after { content: ""; height: 1px; flex-grow: 1; background: var(--border); }
+
+        /* Кнопка алгоритма */
+        a { 
+            text-decoration: none; color: var(--text-main); 
+            font-size: 16px; font-weight: 600;
+            display: flex; align-items: center;
+            padding: 16px 20px;
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
 
-        .category-header {
-            padding: 22px 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: background 0.3s;
-            user-select: none;
-        }
-
-        .category-header:hover { background: var(--bg-hover); }
-
-        .category-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-secondary);
-        }
-
-        .category-icon {
-            font-size: 18px;
-            transition: transform 0.3s;
-            color: #555;
-        }
-
-        /* Список алгоритмов внутри */
-        .algo-list {
-            display: none;
-            padding: 10px 15px 25px;
-            border-top: 1px solid var(--border);
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        .category-wrapper.active .algo-list { display: grid; }
-        .category-wrapper.active .category-icon { transform: rotate(180deg); color: var(--accent); }
-
-        .algo-card {
-            padding: 18px 25px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            background: transparent;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-            text-decoration: none;
-            color: var(--text-main);
-        }
-
-        .algo-card:hover {
+        /* Эффект наведения */
+        a:hover { 
+            transform: translateX(6px) scale(1.01); 
+            border-color: var(--accent);
             background: var(--bg-hover);
-            transform: translateX(8px);
-            border-color: #313136;
+            box-shadow: 0 10px 25px var(--accent-glow);
         }
 
-        .algo-icon-circle {
-            width: 42px;
-            height: 42px;
-            background: #28282c;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            border: 1px solid var(--border);
+        a span.icon {
+            margin-right: 15px; font-size: 19px;
+            background: rgba(45, 45, 48, 0.6);
+            width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; border: 1px solid var(--border);
         }
 
-        .algo-details { flex-grow: 1; }
-        .algo-name { font-weight: 700; font-size: 16px; margin-bottom: 2px; }
-        .algo-complexity { font-size: 11px; color: var(--text-secondary); letter-spacing: 0.5px; }
-
-        /* Кнопки-заглушки для Кода и Описания */
-        .algo-actions {
-            display: flex;
-            gap: 8px;
-            margin-left: auto;
+        .count {
+            margin-left: auto; font-size: 11px; color: var(--text-secondary);
+            background: #2d2d30; padding: 2px 10px; border-radius: 20px;
+            text-transform: uppercase; font-weight: 700;
         }
 
-        .action-btn {
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 800;
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-            background: transparent;
-            padding: 4px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .action-btn:hover {
-            color: #fff;
-            border-color: var(--text-secondary);
-            background: var(--border);
+        /* Метка связи для наведения (необязательно, для акцента) */
+        a:hover::before {
+            content: "";
+            position: absolute; left: -30px; top: 50%; transform: translateY(-50%);
+            width: 10px; height: 10px; background: var(--accent);
+            border-radius: 50%; box-shadow: 0 0 10px var(--accent);
+            transition: opacity 0.3s;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo-wrap">
-            <div class="logo">
-                <div class="logo-box"></div>Algo<span>View</span>
-            </div>
-            <div class="subtitle">Interactive Algorithm Laboratory</div>
+        <div class="logo">
+            <div class="logo-marker"></div>
+            <div class="logo-text">Algo<span>View</span></div>
         </div>
+        <div class="subtitle">Interactive algorithms laboratory</div>
     </header>
 
-    <div class="container">
-        
-        <div class="category-wrapper active">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <div class="category-title">🔍 Searching Algorithms</div>
-                <div class="category-icon">▼</div>
-            </div>
-            <div class="algo-list">
-                <a href="Binary Search/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🔍</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Binary Search</div>
-                        <div class="algo-complexity">Time: O(log N)</div>
-                    </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">Code</button>
-                        <button class="action-btn">Doc</button>
-                    </div>
-                </a>
-                <a href="Lower Bound/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🎯</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Lower Bound</div>
-                        <div class="algo-complexity">First element ≥ target</div>
-                    </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">Code</button>
-                        <button class="action-btn">Doc</button>
-                    </div>
-                </a>
-                <a href="Upper Bound/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🎯</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Upper Bound</div>
-                        <div class="algo-complexity">First element > target</div>
-                    </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">Code</button>
-                        <button class="action-btn">Doc</button>
-                    </div>
-                </a>
-            </div>
-        </div>
+    <div class="diagram-container">
+        <svg class="connectors" viewBox="0 0 50 1000" preserveAspectRatio="none">
+            <defs>
+                <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                    <polygon points="0 0, 6 3, 0 6" fill="#3e3e42"/>
+                </marker>
+            </defs>
+            
+            <line x1="14" y1="-20" x2="14" y2="1000" stroke="#3e3e42" stroke-width="1.5" stroke-dasharray="4 4"/>
 
-        <div class="category-wrapper">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <div class="category-title">🧬 Number Theory</div>
-                <div class="category-icon">▼</div>
-            </div>
-            <div class="algo-list">
-                <a href="Sieve/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🧬</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Sieve of Eratosthenes</div>
-                        <div class="algo-complexity">Finding primes up to N</div>
-                    </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">Code</button>
-                        <button class="action-btn">Doc</button>
-                    </div>
-                </a>
-            </div>
-        </div>
+            </svg>
 
-        <div class="category-wrapper">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <div class="category-title">📊 Sorting</div>
-                <div class="category-icon">▼</div>
-            </div>
-            <div class="algo-list">
-                <a href="Bubble Sort/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🔵</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Bubble Sort</div>
-                        <div class="algo-complexity">Time: O(N²)</div>
-                    </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">Code</button>
-                        <button class="action-btn">Doc</button>
-                    </div>
+        <ul id="algo-tree">
+            <div class="category">Searching</div>        
+            <li data-path="M14 110 H40" data-y="110">
+                <a href="Binary Search/index.html">
+                    <span class="icon">🔍</span> Binary Search
                 </a>
-            </div>
-        </div>
-
-        <div class="category-wrapper">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <div class="category-title">📉 Dynamic Programming</div>
-                <div class="category-icon">▼</div>
-            </div>
-            <div class="algo-list">
-                <a href="LCS/index.html" class="algo-card">
-                    <div class="algo-icon-circle">📉</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Longest Common Subsequence</div>
-                        <div class="algo-complexity">2D Table approach</div>
-                    </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">Code</button>
-                        <button class="action-btn">Doc</button>
-                    </div>
+            </li>
+            <li data-path="M14 175 H40" data-y="175">
+                <a href="Binary Jump Search/index.html">
+                    <span class="icon">🦘</span> Binary Jump Search
                 </a>
-            </div>
-        </div>
+            </li>
+            <li data-path="M14 240 H40" data-y="240">
+                <a href="Lower Bound/index.html">
+                    <span class="icon">🎯</span> Lower Bound
+                </a>
+            </li>
+            <li data-path="M14 305 H40" data-y="305">
+                <a href="Upper Bound/index.html">
+                    <span class="icon">🎯</span> Upper Bound
+                </a>
+            </li>
+            
+            <div class="category">Sorting</div>
+            <li data-path="M14 410 H40" data-y="410">
+                <a href="Bubble Sort/index.html">
+                    <span class="icon">🔵</span> Bubble Sort
+                    <div class="count">O(N²)</div>
+                </a>
+            </li>
+            
+            <div class="category">Dynamic Programming</div>
+            <li data-path="M14 515 H40" data-y="515">
+                <a href="Longest Common Subsequence/index.html">
+                    <span class="icon">📉</span> Longest Common Subsequence
+                </a>
+            </li>        
+            <li data-path="M14 580 H40" data-y="580">
+                <a href="Wagner-Fischer/index.html">
+                    <span class="icon">📉</span> Edit Distance
+                </a>
+            </li>
+            <li data-path="M14 645 H40" data-y="645">
+                <a href="Longest Arithmetic Subsequence/index.html">
+                    <span class="icon">🧬</span> Longest Arithmetic Subsequence
+                </a>
+            </li>
+            <li data-path="M14 710 H40" data-y="710">
+                <a href="Climbing Stairs/index.html">
+                    <span class="icon">🪜</span> Climbing Stairs
+                </a>
+            </li>
+            <li data-path="M14 775 H40" data-y="775">
+                <a href="Minimum Path Sum/index.html">
+                    <span class="icon">🛣️</span> Minimum Path Sum
+                </a>
+            </li>
 
+            <div class="category">Number Theory</div>
+            <li data-path="M14 880 H40" data-y="880">
+                <a href="Sieve of Eratosthenes/index.html">
+                    <span class="icon">🧬</span> Sieve of Eratosthenes
+                    <div class="count">O(N log log N)</div>
+                </a>
+            </li>        
+
+            <div class="category">Combinatorics</div>
+            <li data-path="M14 985 H40" data-y="985">
+                <a href="Narayana/index.html">
+                    <span class="icon">🔄</span> Narayana's Permutation
+                    <div class="count">Next Lex Order</div>
+                </a>
+            </li>        
+        </ul>
     </div>
 
     <script>
-        function toggleCategory(header) {
-            const wrapper = header.parentElement;
-            wrapper.classList.toggle('active');
+        // Скрипт для отрисовки коннекторов (стрелочек)
+        function drawConnectors() {
+            const svg = document.querySelector('.connectors');
+            const items = document.querySelectorAll('#algo-tree li');
+            const tree = document.getElementById('algo-tree');
+            
+            // Убираем старые линии, если они есть
+            svg.querySelectorAll('path').forEach(p => p.remove());
+
+            // Подстраиваем высоту SVG под высоту списка
+            svg.setAttribute('viewBox', `0 0 50 ${tree.offsetHeight}`);
+            
+            items.forEach(item => {
+                // Берем путь из data-path или вычисляем на лету (data-y лучше)
+                const y = item.dataset.y;
+                if (!y) return;
+
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                // Линия L-образная (от центральной вертикали вправо к <li>)
+                path.setAttribute('d', `M14 ${y} H40`);
+                path.setAttribute('stroke', '#3e3e42');
+                path.setAttribute('stroke-width', '1.5');
+                path.setAttribute('fill', 'none');
+                path.setAttribute('marker-end', 'url(#arrowhead)');
+                
+                svg.appendChild(path);
+            });
         }
 
-        // Заглушка, чтобы кнопки внутри ссылки не вызывали переход по href
-        document.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault(); 
-                e.stopPropagation(); // Не дает событию всплыть к ссылке
-                alert('Description and Code sections are coming soon!');
-            });
-        });
+        // Рисуем при загрузке и при изменении размера (на всякий случай)
+        window.onload = drawConnectors;
+        window.onresize = drawConnectors;
     </script>
+    
 </body>
 </html>
