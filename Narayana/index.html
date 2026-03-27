@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AlgoView | Narayana's Permutation</title>
+    <title>Narayana's Permutation | AlgoView Lab</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
     <style>
         :root {
             --bg-main: #1a1a1c;
@@ -11,39 +14,52 @@
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
+            --accent-secondary: #1d9e75;
             --border: #3e3e42;
+            --code-bg: #0d0d0f;
             --pivot-color: #f1c40f;
             --suffix-bg: rgba(127, 119, 221, 0.15);
             --match-color: #1d9e75;
         }
 
+        * { box-sizing: border-box; }
         body { 
-            margin: 0; padding: 2rem; 
+            margin: 0; padding: 2rem 0; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-main); color: var(--text-main); 
         }
         
-        .wrap { max-width: 850px; margin: 0 auto; }
+        .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
         
+        /* VISUALIZER SECTION */
+        .visualizer-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 30px;
+        }
+
         .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
-            color: var(--text-main); padding: 10px; border-radius: 8px; font-size: 14px;
+            color: var(--text-main); padding: 10px; border-radius: 8px; font-size: 14px; width: 280px;
+            font-family: monospace;
         }
         
         button {
-            padding: 10px 20px; border-radius: 8px; border: none;
+            padding: 10px 18px; border-radius: 8px; border: none;
             background: var(--accent); color: white; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s; font-size: 14px;
         }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button:hover { opacity: 0.9; }
 
         .info-box {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 20px; min-height: 80px; margin-bottom: 60px;
-            border-left: 4px solid var(--accent);
+            background: var(--bg-main); border-left: 4px solid var(--accent);
+            padding: 20px; min-height: 85px; margin-bottom: 40px; font-size: 14px; line-height: 1.6;
         }
+        .info-box b { color: var(--accent); }
 
-        .viz-area { position: relative; margin: 60px 0; }
+        /* VIZ AREA - Восстановление оригинальной логики ячеек */
+        .viz-area { position: relative; margin: 60px 0; min-height: 80px; }
         .array-row { display: flex; justify-content: center; gap: 10px; }
 
         .cell {
@@ -62,167 +78,201 @@
             font-size: 14px; font-weight: 800;
         }
 
-        .cell.pivot { border: 3px solid var(--pivot-color); }
+        .cell.pivot { border: 3px solid var(--pivot-color); color: var(--pivot-color); }
         .cell.suffix-focus { background: var(--suffix-bg); border-color: var(--accent); border-style: dashed; }
         .cell.swapped { background: var(--match-color); color: white; border-color: white; }
-        .cell.active { border-color: var(--accent); transform: translateY(-4px); }
+        .cell.active { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
-        .ctrls { display: flex; align-items: center; gap: 10px; margin-top: 40px; }
-        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
+        /* LAB TABS */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
-    <div class="inputs">
-        <input id="in-arr" type="text" value="0, 1, 2, 5, 3, 3, 0" style="width: 280px;">
-        <button onclick="rebuild()">Apply Sequence</button>
+    <div class="visualizer-card">
+        <div class="inputs">
+            <input id="in-arr" type="text" value="0, 1, 2, 5, 3, 3, 0">
+            <button onclick="rebuild()">Apply Sequence</button>
+        </div>
+
+        <div class="info-box" id="info">Click "Next Step" to start.</div>
+        
+        <div class="viz-area">
+            <div class="array-row" id="array-row"></div>
+        </div>
+
+        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+            <button class="secondary" onclick="go(-1)">< Back</button>
+            <button onclick="go(1)">Next Step ></button>
+            <button class="secondary" onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
     </div>
 
-    <div class="info-box" id="info">Click "Next Step" to start.</div>
-    
-    <div class="viz-area">
-        <div class="array-row" id="array-row"></div>
-    </div>
-
-    <div class="ctrls">
-        <button onclick="go(-1)" class="secondary">< Back</button>
-        <button onclick="go(1)">Next Step ></button>
-        <button onclick="resetAll()" class="secondary">Reset</button>
-        <span class="ctr-lbl" id="ctr"></span>
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code class="language-python" id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp" id="cpp-display"></code></pre></div>
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
 <script>
-let steps = [], cur = 0;
-let lastInitial = ""; // Чтобы корректно работал Reset
+    const db = {
+        theory: {
+            EN: "<h3>Narayana's Algorithm</h3><p>Generates the next lexicographical permutation of a sequence. It involves finding the largest index <b>i</b> such that <b>a[i] < a[i+1]</b>, then the largest index <b>j</b> such that <b>a[i] < a[j]</b>, swapping them, and reversing the suffix.</p>",
+            RU: "<h3>Алгоритм Нараяны</h3><p>Алгоритм нахождения следующей перестановки в лексикографическом порядке. Состоит из 4 шагов: поиск индекса <b>i</b>, поиск индекса <b>j</b>, обмен значений и реверс хвоста последовательности.</p>"
+        },
+        python: {
+            v1: "def next_permutation(nums):\n    i = len(nums) - 2\n    while i >= 0 and nums[i] >= nums[i+1]:\n        i -= 1\n    if i >= 0:\n        j = len(nums) - 1\n        while nums[j] <= nums[i]:\n            j -= 1\n        nums[i], nums[j] = nums[j], nums[i]\n    nums[i+1:] = reversed(nums[i+1:])",
+            v2: "# Implementation for yielding all permutations\ndef permutations(arr):\n    arr.sort()\n    yield list(arr)\n    while True:\n        # ... Narayana's logic ...\n        if not success: break\n        yield list(arr)"
+        },
+        cpp: {
+            v1: "void nextPermutation(vector<int>& nums) {\n    std::next_permutation(nums.begin(), nums.end());\n}",
+            v2: "bool my_next_permutation(BidirectionalIt first, BidirectionalIt last) {\n    if (first == last) return false;\n    auto i = last; \n    if (first == --i) return false;\n    while (true) {\n        auto i1 = i; \n        if (*--i < *i1) {\n            auto j = last;\n            while (!(*i < *--j));\n            std::iter_swap(i, j);\n            std::reverse(i1, last);\n            return true;\n        }\n        if (i == first) {\n            std::reverse(first, last);\n            return false;\n        }\n    }\n}"
+        }
+    };
 
-function rebuild() {
-    const val = document.getElementById('in-arr').value;
-    lastInitial = val;
-    const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-    steps = buildSteps(arr);
-    cur = 0;
-    render();
-}
+    let steps = [], cur = 0, lastInitial = "", currentMainTab = 'theory';
 
-function buildSteps(arr) {
-    let _steps = [];
-    let data = [...arr];
-    const n = data.length;
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
 
-    _steps.push({ arr: [...data], msg: "Current state. Ready to find the next permutation." });
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active'); updateContent(item);
+            };
+            panel.appendChild(b);
+        });
+        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
+    }
 
-    // 1. Find i
-    let i = -1;
-    for (let k = n - 2; k >= 0; k--) {
-        _steps.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Checking if ${data[k]} < ${data[k+1]}...` });
-        if (data[k] < data[k+1]) {
-            i = k;
-            break;
+    function updateContent(key) {
+        const display = document.getElementById(currentMainTab + '-display');
+        if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
+        else {
+            display.textContent = db[currentMainTab][key];
+            Prism.highlightElement(display);
         }
     }
 
-    if (i === -1) {
-        _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot found.</b> This is the last lexicographical permutation." });
+    function rebuild() {
+        const val = document.getElementById('in-arr').value;
+        lastInitial = val;
+        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        steps = buildSteps(arr);
+        cur = 0; render();
+    }
+
+    function buildSteps(arr) {
+        let _steps = [];
+        let data = [...arr], n = data.length;
+        _steps.push({ arr: [...data], msg: "Current state. Ready to find the next permutation." });
+
+        let i = -1;
+        for (let k = n - 2; k >= 0; k--) {
+            _steps.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Checking if ${data[k]} < ${data[k+1]}...` });
+            if (data[k] < data[k+1]) { i = k; break; }
+        }
+
+        if (i === -1) {
+            _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot found.</b> This is the last lexicographical permutation." });
+            return _steps;
+        }
+
+        _steps.push({ arr: [...data], pivotIdx: i, msg: `Pivot found at index <b>${i}</b> (value: ${data[i]}).` });
+
+        let j = -1;
+        for (let k = n - 1; k > i; k--) {
+            _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Looking for <b>j</b> where a[i] < a[j].` });
+            if (data[k] > data[i]) { j = k; break; }
+        }
+
+        _steps.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found <b>j</b> at index ${j} (value: ${data[j]}).` });
+
+        let swapped = [...data];
+        [swapped[i], swapped[j]] = [swapped[j], swapped[i]];
+        _steps.push({ arr: [...swapped], pivotIdx: j, matchIdx: i, msg: `Swap <b>a[i]</b> with <b>a[j]</b>.` });
+
+        _steps.push({ arr: [...swapped], suffixRange: [i + 1, n - 1], msg: `<b>Suffix identified</b>: indexes ${i+1} to ${n-1} will be reversed.` });
+
+        let final = [...swapped];
+        let part2 = final.slice(i + 1).reverse();
+        final.splice(i + 1, part2.length, ...part2);
+        
+        _steps.push({ arr: [...final], suffixRange: [i + 1, n - 1], msg: "<b>Next permutation found!</b>" });
         return _steps;
     }
 
-    _steps.push({ arr: [...data], pivotIdx: i, msg: `Pivot found at index <b>${i}</b> (value: ${data[i]}).` });
+    function render() {
+        const s = steps[cur], container = document.getElementById('array-row');
+        container.innerHTML = '';
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
 
-    // 2. Find j
-    let j = -1;
-    for (let k = n - 1; k > i; k--) {
-        _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Find the largest index <b>j</b> such that <b>a[i] < a[j]</b>.` });
-        if (data[k] > data[i]) {
-            j = k;
-            break;
+        s.arr.forEach((val, idx) => {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.textContent = val;
+            if (idx === s.pivotIdx) cell.classList.add('pivot');
+            if (idx === s.matchIdx) cell.classList.add('swapped');
+            if (s.suffixRange && idx >= s.suffixRange[0] && idx <= s.suffixRange[1]) cell.classList.add('suffix-focus');
+            if (s.activeIdx === idx) {
+                cell.classList.add('active');
+                const lbl = document.createElement('div');
+                lbl.className = 'index-label'; lbl.textContent = s.label;
+                cell.appendChild(lbl);
+            }
+            container.appendChild(cell);
+        });
+    }
+
+    function go(dir) {
+        if (dir === 1 && cur === steps.length - 1) {
+            if (steps[cur].isLast) return;
+            steps = buildSteps(steps[cur].arr);
+            cur = 0; render(); return;
         }
+        if(cur + dir >= 0 && cur + dir < steps.length) { cur += dir; render(); }
     }
 
-    _steps.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found index <b>j</b> at ${j} (value: ${data[j]}).` });
-
-    // 3. Swap
-    let swapped = [...data];
-    [swapped[i], swapped[j]] = [swapped[j], swapped[i]];
-    _steps.push({ arr: [...swapped], pivotIdx: j, matchIdx: i, msg: `Swap <b>a[i]</b> with <b>a[j]</b>.` });
-
-    // 4. Highlight Suffix
-    _steps.push({ 
-        arr: [...swapped], 
-        suffixRange: [i + 1, n - 1], 
-        msg: `<b>Suffix identified</b>: indexes ${i+1} to ${n-1} will be reversed.` 
-    });
-
-    // 5. Final Reverse
-    let final = [...swapped];
-    let part1 = final.slice(0, i + 1);
-    let part2 = final.slice(i + 1).reverse();
-    final = [...part1, ...part2];
-    
-    _steps.push({ 
-        arr: [...final], 
-        suffixRange: [i + 1, n - 1],
-        msg: "<b>Next permutation found!</b> Click 'Next' to start finding the one after this." 
-    });
-
-    return _steps;
-}
-
-function render() {
-    const s = steps[cur];
-    const container = document.getElementById('array-row');
-    container.innerHTML = '';
-    document.getElementById('info').innerHTML = s.msg;
-    document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
-
-    s.arr.forEach((val, idx) => {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.textContent = val;
-
-        if (idx === s.pivotIdx) cell.classList.add('pivot');
-        if (idx === s.matchIdx) cell.classList.add('swapped');
-        if (s.suffixRange && idx >= s.suffixRange[0] && idx <= s.suffixRange[1]) cell.classList.add('suffix-focus');
-        
-        if (s.activeIdx === idx) {
-            cell.classList.add('active');
-            const lbl = document.createElement('div');
-            lbl.className = 'index-label';
-            lbl.textContent = s.label;
-            cell.appendChild(lbl);
-        }
-        container.appendChild(cell);
-    });
-}
-
-function go(dir) {
-    if (dir === 1 && cur === steps.length - 1) {
-        // Если мы на последнем шаге и нажимаем "Вперед"
-        const currentArr = steps[cur].arr;
-        // Проверяем, не была ли эта перестановка финальной
-        if (steps[cur].isLast) return; 
-        
-        // Генерируем новые шаги на основе текущего результата
-        steps = buildSteps(currentArr);
-        cur = 0;
-        render();
-        return;
+    function resetAll() {
+        document.getElementById('in-arr').value = lastInitial;
+        rebuild();
     }
-    
-    const nx = cur + dir;
-    if(nx >= 0 && nx < steps.length) {
-        cur = nx;
-        render();
-    }
-}
 
-function resetAll() {
-    document.getElementById('in-arr').value = lastInitial;
-    rebuild();
-}
-
-rebuild();
+    renderContextControls(); rebuild();
 </script>
 </body>
 </html>
