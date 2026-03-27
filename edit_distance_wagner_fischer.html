@@ -1,0 +1,197 @@
+
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; padding: 1rem 0; font-family: var(--font-sans); color: var(--color-text-primary); }
+.wrap { max-width: 660px; margin: 0 auto; }
+.info-box {
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  padding: 10px 14px; font-size: 13px; line-height: 1.7;
+  min-height: 68px; margin: 0 0 12px;
+}
+.info-box b { font-weight: 500; }
+.info-box code { background: var(--color-background-tertiary); padding: 1px 5px; border-radius: 4px; font-family: var(--font-mono); font-size: 12px; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--color-text-secondary); margin: 0 0 10px; }
+.leg { display: flex; align-items: center; gap: 4px; }
+.ldot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.tbl-wrap { overflow-x: auto; margin: 0 0 12px; }
+table { border-collapse: separate; border-spacing: 4px; }
+th { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); text-align: center; padding: 0 2px 4px; min-width: 44px; }
+.rlbl { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); text-align: right; padding-right: 6px; vertical-align: middle; white-space: nowrap; }
+.cell {
+  width: 44px; height: 44px; border-radius: 7px;
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-secondary);
+  text-align: center; vertical-align: middle;
+  font-size: 15px; font-weight: 400;
+  color: var(--color-text-secondary);
+  transition: background .2s, color .2s, border-color .2s;
+}
+.cell.filled  { background: var(--color-background-primary); color: var(--color-text-primary); font-weight: 500; }
+.cell.cur     { background: #EEEDFE; border: 2px solid #7F77DD; color: #3C3489; font-weight: 700; }
+.cell.match   { background: #E1F5EE; border: 2px solid #1D9E75; color: #085041; font-weight: 700; }
+.cell.op-rep  { background: #FAEEDA; border: 1.5px solid #BA7517; color: #633806; }
+.cell.op-del  { background: #FAECE7; border: 1.5px solid #993C1D; color: #712B13; }
+.cell.op-ins  { background: #E6F1FB; border: 1.5px solid #185FA5; color: #0C447C; }
+.cell.hi      { outline: 1.5px solid #AFA9EC; outline-offset: -1px; }
+.op-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 12px; font-weight: 500; margin: 0 2px;
+}
+.badge-match { background: #E1F5EE; color: #085041; }
+.badge-rep   { background: #FAEEDA; color: #633806; }
+.badge-del   { background: #FAECE7; color: #712B13; }
+.badge-ins   { background: #E6F1FB; color: #0C447C; }
+.ctrls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ctr-lbl { font-size: 12px; color: var(--color-text-secondary); }
+.res { font-size: 13px; margin: 10px 0 0; display: flex; align-items: center; gap: 8px; }
+.res-val { font-size: 20px; font-weight: 500; color: #3C3489; }
+.str-row { font-size: 14px; margin: 0 0 10px; min-height: 22px; }
+.ch { display: inline-block; padding: 0 2px; border-radius: 3px; font-family: var(--font-mono); font-size: 15px; letter-spacing: 1px; }
+.ch-cur  { background: #EEEDFE; color: #3C3489; font-weight: 500; }
+.ch-match { background: #E1F5EE; color: #085041; font-weight: 500; }
+</style>
+
+<div class="wrap">
+  <div style="font-size:13px;color:var(--color-text-secondary);margin:0 0 10px">
+    text1 = <b style="color:var(--color-text-primary)">"horse"</b> &nbsp;→&nbsp; text2 = <b style="color:var(--color-text-primary)">"ros"</b> &nbsp;·&nbsp; ответ = 3
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="ldot" style="background:#EEEDFE;border:2px solid #7F77DD"></div>текущая ячейка</div>
+    <div class="leg"><div class="ldot" style="background:#E1F5EE;border:2px solid #1D9E75"></div>совпадение (диагональ бесплатно)</div>
+    <div class="leg"><div class="ldot" style="background:#FAEEDA;border:1.5px solid #BA7517"></div>замена (диагональ +1)</div>
+    <div class="leg"><div class="ldot" style="background:#FAECE7;border:1.5px solid #993C1D"></div>удаление (сверху +1)</div>
+    <div class="leg"><div class="ldot" style="background:#E6F1FB;border:1.5px solid #185FA5"></div>вставка (слева +1)</div>
+  </div>
+
+  <div class="str-row" id="str-display"></div>
+  <div class="info-box" id="info">Нажмите «Следующий шаг».</div>
+  <div class="tbl-wrap"><div id="tbl"></div></div>
+
+  <div class="ctrls">
+    <button onclick="go(-1)">← Назад</button>
+    <button onclick="go(1)">Следующий шаг →</button>
+    <button onclick="jumpEnd()">До конца »</button>
+    <button onclick="resetAll()">Сбросить</button>
+    <span class="ctr-lbl" id="ctr"></span>
+  </div>
+  <div class="res">Ответ dp[n][m]: <span class="res-val" id="resv">—</span></div>
+</div>
+
+<script>
+const t1 = 'horse', t2 = 'ros';
+const n = t1.length, m = t2.length;
+
+function buildSteps() {
+  const steps = [];
+  const dp = Array.from({length: n+1}, (_,i) => Array.from({length: m+1}, (_,j) => i===0?j:(j===0?i:0)));
+
+  steps.push({ i:-1, j:-1, dp: dp.map(r=>[...r]), action:'start', src: null,
+    msg: 'Базовые случаи: <code>dp[i][0]=i</code> (удалить i символов), <code>dp[0][j]=j</code> (вставить j символов).' });
+
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      const match = t1[i-1] === t2[j-1];
+      const rep = dp[i-1][j-1] + (match ? 0 : 1);
+      const del_ = dp[i-1][j] + 1;
+      const ins = dp[i][j-1] + 1;
+      dp[i][j] = Math.min(rep, del_, ins);
+
+      let action, src;
+      if (match)          { action = 'match'; src = 'diag'; }
+      else if (rep <= del_ && rep <= ins) { action = 'replace'; src = 'diag'; }
+      else if (del_ <= ins)               { action = 'delete';  src = 'top';  }
+      else                                { action = 'insert';  src = 'left'; }
+
+      const opLabel = {
+        match:   `<span class="op-badge badge-match">совпадение</span> dp[${i-1}][${j-1}]+0 = ${dp[i][j]}`,
+        replace: `<span class="op-badge badge-rep">замена</span> dp[${i-1}][${j-1}]+1=${rep}, <span class="op-badge badge-del">удал.</span> dp[${i-1}][${j}]+1=${del_}, <span class="op-badge badge-ins">вст.</span> dp[${i}][${j-1}]+1=${ins} → min = ${dp[i][j]}`,
+        delete:  `<span class="op-badge badge-del">удаление</span> dp[${i-1}][${j-1}]+1=${rep}, <span class="op-badge badge-del">удал.</span> dp[${i-1}][${j}]+1=${del_}, <span class="op-badge badge-ins">вст.</span> dp[${i}][${j-1}]+1=${ins} → min = ${dp[i][j]}`,
+        insert:  `<span class="op-badge badge-ins">вставка</span> dp[${i-1}][${j-1}]+1=${rep}, <span class="op-badge badge-del">удал.</span> dp[${i-1}][${j}]+1=${del_}, <span class="op-badge badge-ins">вст.</span> dp[${i}][${j-1}]+1=${ins} → min = ${dp[i][j]}`,
+      };
+
+      steps.push({ i, j, dp: dp.map(r=>[...r]), action, src,
+        msg: `<b>text1[${i-1}]='${t1[i-1]}'</b> vs <b>text2[${j-1}]='${t2[j-1]}'</b><br>${opLabel[action]}<br><b>dp[${i}][${j}] = ${dp[i][j]}</b>` });
+    }
+  }
+  steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), action:'done', src:null,
+    msg: `<b>Готово.</b> dp[${n}][${m}] = <b>${dp[n][m]}</b> — расстояние Левенштейна между "${t1}" и "${t2}".` });
+  return steps;
+}
+
+const steps = buildSteps();
+let cur = 0;
+
+function renderStrDisplay(s) {
+  if (s.i < 1) { document.getElementById('str-display').innerHTML = ''; return; }
+  const ci = s.i-1, cj = s.j-1;
+  const isMat = s.action === 'match';
+  let h1 = '', h2 = '';
+  for (let k = 0; k < t1.length; k++) {
+    const cls = k===ci ? (isMat?'ch ch-match':'ch ch-cur') : 'ch';
+    h1 += `<span class="${cls}">${t1[k]}</span>`;
+  }
+  for (let k = 0; k < t2.length; k++) {
+    const cls = k===cj ? (isMat?'ch ch-match':'ch ch-cur') : 'ch';
+    h2 += `<span class="${cls}">${t2[k]}</span>`;
+  }
+  document.getElementById('str-display').innerHTML =
+    `text1:&nbsp;${h1}&nbsp;&nbsp;&nbsp;text2:&nbsp;${h2}`;
+}
+
+function render() {
+  const s = steps[cur];
+  document.getElementById('ctr').textContent = `шаг ${cur} / ${steps.length-1}`;
+  document.getElementById('resv').textContent = s.action==='done' ? s.dp[n][m] : (cur===0?'—':'...');
+  document.getElementById('info').innerHTML = s.msg;
+  renderStrDisplay(s);
+
+  let html = '<table><tr><th></th><th>""</th>';
+  for (let j = 0; j < m; j++) html += `<th><span style="color:var(--color-text-primary);font-size:14px">${t2[j]}</span></th>`;
+  html += '</tr>';
+
+  for (let i = 0; i <= n; i++) {
+    const rl = i===0 ? '""' : `<span style="color:var(--color-text-primary);font-size:14px">${t1[i-1]}</span>`;
+    html += `<tr><td class="rlbl">${rl}</td>`;
+    for (let j = 0; j <= m; j++) {
+      const isBase = i===0||j===0;
+      const isFilled = isBase || (cur>0 && (i<s.i||(i===s.i&&j<=s.j)));
+      const val = s.dp[i][j];
+
+      let cls = 'cell';
+      if (isFilled) cls += ' filled';
+
+      if (s.i>0 && s.j>0 && s.action!=='start') {
+        if (i===s.i && j===s.j) {
+          if (s.action==='match') cls += ' match';
+          else if (s.action==='replace') cls += ' op-rep cur';
+          else if (s.action==='delete')  cls += ' op-del cur';
+          else if (s.action==='insert')  cls += ' op-ins cur';
+          else cls += ' cur';
+        } else if (s.src==='diag' && i===s.i-1 && j===s.j-1) {
+          cls += s.action==='match' ? ' match' : ' op-rep';
+        } else if (s.src==='top'  && i===s.i-1 && j===s.j) {
+          cls += ' op-del';
+        } else if (s.src==='left' && i===s.i   && j===s.j-1) {
+          cls += ' op-ins';
+        }
+        if (i===s.i && j!==s.j) cls += ' hi';
+        if (j===s.j && i!==s.i) cls += ' hi';
+      }
+
+      html += `<td class="${cls}">${isFilled ? val : ''}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</table>';
+  document.getElementById('tbl').innerHTML = html;
+}
+
+function go(dir) { const nx=cur+dir; if(nx>=0&&nx<steps.length){cur=nx;render();} }
+function jumpEnd() { cur=steps.length-1; render(); }
+function resetAll() { cur=0; render(); }
+
+render();
+</script>
