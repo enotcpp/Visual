@@ -8,247 +8,261 @@
         :root {
             --bg-main: #141416;
             --bg-card: #1e1e22;
-            --bg-hover: #2d2d30;
+            --bg-hover: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
-            --accent: #7f77dd; /* Наш фиолетовый */
-            --accent-glow: rgba(127, 119, 221, 0.3);
+            --accent: #7f77dd;
             --border: #2d2d30;
-            --conn-color: #3e3e42; /* Цвет линий-коннекторов */
+            --font-stack: 'Inter', -apple-system, sans-serif;
         }
 
         body { 
-            font-family: 'Inter', -apple-system, system-ui, sans-serif; 
-            background: var(--bg-main); color: var(--text-main);
-            margin: 0; padding: 30px 20px; /* Сместили выше */
-            display: flex; flex-direction: column; align-items: center;
+            font-family: var(--font-stack);
+            background: var(--bg-main); 
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px; /* Отступ от краев экрана */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Все влево */
         }
 
-        /* КОМПАКТНОЕ ЛОГО (Вариант 1, строгое) */
+        /* ЛОГОТИП С ТОЧКОЙ */
         header {
-            width: 100%; max-width: 650px;
-            display: flex; flex-direction: column; align-items: flex-start;
-            margin-bottom: 20px; /* Меньше отступ */
-            position: relative;
+            margin-bottom: 40px;
+            border-left: 2px solid var(--accent);
+            padding-left: 20px;
         }
 
         .logo {
-            font-size: 34px; font-weight: 900; letter-spacing: -1.5px;
-            display: flex; align-items: center; gap: 10px; cursor: default;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* Строгая точка фокусировки (наш маркер) */
-        .logo-marker {
-            width: 14px; height: 14px; background: var(--accent);
-            border-radius: 3px;
-        }
-
-        .logo-text span { color: var(--accent); }
+        .logo span { color: var(--accent); }
 
         .subtitle {
-            font-size: 13px; color: var(--text-secondary);
-            margin-top: 5px; text-transform: uppercase; letter-spacing: 1.5px;
-            font-weight: 600; opacity: 0.8;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+            margin-top: 5px;
         }
 
-        /* ГЛАВНАЯ СХЕМА-КАНВАС */
-        .diagram-container {
-            width: 100%; max-width: 650px;
-            position: relative; padding-left: 50px; /* Место для SVG */
+        .container {
+            width: 100%;
+            max-width: 700px; /* Ограничиваем ширину контента слева */
         }
 
-        /* SVG для коннекторов */
-        .connectors {
-            position: absolute; left: 0; top: 0; width: 50px; height: 100%;
-            z-index: 1; pointer-events: none;
+        /* КАТЕГОРИИ (АККОРДЕОНЫ) */
+        .category-wrapper {
+            margin-bottom: 12px;
+            width: 100%;
         }
 
-        /* Список в стиле "Схемы" */
-        ul { list-style: none; padding: 0; margin: 0; position: relative; z-index: 2; }
-        li { margin: 10px 0; position: relative; }
-
-        .category {
-            font-size: 11px; text-transform: uppercase; color: var(--text-secondary);
-            margin: 30px 0 10px 10px; letter-spacing: 2px; font-weight: 700;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .category::after { content: ""; height: 1px; flex-grow: 1; background: var(--border); }
-
-        /* Кнопка алгоритма */
-        a { 
-            text-decoration: none; color: var(--text-main); 
-            font-size: 16px; font-weight: 600;
-            display: flex; align-items: center;
-            padding: 16px 20px;
-            background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+        .category-header {
+            padding: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: color 0.3s;
         }
 
-        /* Эффект наведения */
-        a:hover { 
-            transform: translateX(6px) scale(1.01); 
+        .category-header:hover { color: var(--accent); }
+
+        .category-title {
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        .chevron {
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+
+        /* СПИСОК АЛГОРИТМОВ */
+        .algo-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            padding-left: 20px;
+            border-left: 1px solid var(--border);
+            margin-left: 5px;
+        }
+
+        .category-wrapper.active .algo-list {
+            max-height: 1000px; /* Достаточно большое число */
+            padding-top: 15px;
+            padding-bottom: 15px;
+        }
+
+        .category-wrapper.active .chevron {
+            transform: rotate(180deg);
+            color: var(--accent);
+        }
+
+        /* КАРТОЧКА АЛГОРИТМА */
+        .algo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid transparent;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .algo-item:hover {
             border-color: var(--accent);
             background: var(--bg-hover);
-            box-shadow: 0 10px 25px var(--accent-glow);
+            transform: translateX(5px);
         }
 
-        a span.icon {
-            margin-right: 15px; font-size: 19px;
-            background: rgba(45, 45, 48, 0.6);
-            width: 38px; height: 38px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 10px; border: 1px solid var(--border);
+        .algo-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .count {
-            margin-left: auto; font-size: 11px; color: var(--text-secondary);
-            background: #2d2d30; padding: 2px 10px; border-radius: 20px;
-            text-transform: uppercase; font-weight: 700;
+        .algo-icon { font-size: 18px; opacity: 0.8; }
+        .algo-name { font-size: 15px; font-weight: 600; }
+
+        /* КНОПКИ-ЗАГЛУШКИ */
+        .algo-btns {
+            display: flex;
+            gap: 6px;
         }
 
-        /* Метка связи для наведения (необязательно, для акцента) */
-        a:hover::before {
-            content: "";
-            position: absolute; left: -30px; top: 50%; transform: translateY(-50%);
-            width: 10px; height: 10px; background: var(--accent);
-            border-radius: 50%; box-shadow: 0 0 10px var(--accent);
-            transition: opacity 0.3s;
+        .btn-tag {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 5px;
+            background: #2d2d30;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
         }
+
+        .btn-tag:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">
-            <div class="logo-marker"></div>
-            <div class="logo-text">Algo<span>View</span></div>
-        </div>
+        <div class="logo">Algo<span>View</span></div>
         <div class="subtitle">Interactive algorithms laboratory</div>
     </header>
 
-    <div class="diagram-container">
-        <svg class="connectors" viewBox="0 0 50 1000" preserveAspectRatio="none">
-            <defs>
-                <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                    <polygon points="0 0, 6 3, 0 6" fill="#3e3e42"/>
-                </marker>
-            </defs>
-            
-            <line x1="14" y1="-20" x2="14" y2="1000" stroke="#3e3e42" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <div class="container" id="main-container">
+        
+        <div class="category-wrapper">
+            <div class="category-header" onclick="toggleCat(this)">
+                <span class="chevron">▼</span>
+                <span class="category-title">Searching</span>
+            </div>
+            <div class="algo-list">
+                <div class="algo-item">
+                    <a href="Binary Search/index.html" class="algo-info" style="text-decoration:none; color:inherit;">
+                        <span class="algo-icon">🔍</span>
+                        <span class="algo-name">Binary Search</span>
+                    </a>
+                    <div class="algo-btns">
+                        <div class="btn-tag">DOC</div>
+                        <div class="btn-tag">PY</div>
+                        <div class="btn-tag">CPP</div>
+                    </div>
+                </div>
+                <div class="algo-item">
+                    <a href="Lower Bound/index.html" class="algo-info" style="text-decoration:none; color:inherit;">
+                        <span class="algo-icon">🎯</span>
+                        <span class="algo-name">Lower Bound</span>
+                    </a>
+                    <div class="algo-btns">
+                        <div class="btn-tag">DOC</div>
+                        <div class="btn-tag">PY</div>
+                        <div class="btn-tag">CPP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            </svg>
+        <div class="category-wrapper">
+            <div class="category-header" onclick="toggleCat(this)">
+                <span class="chevron">▼</span>
+                <span class="category-title">Sorting</span>
+            </div>
+            <div class="algo-list">
+                <div class="algo-item">
+                    <a href="Bubble Sort/index.html" class="algo-info" style="text-decoration:none; color:inherit;">
+                        <span class="algo-icon">🔵</span>
+                        <span class="algo-name">Bubble Sort</span>
+                    </a>
+                    <div class="algo-btns">
+                        <div class="btn-tag">DOC</div>
+                        <div class="btn-tag">PY</div>
+                        <div class="btn-tag">CPP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <ul id="algo-tree">
-            <div class="category">Searching</div>        
-            <li data-path="M14 110 H40" data-y="110">
-                <a href="Binary Search/index.html">
-                    <span class="icon">🔍</span> Binary Search
-                </a>
-            </li>
-            <li data-path="M14 175 H40" data-y="175">
-                <a href="Binary Jump Search/index.html">
-                    <span class="icon">🦘</span> Binary Jump Search
-                </a>
-            </li>
-            <li data-path="M14 240 H40" data-y="240">
-                <a href="Lower Bound/index.html">
-                    <span class="icon">🎯</span> Lower Bound
-                </a>
-            </li>
-            <li data-path="M14 305 H40" data-y="305">
-                <a href="Upper Bound/index.html">
-                    <span class="icon">🎯</span> Upper Bound
-                </a>
-            </li>
-            
-            <div class="category">Sorting</div>
-            <li data-path="M14 410 H40" data-y="410">
-                <a href="Bubble Sort/index.html">
-                    <span class="icon">🔵</span> Bubble Sort
-                    <div class="count">O(N²)</div>
-                </a>
-            </li>
-            
-            <div class="category">Dynamic Programming</div>
-            <li data-path="M14 515 H40" data-y="515">
-                <a href="Longest Common Subsequence/index.html">
-                    <span class="icon">📉</span> Longest Common Subsequence
-                </a>
-            </li>        
-            <li data-path="M14 580 H40" data-y="580">
-                <a href="Wagner-Fischer/index.html">
-                    <span class="icon">📉</span> Edit Distance
-                </a>
-            </li>
-            <li data-path="M14 645 H40" data-y="645">
-                <a href="Longest Arithmetic Subsequence/index.html">
-                    <span class="icon">🧬</span> Longest Arithmetic Subsequence
-                </a>
-            </li>
-            <li data-path="M14 710 H40" data-y="710">
-                <a href="Climbing Stairs/index.html">
-                    <span class="icon">🪜</span> Climbing Stairs
-                </a>
-            </li>
-            <li data-path="M14 775 H40" data-y="775">
-                <a href="Minimum Path Sum/index.html">
-                    <span class="icon">🛣️</span> Minimum Path Sum
-                </a>
-            </li>
+        <div class="category-wrapper">
+            <div class="category-header" onclick="toggleCat(this)">
+                <span class="chevron">▼</span>
+                <span class="category-title">Dynamic Programming</span>
+            </div>
+            <div class="algo-list">
+                <div class="algo-item">
+                    <span class="algo-info">
+                        <span class="algo-icon">📉</span>
+                        <span class="algo-name">LCS</span>
+                    </span>
+                    <div class="algo-btns">
+                        <div class="btn-tag">DOC</div>
+                        <div class="btn-tag">PY</div>
+                        <div class="btn-tag">CPP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <div class="category">Number Theory</div>
-            <li data-path="M14 880 H40" data-y="880">
-                <a href="Sieve of Eratosthenes/index.html">
-                    <span class="icon">🧬</span> Sieve of Eratosthenes
-                    <div class="count">O(N log log N)</div>
-                </a>
-            </li>        
-
-            <div class="category">Combinatorics</div>
-            <li data-path="M14 985 H40" data-y="985">
-                <a href="Narayana/index.html">
-                    <span class="icon">🔄</span> Narayana's Permutation
-                    <div class="count">Next Lex Order</div>
-                </a>
-            </li>        
-        </ul>
     </div>
 
     <script>
-        // Скрипт для отрисовки коннекторов (стрелочек)
-        function drawConnectors() {
-            const svg = document.querySelector('.connectors');
-            const items = document.querySelectorAll('#algo-tree li');
-            const tree = document.getElementById('algo-tree');
-            
-            // Убираем старые линии, если они есть
-            svg.querySelectorAll('path').forEach(p => p.remove());
-
-            // Подстраиваем высоту SVG под высоту списка
-            svg.setAttribute('viewBox', `0 0 50 ${tree.offsetHeight}`);
-            
-            items.forEach(item => {
-                // Берем путь из data-path или вычисляем на лету (data-y лучше)
-                const y = item.dataset.y;
-                if (!y) return;
-
-                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                // Линия L-образная (от центральной вертикали вправо к <li>)
-                path.setAttribute('d', `M14 ${y} H40`);
-                path.setAttribute('stroke', '#3e3e42');
-                path.setAttribute('stroke-width', '1.5');
-                path.setAttribute('fill', 'none');
-                path.setAttribute('marker-end', 'url(#arrowhead)');
-                
-                svg.appendChild(path);
-            });
+        function toggleCat(el) {
+            const wrapper = el.parentElement;
+            wrapper.classList.toggle('active');
         }
 
-        // Рисуем при загрузке и при изменении размера (на всякий случай)
-        window.onload = drawConnectors;
-        window.onresize = drawConnectors;
+        // Заглушка для кнопок, чтобы они не срабатывали как ссылка
+        document.querySelectorAll('.btn-tag').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('Content coming soon!');
+            });
+        });
     </script>
-    
 </body>
 </html>
