@@ -2,202 +2,259 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bubble Sort</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort | AlgoView</title>
     <style>
         :root {
-            --bg-main: #1a1a1c;
-            --bg-card: #242426;
-            --bg-input: #2d2d30;
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --accent-secondary: #1d9e75;
-            --border: #3e3e42;
+            --accent-soft: rgba(127, 119, 221, 0.1);
+            --border: #313136;
+            --code-bg: #0d0d0f;
             --marking: #e67e22;
+            --accent-secondary: #1d9e75;
         }
 
         body { 
-            margin: 0; padding: 2rem 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg-main); color: var(--text-main); 
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-main); color: var(--text-main); 
         }
         
-        .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
-        .inputs { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+        /* VISUALIZER SECTION */
+        .visualizer-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { font-size: 22px; margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
-            color: white; padding: 10px; border-radius: 8px; font-size: 14px; width: 250px;
+            color: white; padding: 10px 15px; border-radius: 8px; outline: none; width: 220px;
         }
-        
+
         button {
-            padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer;
-            transition: all 0.2s;
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
         }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
         button.primary { background: var(--accent); color: white; border: none; }
-        button:hover { border-color: var(--accent); transform: translateY(-1px); }
 
-        .info-box {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 20px; min-height: 80px; margin-bottom: 50px;
-            border-left: 4px solid var(--accent); line-height: 1.6;
-        }
-
+        /* Твоя область сортировки */
         .sort-area { 
             display: flex; justify-content: center; align-items: flex-end; 
-            gap: 10px; margin: 60px 0; height: 150px; 
+            gap: 10px; margin: 40px 0; height: 160px; 
         }
 
         .cell {
-            width: 50px;
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 8px;
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-            padding-bottom: 10px; font-size: 16px; font-weight: bold;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            width: 50px; background: var(--bg-main); border: 1px solid var(--border);
+            border-radius: 8px; display: flex; flex-direction: column; align-items: center; 
+            justify-content: flex-end; padding-bottom: 10px; font-size: 14px; font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
         }
-
-        /* Высота ячейки зависит от значения (визуальный столбец) */
         .cell-bar {
-            width: 100%; background: var(--accent); opacity: 0.3;
-            position: absolute; bottom: 0; border-radius: 0 0 7px 7px;
-            transition: height 0.3s ease;
+            width: 100%; background: var(--accent); opacity: 0.2;
+            position: absolute; bottom: 0; border-radius: 0 0 7px 7px; transition: height 0.3s;
         }
+        .cell.active { border-color: var(--marking); transform: translateY(-10px); z-index: 2; box-shadow: 0 5px 15px rgba(230, 126, 34, 0.3); }
+        .cell.sorted { background: var(--accent-secondary); border-color: transparent; color: white; }
 
-        .cell.active { border-color: var(--marking); transform: translateY(-10px); z-index: 2; box-shadow: 0 10px 20px rgba(230, 126, 34, 0.2); }
-        .cell.sorted { background: var(--accent-secondary); border-color: #fff; color: white; }
-        .cell.sorted .cell-bar { background: white; opacity: 0.2; }
+        /* LAB INFO SECTION */
+        .lab-info {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+        }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn {
+            background: none; border: none; padding: 18px 25px; color: var(--text-secondary);
+            font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; letter-spacing: 0.5px;
+        }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
 
-        .ctrls { display: flex; align-items: center; gap: 12px; margin-top: 40px; }
-        .ctr-lbl { font-size: 13px; color: var(--text-secondary); margin-left: auto; }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn {
+            font-size: 10px; padding: 4px 8px; background: transparent; 
+            border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer;
+        }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+        .tab-content { display: none; padding: 25px; line-height: 1.6; min-height: 200px; }
+        .tab-content.active { display: block; }
+        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
-    <h1>Bubble Sort</h1>
-    <div class="inputs">
-        <label>Array:</label>
-        <input id="arr-input" type="text" value="45, 12, 8, 32, 19, 5">
-        <button onclick="rebuild()" class="primary">Reset & Load</button>
+    <div class="visualizer-section">
+        <h1>🧼 Bubble Sort Visualizer</h1>
+        <div class="inputs">
+            <input id="arr-input" type="text" value="45, 12, 8, 32, 19, 5">
+            <button onclick="rebuild()" class="primary">Load Array</button>
+        </div>
+
+        <div id="info" style="min-height: 40px; color: var(--text-secondary); font-size: 14px;">Press Next to start.</div>
+        
+        <div class="sort-area" id="sort-area"></div>
+
+        <div class="inputs" style="margin-top: 30px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
     </div>
 
-    <div class="info-box" id="info">Press "Next Step" to start sorting.</div>
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
 
-    <div class="sort-area" id="sort-area"></div>
-
-    <div class="ctrls">
-        <button onclick="go(-1)">← Back</button>
-        <button onclick="go(1)" class="primary">Next Step →</button>
-        <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
-        <span class="ctr-lbl" id="ctr"></span>
+        <div id="theory" class="tab-content active">
+            <div id="theory-display"></div>
+        </div>
+        <div id="python" class="tab-content">
+            <pre><code id="python-display"></code></pre>
+        </div>
+        <div id="cpp" class="tab-content">
+            <pre><code id="cpp-display"></code></pre>
+        </div>
     </div>
 </div>
 
 <script>
-let arr = [];
-let steps = [];
-let cur = 0;
-let timer = null;
-
-function rebuild() {
-    arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-    initBubbleSort();
-}
-
-function initBubbleSort() {
-    steps = [];
-    let tempArr = [...arr];
-    let n = tempArr.length;
-    let sortedIndices = [];
-
-    steps.push({ 
-        arr: [...tempArr], active: [], sorted: [], 
-        msg: "Starting Bubble Sort. We compare adjacent elements." 
-    });
-
-    for (let i = 0; i < n - 1; i++) {
-        for (let j = 0; j < n - i - 1; j++) {
-            // Шаг 1: Сравнение
-            steps.push({ 
-                arr: [...tempArr], active: [j, j + 1], sorted: [...sortedIndices], 
-                msg: `Comparing <b>${tempArr[j]}</b> and <b>${tempArr[j+1]}</b>.` 
-            });
-
-            if (tempArr[j] > tempArr[j + 1]) {
-                // Шаг 2: Обмен
-                [tempArr[j], tempArr[j + 1]] = [tempArr[j + 1], tempArr[j]];
-                steps.push({ 
-                    arr: [...tempArr], active: [j, j + 1], sorted: [...sortedIndices], 
-                    msg: `<b>${tempArr[j+1]} > ${tempArr[j]}</b>. Swapping them.` 
-                });
-            }
+    // --- DATABASE ---
+    const db = {
+        theory: {
+            EN: "<h3>Bubble Sort</h3><p>Bubble Sort is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order. The pass through the list is repeated until the list is sorted.</p>",
+            DE: "<h3>Bubble Sort</h3><p>Bubble Sort ist ein einfacher Sortieralgorithmus, der wiederholt die Liste durchläuft, benachbarte Elemente vergleicht und sie vertauscht, wenn sie in der falschen Reihenfolge sind.</p>",
+            UKR: "<h3>Сортування бульбашкою</h3><p>Це простий алгоритм сортування, який працює, багаторазово проходячи крізь список, порівнюючи сусідні елементи та міняючи їх місцями, якщо вони знаходяться у неправильному порядку.</p>",
+            RU: "<h3>Сортировка пузырьком</h3><p>Простой алгоритм сортировки, который многократно проходит по списку, сравнивает соседние элементы и меняет их местами, если они стоят в неправильном порядке.</p>"
+        },
+        python: {
+            v1: "def bubble_sort(arr):\n    n = len(arr)\n    for i in range(n):\n        for j in range(0, n-i-1):\n            if arr[j] > arr[j+1]:\n                arr[j], arr[j+1] = arr[j+1], arr[j]",
+            v2: "def bubble_sort_optimized(arr):\n    n = len(arr)\n    for i in range(n):\n        swapped = False\n        for j in range(0, n-i-1):\n            if arr[j] > arr[j+1]:\n                arr[j], arr[j+1] = arr[j+1], arr[j]\n                swapped = True\n        if not swapped: break"
+        },
+        cpp: {
+            v1: "void bubbleSort(int arr[], int n) {\n    for (int i = 0; i < n-1; i++)\n        for (int j = 0; j < n-i-1; j++)\n            if (arr[j] > arr[j+1])\n                swap(arr[j], arr[j+1]);\n}",
+            v2: "// Optimized C++ version\nvoid bubbleSort(vector<int>& arr) {\n    bool swapped;\n    // ... logic with flag\n}"
         }
-        // Элемент в конце теперь отсортирован
-        sortedIndices.push(n - 1 - i);
-        steps.push({ 
-            arr: [...tempArr], active: [], sorted: [...sortedIndices], 
-            msg: `Element <b>${tempArr[n-1-i]}</b> is now in its final position.` 
+    };
+
+    let currentMainTab = 'theory';
+
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
+
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel');
+        panel.innerHTML = '';
+
+        if (currentMainTab === 'theory') {
+            ['EN', 'DE', 'UKR', 'RU'].forEach(lang => {
+                const b = document.createElement('button');
+                b.className = 'sub-btn' + (lang === 'EN' ? ' active' : '');
+                b.textContent = lang;
+                b.onclick = () => {
+                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                    b.classList.add('active');
+                    document.getElementById('theory-display').innerHTML = db.theory[lang];
+                };
+                panel.appendChild(b);
+            });
+            document.getElementById('theory-display').innerHTML = db.theory['EN'];
+        } else {
+            ['v1', 'v2'].forEach(ver => {
+                const b = document.createElement('button');
+                b.className = 'sub-btn' + (ver === 'v1' ? ' active' : '');
+                b.textContent = ver;
+                b.onclick = () => {
+                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                    b.classList.add('active');
+                    document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][ver];
+                };
+                panel.appendChild(b);
+            });
+            document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab]['v1'];
+        }
+    }
+
+    // --- VISUALIZATION LOGIC (Your Original) ---
+    let arr = [], steps = [], cur = 0, timer = null;
+
+    function rebuild() {
+        arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        initBubbleSort();
+    }
+
+    function initBubbleSort() {
+        steps = []; let tempArr = [...arr], n = tempArr.length, sortedIndices = [];
+        steps.push({ arr: [...tempArr], active: [], sorted: [], msg: "Starting Bubble Sort." });
+
+        for (let i = 0; i < n - 1; i++) {
+            for (let j = 0; j < n - i - 1; j++) {
+                steps.push({ arr: [...tempArr], active: [j, j + 1], sorted: [...sortedIndices], msg: `Comparing ${tempArr[j]} and ${tempArr[j+1]}.` });
+                if (tempArr[j] > tempArr[j + 1]) {
+                    [tempArr[j], tempArr[j + 1]] = [tempArr[j + 1], tempArr[j]];
+                    steps.push({ arr: [...tempArr], active: [j, j + 1], sorted: [...sortedIndices], msg: `Swap: ${tempArr[j+1]} > ${tempArr[j]}.` });
+                }
+            }
+            sortedIndices.push(n - 1 - i);
+            steps.push({ arr: [...tempArr], active: [], sorted: [...sortedIndices], msg: `Element ${tempArr[n-1-i]} is placed.` });
+        }
+        sortedIndices.push(0);
+        steps.push({ arr: [...tempArr], active: [], sorted: [...sortedIndices], msg: "Sorting complete!" });
+        cur = 0; render();
+    }
+
+    function render() {
+        const s = steps[cur], container = document.getElementById('sort-area');
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        container.innerHTML = '';
+        const maxVal = Math.max(...arr);
+
+        s.arr.forEach((val, i) => {
+            const div = document.createElement('div');
+            div.className = 'cell';
+            if (s.active.includes(i)) div.classList.add('active');
+            if (s.sorted.includes(i)) div.classList.add('sorted');
+            const barH = (val / maxVal) * 100;
+            div.innerHTML = `<div class="cell-bar" style="height: ${barH}%"></div>${val}`;
+            div.style.height = `${50 + (val/maxVal)*80}px`;
+            container.appendChild(div);
         });
     }
-    
-    // Финальный штрих: всё отсортировано
-    sortedIndices.push(0);
-    steps.push({ 
-        arr: [...tempArr], active: [], sorted: [...sortedIndices], 
-        msg: "<b>Sorting complete!</b> All elements are in order." 
-    });
 
-    cur = 0;
-    render();
-}
-
-function render() {
-    const s = steps[cur];
-    const container = document.getElementById('sort-area');
-    document.getElementById('info').innerHTML = s.msg;
-    document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
-    
-    container.innerHTML = '';
-    const maxVal = Math.max(...arr);
-
-    s.arr.forEach((val, i) => {
-        const div = document.createElement('div');
-        div.className = 'cell';
-        if (s.active.includes(i)) div.classList.add('active');
-        if (s.sorted.includes(i)) div.classList.add('sorted');
-
-        // Визуальный столбец
-        const barHeight = (val / maxVal) * 100;
-        div.innerHTML = `<div class="cell-bar" style="height: ${barHeight}%"></div>${val}`;
-        div.style.height = `${60 + (val/maxVal)*80}px`;
-
-        container.appendChild(div);
-    });
-}
-
-function go(dir) { 
-    if (cur+dir >= 0 && cur+dir < steps.length) { 
-        cur+=dir; render(); 
-    } else if (timer) {
-        toggleAuto();
+    function go(dir) { 
+        if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); }
+        else if (timer) toggleAuto();
     }
-}
 
-function toggleAuto() {
-    const btn = document.getElementById('auto-btn');
-    if (timer) {
-        clearInterval(timer);
-        timer = null;
-        btn.textContent = "Auto Play";
-    } else {
-        btn.textContent = "Stop";
-        timer = setInterval(() => go(1), 600);
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 600); }
     }
-}
 
-rebuild();
+    renderContextControls();
+    rebuild();
 </script>
 </body>
 </html>
