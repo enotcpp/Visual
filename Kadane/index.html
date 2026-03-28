@@ -17,7 +17,7 @@
             --code-bg: #0d0d0f;
             --pos: #1d9e75; /* Green */
             --neg: #e74c3c; /* Red */
-            --highlight: #e67e22; /* Orange */
+            --highlight: #e67e22; /* Orange for selection/i */
         }
 
         body { 
@@ -50,11 +50,11 @@
         .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; font-weight: 800; }
         .stat-val { font-size: 22px; font-weight: 800; color: white; font-family: monospace; }
 
-        /* KADANE AREA (Two honest grids) */
-        .viz-container { display: flex; flex-direction: column; gap: 20px; margin: 40px 0; }
+        /* KADANE AREA (Two grids) */
+        .viz-container { display: flex; flex-direction: column; gap: 30px; margin: 40px 0; }
         .row-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; }
         
-        .grid-area { display: flex; justify-content: center; gap: 10px; }
+        .grid-area { display: flex; justify-content: center; gap: 8px; }
         
         .cell {
             width: 55px; height: 55px; background: var(--bg-input); border: 1px solid var(--border);
@@ -63,26 +63,34 @@
             color: var(--text-main); position: relative;
         }
         
-        /* Cell States */
-        /* Array A: Current element being processed */
+        /* CELL STATES */
+        /* Current Index i */
         .grid-a .cell.active { border: 3px solid var(--highlight); color: var(--highlight); transform: scale(1.05); }
+        .grid-a .cell.active.in-max-range { border-color: var(--pos); color: var(--pos); } /* Priority color */
         
-        /* Array A: Part of the global maximum subarray */
-        .grid-a .cell.in-max-range { border: 3px solid var(--pos); color: var(--pos); }
+        /* Subarray Cells (Global Max) */
+        .grid-a .cell.in-max-range { border: 3px solid var(--pos); box-shadow: 0 0 10px rgba(29, 158, 117, 0.2); }
 
         .grid-dp .cell { opacity: 0.3; }
-        .grid-dp .cell.processed { opacity: 1; border-color: #4a4a4d; background: #2a2a2d; }
+        .grid-dp .cell.processed { opacity: 1; border-color: #4a4a4d; }
+        
+        /* Global Winner (Fill) */
+        .grid-dp .cell.processed.is-global-winner { background: var(--pos); border-color: white; color: white; opacity: 1; box-shadow: 0 0 15px rgba(29, 158, 117, 0.4); }
         
         /* The Pivot Point (The Reset) */
-        .grid-dp .cell.processed.option-reset { background: var(--highlight); color: white; border-color: white; opacity: 1; }
+        .grid-dp .cell.processed.current-dp { border: 3px solid var(--highlight); opacity: 1; color: var(--highlight); }
         
-        /* Current DP cell being calculated */
-        .grid-dp .cell.current-dp { border: 3px solid var(--highlight); opacity: 1; background: var(--bg-card); color: var(--highlight); }
-        
-        /* Cell storing the current best global sum */
-        .grid-dp .cell.is-global-winner { background: var(--pos); border-color: white; color: white; opacity: 1; box-shadow: 0 0 15px rgba(29, 158, 117, 0.4); }
+        /* === THE START POINTER / NEW CHAIN LOGIC === */
+        /* Visualization for cells that are part of the current local max sum */
+        .grid-dp .cell.processed.in-current-chain { background: var(--accent-soft); border: 2px dashed var(--accent); }
 
-        /* NO POINTER LABELS REQUIRED */
+        .ptr { position: absolute; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; color: white; text-transform: uppercase; z-index: 5; }
+        
+        /* Orange Pointer for current iteration */
+        .ptr-i { top: -35px; background: var(--highlight); }
+        
+        /* BLUE Pointer for the start of the current chain */
+        .ptr-start { top: -35px; background: var(--accent); }
 
         /* LAB INFO PANEL */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
@@ -92,13 +100,6 @@
             font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer;
         }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
-
-        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 20px; }
-        .sub-btn {
-            font-size: 10px; padding: 4px 8px; opacity: 0.6; border: 1px solid var(--border);
-            background: transparent; color: var(--text-secondary); border-radius: 4px; cursor: pointer;
-        }
-        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 
         .tab-content { display: none; padding: 30px; min-height: 200px; line-height: 1.6; }
         .tab-content.active { display: block; }
@@ -121,7 +122,7 @@
         <div class="stats-panel">
             <div class="stat-item">
                 <div class="stat-label">Global Max (res)</div>
-                <div class="stat-val" id="global-max-val">-∞</div>
+                <div class="stat-val" id="global-max-val">0</div>
             </div>
         </div>
 
@@ -129,11 +130,11 @@
         
         <div class="viz-container">
             <div>
-                <div class="row-label">Input Array A (Subarray source in Green)</div>
+                <div class="row-label">Input Array A (Subarray source Green)</div>
                 <div class="grid-area grid-a" id="input-grid"></div>
             </div>
             <div>
-                <div class="row-label">DP Array (Orange indicates new subarray)</div>
+                <div class="row-label">DP Array (Blue defines current chain)</div>
                 <div class="grid-area grid-dp" id="dp-grid"></div>
             </div>
         </div>
@@ -150,125 +151,83 @@
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
             <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
-            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
-            <div class="context-controls" id="context-panel"></div>
         </div>
-
-        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
-        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
-        <div id="cpp" class="tab-content"><pre><code id="cpp-display"></code></pre></div>
+        <div id="theory" class="tab-content active">
+            <h3>Maximum Subarray Sum</h3>
+            <p>At each element <span class='math'>A[i]</span>, we decide: should we extend the current sum (<span class='math'>cur + A[i]</span>) or start a new subarray from (<span class='math'>A[i]</span>). </p>
+            <p>Viz note: <b>BLUE pointer</b> shows the start of the current accumulation.</p>
+        </div>
+        <div id="python" class="tab-content">
+            <pre><code>def kadane(A):
+    res = cur = A[0]
+    for x in A[1:]:
+        cur = max(x, cur + x)
+        res = max(res, cur)
+    return res</code></pre>
+        </div>
     </div>
 </div>
 
 <script>
-    // DATABASE - Strict Lab Module Style
+    // --- DATABASE ---
     const db = {
         theory: {
-            RU: "<h3>Алгоритм Кадана</h3><p>Greedy/Dynamic Programming подход для поиска максимальной суммы подмассива. На каждом шаге мы решаем: прибавить текущее число к накопленной сумме (<span class='math'>cur + A[i]</span>) или начать заново с текущего элемента (<span class='math'>A[i]</span>). Если <span class='math'>cur</span> становится отрицательным, выгоднее начать заново.</p><p>Визуально перезагрузка цепи обозначается <b>оранжевым цветом</b> в массиве DP.</p>",
-            EN: "<h3>Kadane's Algorithm</h3><p>Greedy/Dynamic Programming approach. At each step, it decides whether to extend the current chain (<span class='math'>cur + A[i]</span>) or start a new one from the current element (<span class='math'>A[i]</span>). If the accumulated sum (<span class='math'>cur</span>) is negative, it's better to restart fresh.</p><p>Visual restart of the chain is indicated by an <b>Orange background</b> in the DP array.</p>"
-        },
-        python: {
-            v1: "def kadane(A):\n    # res = Global max\n    # cur = Local max\n    res = cur = A[0]\n    \n    for x in A[1:]:\n        # Is continuing better than starting over?\n        cur = max(x, cur + x)\n        res = max(res, cur)\n        \n    return res"
-        },
-        cpp: {
-            v1: "// Simple 1-pass loop\nint maxSubArray(vector<int>& nums) {\n    int res = nums[0], cur = nums[0];\n    for(int i = 1; i < nums.size(); i++) {\n        cur = max(nums[i], cur + nums[i]);\n        res = max(res, cur);\n    }\n    return res;\n}"
+            RU: "<h3>Алгоритм Кадана</h3><p>Greedy/Dynamic Programming подход. На каждом шаге мы решаем: прибавить текущее число к накопленной сумме (<span class='math'>cur + A[i]</span>) или начать заново с текущего элемента (<span class='math'>A[i]</span>). Если <span class='math'>cur</span> становится отрицательным, выгоднее начать заново.</p><p>Viz: <b>Синий указатель</b> показывает, откуда тянется текущая сумма.</p>"
         }
     };
 
-    let currentMainTab = 'theory';
-    function switchMainTab(btn, tabId) {
-        currentMainTab = tabId;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
-        renderContextControls();
-    }
-
-    function renderContextControls() {
-        const panel = document.getElementById('context-panel');
-        panel.innerHTML = '';
-        const options = currentMainTab === 'theory' ? ['RU', 'EN'] : ['v1'];
-        
-        options.forEach((opt, idx) => {
-            const b = document.createElement('button');
-            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
-            b.textContent = opt;
-            b.onclick = () => {
-                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-                b.classList.add('active');
-                if (currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[opt];
-                else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][opt];
-            };
-            panel.appendChild(b);
-        });
-        // Initial load
-        if (currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[options[0]];
-        else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][options[0]];
-    }
-
     // VISUALIZATION LOGIC
-    let A = [], dp = [], steps = [], cur = 0;
+    let A = [], steps = [], cur = 0;
 
     function randomize() {
-        const r = Array.from({length: 10}, () => Math.floor(Math.random() * 21) - 10);
+        const r = Array.from({length: 9}, () => Math.floor(Math.random() * 21) - 10);
         document.getElementById('arr-input').value = r.join(', ');
         rebuild();
     }
 
     function rebuild() {
         A = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        // Simple default if empty
         if (A.length === 0) A = [1, -2, 3];
         init();
     }
 
     function init() {
         steps = [];
-        dp = Array(A.length).fill(null);
-        let res = A[0];
-        let cur_max = A[0];
-        let start = 0, end = 0, tempStart = 0;
-        let global_winner_idx = 0;
+        let dpArr = Array(A.length).fill(null);
+        let res = A[0], current_max = A[0];
+        let start = 0, end = 0, temp_start = 0, global_max_idx = 0;
 
-        // Step 0: Initialize
-        dp[0] = A[0];
-        steps.push({ 
-            idx: 0, cur_max: A[0], res: A[0], dp: [...dp], range: [0, 0], global_idx: 0,
-            msg: `Initialize: <span class='math'>res = A[0]</span>. Start from index 0.` 
-        });
+        // Step 0: Init
+        dpArr[0] = A[0];
+        steps.push({ idx: 0, dp: [...dpArr], res, range: [0, 0], global_idx: 0, chain_start: 0, msg: "Start: res = A[0]" });
 
         for (let i = 1; i < A.length; i++) {
-            let choiceContinue = cur_max + A[i];
+            let choiceContinue = current_max + A[i];
             let choiceReset = A[i];
+            
+            // DECISION TIME
             let chainReset = (choiceReset > choiceContinue);
             
             cur_max = Math.max(choiceReset, choiceContinue);
-            dp[i] = cur_max;
+            if (chainReset) temp_start = i; // Reset the chain start index
 
-            let msg = `i=${i}: Value <b>${A[i]}</b>. `;
+            dpArr[i] = cur_max;
+            current_max = cur_max; // Update local_max
+
+            let msg = `Step ${i}: Value <b>${A[i]}</b>. `;
             if (chainReset) {
-                msg += `<span style="color:var(--highlight)">Current sum negative. Restarting subarr from A[${i}].</span>`;
-                tempStart = i;
+                msg += `Starting new chain from A[${i}]. Previous sum was negative.`;
             } else {
-                msg += `Continuing chain. cur=${cur_max}.`;
+                msg += `Continuing chain. Total is ${cur_max}.`;
             }
 
             if (cur_max > res) {
-                res = cur_max;
-                start = tempStart;
-                end = i;
-                global_winner_idx = i;
-                msg += ` <span style="color:var(--pos)">New res = <b>${res}</b>!</span>`;
+                res = cur_max; start = temp_start; end = i; global_max_idx = i;
+                msg += ` <span style="color:var(--pos)">New Global Max res = <b>${res}</b>!</span>`;
             }
 
-            steps.push({
-                idx: i, cur_max: cur_max, res: res, dp: [...dp], range: [start, end], global_idx: global_winner_idx,
-                restart: chainReset,
-                msg: msg
-            });
+            steps.push({ idx: i, dp: [...dpArr], res, range: [start, end], global_idx: global_max_idx, chain_start: temp_start, msg: msg });
         }
-        steps.push({ ...steps[steps.length-1], done: true, msg: `Finished! Maximum Subarray Sum is <b>${res}</b>.` });
         cur = 0; render();
     }
 
@@ -280,36 +239,49 @@
         
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('ctr').textContent = `Step ${cur + 1}/${steps.length}`;
+        document.getElementById('global-max-val').textContent = s.res;
 
         A.forEach((val, i) => {
-            // Matrix A - Strict Divider Style
+            // Matrix A
             const cellA = document.createElement('div');
             cellA.className = 'cell';
             cellA.textContent = val;
-            if (i === s.idx) cellA.classList.add('active'); // Oранжевая рамка для текущего i
-            if (i >= s.range[0] && i <= s.range[1]) cellA.classList.add('in-max-range'); // Зеленая рамка для диапазона
+            if (i === s.idx) {
+                cellA.classList.add('active');
+                cellA.innerHTML += `<div class="ptr ptr-i">i</div>`;
+            }
+            if (i >= s.range[0] && i <= s.range[1]) cellA.classList.add('in-max-range'); // Green border
             gridA.appendChild(cellA);
 
             // DP Matrix
             const cellD = document.createElement('div');
-            cellD.className = 'cell';
-            cellD.textContent = s.dp[i] === null ? '' : s.dp[i];
+            cellD.className = 'cell processed';
+            const valDP = s.dp[i];
+            cellD.textContent = valDP === null ? '' : valDP;
             
-            if (s.dp[i] !== null) cellD.classList.add('processed');
-            if (i === s.idx) cellD.classList.add('current-dp');
-            if (i === s.idx && s.restart) cellD.classList.add('option-reset'); // Оранжевая ЗАЛИВКА для сброса
+            if (valDP === null) cellD.style.opacity = '0.3';
+            if (i === s.idx) cellD.classList.add('current-dp'); // Orange frame
 
-            if (i === s.global_idx) cellD.classList.add('is-global-winner'); // Зеленая ЗАЛИВКА для рекорда
+            // === VIZ CHAIN START (Синий указатель и подсветка) ===
+            if (i === s.chain_start && i <= s.idx) {
+                cellD.innerHTML += `<div class="ptr ptr-start">Start</div>`;
+            }
+            if (i >= s.chain_start && i <= s.idx) {
+                cellD.classList.add('in-current-chain'); // Light blue dashed background
+            }
+
+            // Global Winner Cell
+            if (i === s.global_idx && valDP !== null) cellD.classList.add('is-global-winner'); // Green fill
             gridDP.appendChild(cellD);
         });
-
-        document.getElementById('global-max-val').textContent = s.res === null ? '-∞' : s.res;
     }
 
     function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
-    function resetAll() { cur=0; render(); }
-
-    renderContextControls();
+    function switchMainTab(btn, id) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+    }
     rebuild();
 </script>
 </body>
