@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sort | AlgoView Lab</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-soft: rgba(127, 119, 221, 0.1);
+            --border: #313136;
+            --code-bg: #0d0d0f;
+            --accent-secondary: #1d9e75;
+            --highlight: #e67e22;
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        h1 { font-size: 22px; margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+
+        .visualizer-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 10px 15px; border-radius: 8px; outline: none; width: 220px;
+        }
+        
+        button {
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button.primary { background: var(--accent); color: white; border: none; }
+
+        .info-box { min-height: 40px; color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+
+        .array-container { 
+            display: flex; justify-content: center; align-items: flex-end; 
+            gap: 10px; margin: 40px 0; height: 160px; 
+        }
+
+        .bar {
+            width: 45px; background: var(--bg-main); border: 1px solid var(--border);
+            border-radius: 8px; display: flex; flex-direction: column; align-items: center; 
+            justify-content: flex-end; padding-bottom: 10px; font-size: 13px; font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+        }
+
+        .bar.active-range { border-color: var(--accent); background: var(--accent-soft); }
+        .bar.comparing { background: var(--highlight); border-color: transparent; color: white; transform: translateY(-10px); }
+        .bar.sorted { background: var(--accent-secondary); border-color: transparent; color: white; }
+
+        .ptr-label {
+            position: absolute; top: -25px; font-size: 10px;
+            text-transform: uppercase; font-weight: 800; color: var(--text-secondary);
+            width: 100%; text-align: center;
+        }
+
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+        .tab-content { display: none; padding: 25px; line-height: 1.6; min-height: 200px; }
+        .tab-content.active { display: block; }
+        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="visualizer-card">
+        <h1>⚡ Quick Sort Visualizer</h1>
+        <div class="inputs">
+            <input id="arr-input" type="text" value="38, 27, 43, 3, 9, 82, 10">
+            <button onclick="rebuild()" class="primary">Load Array</button>
+            <button onclick="randomize()">Random</button>
+        </div>
+
+        <div class="info-box" id="info">Press Next to start partitioning.</div>
+        
+        <div class="array-container" id="array-box"></div>
+
+        <div class="inputs" style="margin-top: 30px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code class="language-python" id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp" id="cpp-display"></code></pre></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
+<script>
+    const db = {
+        theory: {
+            EN: "<h3>Quick Sort</h3><p>An efficient, in-place sorting algorithm using <b>Divide and Conquer</b>. It picks a 'pivot' and partitions the array: elements less than pivot go left, greater go right.</p><b>Complexity:</b> O(N log N) average.",
+            RU: "<h3>Быстрая сортировка</h3><p>Эффективный алгоритм «на месте». Выбирается <b>Pivot</b> (опорный элемент), относительно которого массив делится на две части: меньшие элементы перемещаются влево, большие — вправо.</p><b>Сложность:</b> O(N log N) в среднем."
+        },
+        python: {
+            v1: "def quick_sort(arr):\n    if len(arr) <= 1: return arr\n    pivot = arr[-1]\n    left = [x for x in arr[:-1] if x < pivot]\n    right = [x for x in arr[:-1] if x >= pivot]\n    return quick_sort(left) + [pivot] + quick_sort(right)",
+            v2: "# In-place partition\ndef partition(arr, low, high):\n    pivot = arr[high]\n    i = low - 1\n    for j in range(low, high):\n        if arr[j] < pivot:\n            i += 1\n            arr[i], arr[j] = arr[j], arr[i]\n    arr[i+1], arr[high] = arr[high], arr[i+1]\n    return i + 1"
+        },
+        cpp: {
+            v1: "void quickSort(int arr[], int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}",
+            v2: "int partition(int arr[], int low, int high) {\n    int pivot = arr[high];\n    int i = (low - 1);\n    for (int j = low; j < high; j++) {\n        if (arr[j] < pivot) {\n            i++;\n            std::swap(arr[i], arr[j]);\n        }\n    }\n    std::swap(arr[i + 1], arr[high]);\n    return (i + 1);\n}"
+        }
+    };
+
+    let items = [], steps = [], cur = 0, timer = null, currentMainTab = 'theory';
+
+    // --- LOGIC ---
+    function initSort() {
+        steps = [];
+        let a = [...items];
+        let finalSortedIndices = new Set();
+
+        function quickSort(arr, low, high) {
+            if (low < high) {
+                let pi = partition(arr, low, high);
+                finalSortedIndices.add(pi);
+                steps.push({ a: [...arr], allSorted: new Set(finalSortedIndices), msg: `Pivot ${arr[pi]} is now in its final position.` });
+                
+                quickSort(arr, low, pi - 1);
+                quickSort(arr, pi + 1, high);
+            } else if (low === high) {
+                finalSortedIndices.add(low);
+                steps.push({ a: [...arr], allSorted: new Set(finalSortedIndices), msg: `Single element ${arr[low]} is sorted.` });
+            }
+        }
+
+        function partition(arr, low, high) {
+            let pivot = arr[high];
+            let i = low - 1;
+
+            steps.push({ a: [...arr], range: [low, high], pivotIdx: high, allSorted: new Set(finalSortedIndices), msg: `New partition: picking <b>${pivot}</b> as pivot.` });
+
+            for (let j = low; j < high; j++) {
+                steps.push({ 
+                    a: [...arr], range: [low, high], pivotIdx: high, 
+                    comparing: [j, high], pointers: {i, j},
+                    allSorted: new Set(finalSortedIndices),
+                    msg: `Comparing ${arr[j]} with pivot ${pivot}.` 
+                });
+
+                if (arr[j] < pivot) {
+                    i++;
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                    steps.push({ 
+                        a: [...arr], range: [low, high], pivotIdx: (high === i ? j : (high === j ? i : high)),
+                        swapping: [i, j], pointers: {i, j},
+                        allSorted: new Set(finalSortedIndices),
+                        msg: `Swapping ${arr[i]} and ${arr[j]} (smaller than pivot).` 
+                    });
+                }
+            }
+            [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+            return i + 1;
+        }
+
+        quickSort(a, 0, a.length - 1);
+        steps.push({ a: [...a], isDone: true, msg: "<b>Quick Sort Complete!</b>" });
+        cur = 0; render();
+    }
+
+    function render() {
+        const s = steps[cur], container = document.getElementById('array-box');
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        container.innerHTML = '';
+        const maxVal = Math.max(...items, 1);
+
+        s.a.forEach((val, idx) => {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            
+            if (s.range && idx >= s.range[0] && idx <= s.range[1]) bar.classList.add('active-range');
+            if (s.comparing && s.comparing.includes(idx)) bar.classList.add('comparing');
+            if (s.swapping && s.swapping.includes(idx)) { bar.style.backgroundColor = "var(--accent)"; bar.style.color = "white"; }
+            if (s.isDone || (s.allSorted && s.allSorted.has(idx))) bar.classList.add('sorted');
+
+            if (idx === s.pivotIdx) {
+                bar.style.backgroundColor = "var(--highlight)";
+                bar.style.color = "white";
+                bar.innerHTML += `<div class="ptr-label" style="top:-40px; color:var(--highlight)">Pivot</div>`;
+            }
+
+            bar.style.height = `${50 + (val/maxVal)*80}px`;
+            bar.innerHTML += val;
+
+            if (s.pointers) {
+                if (idx === s.pointers.i) bar.innerHTML += `<div class="ptr-label" style="text-align:left; padding-left:5px">i</div>`;
+                if (idx === s.pointers.j) bar.innerHTML += `<div class="ptr-label" style="text-align:right; padding-right:5px">j</div>`;
+            }
+
+            container.appendChild(bar);
+        });
+    }
+
+    // --- UI CONTROLS ---
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
+
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active'); updateContent(item);
+            };
+            panel.appendChild(b);
+        });
+        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
+    }
+
+    function updateContent(key) {
+        const display = document.getElementById(currentMainTab + '-display');
+        if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
+        else { display.textContent = db[currentMainTab][key]; Prism.highlightElement(display); }
+    }
+
+    function randomize() {
+        let r = [];
+        for(let i=0; i<8; i++) r.push(Math.floor(Math.random() * 60) + 5);
+        document.getElementById('arr-input').value = r.join(', ');
+        rebuild();
+    }
+
+    function rebuild() {
+        const val = document.getElementById('arr-input').value;
+        items = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if (timer) toggleAuto();
+        initSort();
+    }
+
+    function go(dir) { 
+        if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); }
+        else if (timer) toggleAuto();
+    }
+
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 800); }
+    }
+
+    renderContextControls();
+    rebuild();
+</script>
+</body>
+</html>
