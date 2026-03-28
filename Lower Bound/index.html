@@ -23,39 +23,39 @@
 
         * { box-sizing: border-box; }
         body { 
-            margin: 0; padding: 2rem 0; 
+            margin: 0; padding: 0; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-main); color: var(--text-main); 
         }
         
-        .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
-
-        /* 1. ИЗМЕНЕНИЯ В .WRAP ДЛЯ ПОЗИЦИОНИРОВАНИЯ ЛОГО */
+        /* КОНТЕЙНЕР */
         .wrap { 
             max-width: 850px; 
             margin: 0 auto; 
-            padding: 40px 20px 0; /* Увеличили верхний padding, чтобы освободить место */
-            position: relative; /* Чтобы логотип позиционировался внутри wrap */
+            padding: 20px; 
         }  
         
-        /* 2. НОВЫЕ СТИЛИ ДЛЯ ЛОГОТИПА */
-        .logo-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            pointer-events: none; /* Чтобы логотип не мешал кликам, если налезет */
-        }
-        .logo-image {
-            height: 24px; /* Настройте высоту по вкусу */
-            display: block;
+        /* ЛОГОТИП В УГЛУ */
+        .header-top {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-top: 10px;
         }
 
-        /* 3. ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ЗАГОЛОВКА */
-        .header-area {
-            margin-top: 20px; /* Отступ от логотипа */
-            margin-bottom: 30px;
+        .logo-image {
+            height: 28px;
+            display: block;
+            margin-right: 20px;
         }
-        
+
+        h1 { 
+            font-size: 24px; 
+            margin: 0; 
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
         /* VISUALIZER SECTION */
         .visualizer-card {
             background: var(--bg-card); border: 1px solid var(--border);
@@ -120,7 +120,7 @@
         .ptr-m { bottom: -38px; background: var(--mid-color); }
 
         /* LAB TABS */
-        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 50px;}
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
@@ -135,10 +135,11 @@
 <body>
 
 <div class="wrap">
-<div class="logo-container">
+    <header class="header-top">
         <img src="image_0.png" alt="AlgoView Logo" class="logo-image">
-    </div>
-    <h1>Lower Bound</h1>
+        <h1>Lower Bound</h1>
+    </header>
+
     <div class="visualizer-card">
         <div class="inputs">
             <input id="arr-input" type="text" value="1, 3, 3, 3, 5, 8, 10" style="width: 250px;">
@@ -228,7 +229,8 @@
     }
 
     function rebuild() {
-        arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)).sort((a,b)=>a-b);
+        const val = document.getElementById('arr-input').value;
+        arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)).sort((a,b)=>a-b);
         target = parseInt(document.getElementById('target-input').value);
         init();
     }
