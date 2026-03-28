@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kadane's Algorithm | Lab Module</title>
+    <title>Kadane's Algorithm | AlgoView Lab</title>
     <style>
         :root {
             --bg-main: #141416;
@@ -12,238 +12,166 @@
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --accent-soft: rgba(127, 119, 221, 0.1);
             --border: #313136;
-            --code-bg: #0d0d0f;
             --pos: #1d9e75; /* Green */
             --highlight: #e67e22; /* Orange */
         }
 
-        body { 
-            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: var(--bg-main); color: var(--text-main); 
-        }
-        
+        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
         .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        .visualizer-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; }
 
-        .visualizer-section {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 20px; padding: 30px; margin-bottom: 40px;
-        }
-        .inputs { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; }
-        .inputs input { 
-            background: var(--bg-input); border: 1px solid var(--border);
-            color: white; padding: 10px; border-radius: 8px; outline: none; flex-grow: 1;
-            font-family: monospace; font-size: 14px;
-        }
-        button {
-            padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--bg-input); color: var(--text-main); font-weight: 600;
-            cursor: pointer; transition: 0.2s; font-size: 14px;
-        }
-        button.primary { background: var(--accent); color: white; border: none; }
-
-        .stats-panel { display: flex; justify-content: flex-end; gap: 20px; margin-bottom: 20px; }
+        /* STATS PANEL */
+        .stats-panel { display: flex; justify-content: flex-end; gap: 30px; margin-bottom: 20px; }
         .stat-item { text-align: right; }
         .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; font-weight: 800; }
-        .stat-val { font-size: 22px; font-weight: 800; color: white; font-family: monospace; }
+        .stat-val { font-size: 24px; font-weight: 800; color: white; font-family: monospace; }
+        .stat-val.orange { color: var(--highlight); }
 
-        .viz-container { display: flex; flex-direction: column; gap: 20px; margin: 40px 0; }
-        .row-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; }
+        /* GRID */
+        .viz-container { display: flex; flex-direction: column; gap: 25px; margin: 30px 0; }
+        .row-label { font-size: 11px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; }
         .grid-area { display: flex; justify-content: center; gap: 10px; }
         
         .cell {
             width: 55px; height: 55px; background: var(--bg-input); border: 1px solid var(--border);
             border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; font-family: monospace; transition: all 0.2s;
-            color: var(--text-main); position: relative;
+            font-size: 18px; font-weight: bold; font-family: monospace; position: relative;
         }
         
-        /* Array A: Текущий элемент и глобальный диапазон */
-        .grid-a .cell.active { border: 3px solid var(--highlight); color: var(--highlight); transform: scale(1.05); }
+        /* Состояния ячеек */
+        .grid-a .cell.active { border: 3px solid var(--highlight); }
         .grid-a .cell.in-max-range { border: 3px solid var(--pos); color: var(--pos); }
 
-        /* DP Array */
-        .grid-dp .cell { opacity: 0.3; }
-        .grid-dp .cell.processed { opacity: 1; border-color: #4a4a4d; background: #2a2a2d; }
-        .grid-dp .cell.current-dp { border: 3px solid var(--highlight); opacity: 1; color: var(--highlight); }
-        .grid-dp .cell.option-reset { background: var(--highlight); color: white; border-color: white; opacity: 1; }
-        .grid-dp .cell.is-global-winner { background: var(--pos); border-color: white; color: white; opacity: 1; box-shadow: 0 0 15px rgba(29, 158, 117, 0.4); }
+        .grid-dp .cell { opacity: 0.4; }
+        .grid-dp .cell.processed { opacity: 1; }
+        .grid-dp .cell.is-global-winner { background: var(--pos); color: white; border-color: white; }
         
-        /* НОВОЕ: Рамка для ячейки, с которой началась текущая последовательность */
-        .grid-dp .cell.local-start-node { border: 3px solid var(--highlight); }
+        /* ТА САМАЯ ОРАНЖЕВАЯ РАМКА ДЛЯ ЛОКАЛЬНОГО МИНИМУМА */
+        .grid-dp .cell.chain-start { border: 3px solid var(--highlight); opacity: 1; box-shadow: 0 0 10px rgba(230, 126, 34, 0.3); }
+        /* Подсветка текущего шага заливкой при сбросе */
+        .grid-dp .cell.current-step.reset-trigger { background: var(--highlight); color: white; }
 
-        /* TABS */
-        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
-        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
-        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 20px; }
-        .sub-btn { font-size: 10px; padding: 4px 8px; opacity: 0.6; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
-        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-        .tab-content { display: none; padding: 30px; min-height: 200px; line-height: 1.6; }
-        .tab-content.active { display: block; }
-        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; font-size: 14px; }
+        button { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: white; cursor: pointer; }
+        button.primary { background: var(--accent); border: none; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
     <div class="visualizer-section">
-        <h1>∑ Kadane's Algorithm</h1>
-        <div class="inputs">
-            <input id="arr-input" type="text" value="-2, 1, -3, 4, -1, 2, 1, -5, 4">
-            <button onclick="rebuild()" class="primary">Update</button>
-            <button onclick="randomize()">Random</button>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h1>∑ Kadane's Algorithm</h1>
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <div class="stat-label">Local Start Point</div>
+                    <div class="stat-val orange" id="local-min-val">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Global Max (res)</div>
+                    <div class="stat-val" id="global-max-val">0</div>
+                </div>
+            </div>
         </div>
-        <div class="stats-panel">
-            <div class="stat-item"><div class="stat-label">Global Max (res)</div><div class="stat-val" id="global-max-val">0</div></div>
-        </div>
-        <div id="info" style="margin-bottom: 20px; color: var(--text-secondary); border-left: 3px solid var(--border); padding-left: 15px; font-size: 14px; min-height: 40px;">Ready.</div>
+
+        <div id="info" style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;"></div>
+
         <div class="viz-container">
-            <div><div class="row-label">Input Array A</div><div class="grid-area grid-a" id="input-grid"></div></div>
-            <div><div class="row-label">DP Array (Orange Border: Start of Current Chain)</div><div class="grid-area grid-dp" id="dp-grid"></div></div>
+            <div>
+                <div class="row-label">Input Array A</div>
+                <div id="input-grid" class="grid-area"></div>
+            </div>
+            <div>
+                <div class="row-label">DP Array (Orange frame = Local Minimum start)</div>
+                <div id="dp-grid" class="grid-area"></div>
+            </div>
         </div>
-        <div class="inputs" style="margin-top: 30px; margin-bottom: 0;">
+
+        <div style="display: flex; gap: 10px;">
             <button onclick="go(-1)">← Back</button>
             <button onclick="go(1)" class="primary">Next Step →</button>
-            <button onclick="resetAll()">Reset</button>
-            <span id="ctr" style="margin-left: auto; font-size: 13px; color: var(--text-secondary);"></span>
+            <button onclick="reset()">Reset</button>
         </div>
-    </div>
-
-    <div class="lab-info">
-        <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
-            <div class="context-controls" id="context-panel"></div>
-        </div>
-        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
-        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
     </div>
 </div>
 
 <script>
-    const db = {
-        theory: {
-            RU: "<h3>Алгоритм Кадана</h3><p>На каждом шаге мы решаем: продолжить текущую сумму или начать заново. Оранжевая рамка в нижнем ряду показывает <b>начало</b> текущей цепочки, оранжевая заливка — момент <b>сброса</b>.</p>",
-            EN: "<h3>Kadane's Algorithm</h3><p>At each step we decide to either extend the chain or start fresh. The orange border in the DP row marks the <b>start</b> of the current accumulation chain.</p>"
-        },
-        python: { v1: "def kadane(A):\n    res = cur = A[0]\n    for x in A[1:]:\n        cur = max(x, cur + x)\n        res = max(res, cur)\n    return res" }
-    };
-
-    let A = [], steps = [], cur = 0;
-
-    function randomize() {
-        document.getElementById('arr-input').value = Array.from({length: 9}, () => Math.floor(Math.random() * 21) - 10).join(', ');
-        rebuild();
-    }
-
-    function rebuild() {
-        A = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        if (A.length === 0) A = [1, -2, 3];
-        init();
-    }
+    let A = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+    let steps = [];
+    let curStep = 0;
 
     function init() {
         steps = [];
-        let dpArr = Array(A.length).fill(null);
-        let res = A[0], cur_max = A[0], start = 0, end = 0, tempStart = 0, winnerIdx = 0;
+        let dp = Array(A.length).fill(null);
+        let res = A[0], current_sum = A[0];
+        let start = 0, end = 0, temp_start = 0;
+        let last_reset_idx = 0; // Индекс локального минимума
 
-        dpArr[0] = A[0];
-        steps.push({ idx: 0, dp: [...dpArr], res, range: [0, 0], winnerIdx: 0, localStart: 0, msg: "Start." });
+        // Step 0
+        dp[0] = A[0];
+        steps.push({ idx: 0, dp: [...dp], res, range: [0, 0], winner: 0, localMinIdx: 0, reset: false, msg: "Initialize with A[0]" });
 
         for (let i = 1; i < A.length; i++) {
-            let chainReset = A[i] > cur_max + A[i];
-            cur_max = Math.max(A[i], cur_max + A[i]);
-            if (chainReset) tempStart = i;
-            dpArr[i] = cur_max;
-
-            if (cur_max > res) { res = cur_max; start = tempStart; end = i; winnerIdx = i; }
+            let restart = A[i] > current_sum + A[i];
+            
+            if (restart) {
+                last_reset_idx = i - 1; // Мы фиксируем точку, ПОСЛЕ которой начался рост
+                temp_start = i;
+                current_sum = A[i];
+            } else {
+                current_sum += A[i];
+            }
+            
+            dp[i] = current_sum;
+            if (current_sum > res) {
+                res = current_sum; start = temp_start; end = i;
+            }
 
             steps.push({
-                idx: i, dp: [...dpArr], res, range: [start, end], winnerIdx,
-                localStart: tempStart, restart: chainReset,
-                msg: chainReset ? `Reset at i=${i}` : `Adding A[${i}] to chain.`
+                idx: i, dp: [...dp], res, range: [start, end], 
+                winner: (dp[i] === res) ? i : steps[steps.length-1].winner, 
+                localMinIdx: last_reset_idx,
+                reset: restart,
+                msg: restart ? `Reset! Starting new chain from ${A[i]}` : `Adding ${A[i]} to chain`
             });
         }
-        cur = 0; render();
+        render();
     }
 
     function render() {
-        const s = steps[cur];
+        const s = steps[curStep];
         const gridA = document.getElementById('input-grid');
         const gridDP = document.getElementById('dp-grid');
         gridA.innerHTML = ''; gridDP.innerHTML = '';
-        
-        document.getElementById('info').innerHTML = s.msg;
-        document.getElementById('ctr').textContent = `Step ${cur + 1}/${steps.length}`;
+
         document.getElementById('global-max-val').textContent = s.res;
+        document.getElementById('local-min-val').textContent = A[s.localMinIdx];
+        document.getElementById('info').textContent = s.msg;
 
         A.forEach((val, i) => {
-            // INPUT ARRAY A
             const cellA = document.createElement('div');
             cellA.className = 'cell' + (i === s.idx ? ' active' : '') + (i >= s.range[0] && i <= s.range[1] ? ' in-max-range' : '');
             cellA.textContent = val;
             gridA.appendChild(cellA);
 
-            // DP ARRAY
             const cellD = document.createElement('div');
             cellD.className = 'cell';
             if (s.dp[i] !== null) cellD.classList.add('processed');
-            if (i === s.idx) cellD.classList.add('current-dp');
+            if (i === s.winner) cellD.classList.add('is-global-winner');
+            if (i === s.idx && s.reset) cellD.classList.add('current-step', 'reset-trigger');
             
-            // Если на этом шаге был старт новой цепочки (restart), 
-            // оранжевая ЗАЛИВКА на текущем элементе
-            if (i === s.idx && s.restart) cellD.classList.add('option-reset');
-            
-            if (i === s.winnerIdx) cellD.classList.add('is-global-winner');
+            // ГЛАВНОЕ: Оранжевая рамка на локальном минимуме
+            if (i === s.localMinIdx) cellD.classList.add('chain-start');
 
-            // ИСПРАВЛЕННАЯ ЛОГИКА: 
-            // Оранжевая РАМКА теперь четко на локальном минимуме (начале)
-            if (i === s.localStart) {
-                cellD.classList.add('local-start-node');
-            }
-            
             cellD.textContent = s.dp[i] === null ? '' : s.dp[i];
             gridDP.appendChild(cellD);
         });
     }
 
-    function switchMainTab(btn, id) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active'); document.getElementById(id).classList.add('active');
-        renderContextControls();
-    }
+    function go(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
+    function reset() { curStep = 0; render(); }
 
-    function renderContextControls() {
-        const panel = document.getElementById('context-panel');
-        panel.innerHTML = '';
-        const opts = document.querySelector('.tab-btn.active').textContent === 'Theory' ? ['RU', 'EN'] : ['v1'];
-        opts.forEach((opt, idx) => {
-            const b = document.createElement('button');
-            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
-            b.textContent = opt;
-            b.onclick = () => {
-                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-                b.classList.add('active');
-                const activeId = document.querySelector('.tab-content.active').id;
-                if (activeId === 'theory') document.getElementById('theory-display').innerHTML = db.theory[opt];
-                else document.getElementById('python-display').textContent = db.python.v1;
-            };
-            panel.appendChild(b);
-        });
-        const activeId = document.querySelector('.tab-content.active').id;
-        if (activeId === 'theory') document.getElementById('theory-display').innerHTML = db.theory[opts[0]];
-        else document.getElementById('python-display').textContent = db.python.v1;
-    }
-
-    function go(dir) { if (cur + dir >= 0 && cur + dir < steps.length) { cur += dir; render(); } }
-    function resetAll() { cur = 0; render(); }
-
-    renderContextControls();
-    rebuild();
+    init();
 </script>
 </body>
 </html>
