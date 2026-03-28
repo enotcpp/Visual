@@ -196,14 +196,12 @@
 
     function initSort() {
         steps = [];
-        let a = [...items]; // Оригинальный массив
+        let a = [...items];
         
-        // Рекурсивная функция сортировки
         function mergeSort(arr, left, right) {
             if (left >= right) return;
             let mid = Math.floor((left + right) / 2);
             
-            // Шаг разделения (как в оригинале)
             steps.push({ a: [...arr], range: [left, right], mid, msg: `Dividing range [${left}-${right}].` });
             
             mergeSort(arr, left, mid);
@@ -211,7 +209,6 @@
             merge(arr, left, mid, right);
         }
 
-        // Функция слияния (как в оригинале)
         function merge(arr, left, mid, right) {
             let n1 = mid - left + 1;
             let n2 = right - mid;
@@ -220,51 +217,39 @@
 
             let i = 0, j = 0, k = left;
             while (i < n1 && j < n2) {
-                // ШАГ ПЕРЕД ЗАПИСЬЮ: Показываем, что мы сравниваем
-                steps.push({ 
-                    a: [...arr], // Массив еще старый
-                    range: [left, right], 
-                    comparing: [left + i, mid + 1 + j], // Те два, что сравниваем
-                    msg: `Comparing <b>${L[i]}</b> and <b>${R[j]}</b>.` 
-                });
-
+                // Подсвечиваем сравнение
+                steps.push({ a: [...arr], range: [left, right], comparing: [left + i, mid + 1 + j], msg: `Comparing <b>${L[i]}</b> and <b>${R[j]}</b>.` });
+                
                 if (L[i] <= R[j]) {
-                    arr[k] = L[i];
-                    i++;
+                    arr[k] = L[i]; i++;
                 } else {
-                    arr[k] = R[j];
-                    j++;
+                    arr[k] = R[j]; j++;
                 }
                 
-                // ШАГ ПОСЛЕ ЗАПИСИ: Показываем, что элемент встал на место (и здесь может быть дубль)
-                steps.push({ 
-                    a: [...arr], // Массив уже обновился (здесь может быть дубль, это нормально!)
-                    range: [left, right], 
-                    activeIdx: k, // Подсвечиваем только тот индекс, куда записали
-                    msg: `Placed smaller element into position ${k}.` 
-                });
+                // Элемент записан — подсвечиваем активный индекс k
+                steps.push({ a: [...arr], range: [left, right], activeIdx: k, msg: `Placed element into position ${k}.` });
                 k++;
             }
 
-            while (i < n1) { arr[k] = L[i]; steps.push({a:[...arr], range:[left, right], activeIdx:k, msg:`Placing remaining element.`}); i++; k++; }
-            while (j < n2) { arr[k] = R[j]; steps.push({a:[...arr], range:[left, right], activeIdx:k, msg:`Placing remaining element.`}); j++; k++; }
+            while (i < n1) { 
+                arr[k] = L[i]; 
+                steps.push({ a: [...arr], range: [left, right], activeIdx: k, msg: `Placing remaining element.` });
+                i++; k++; 
+            }
+            while (j < n2) { 
+                arr[k] = R[j]; 
+                steps.push({ a: [...arr], range: [left, right], activeIdx: k, msg: `Placing remaining element.` });
+                j++; k++; 
+            }
             
-            // Завершение слияния диапазона
-            steps.push({ 
-                a: [...arr], 
-                range: [left, right], 
-                isDoneRange: true, // Флаг, что этот диапазон теперь отсортирован внутри себя
-                msg: `Merged range [${left}-${right}] successfully.` 
-            });
+            steps.push({ a: [...arr], range: [left, right], isDoneRange: true, msg: `Merged range [${left}-${right}] successfully.` });
         }
 
         mergeSort(a, 0, a.length - 1);
-        // Финальный шаг
-        steps.push({ a: [...a], range: [], isDoneAll: true, msg: "<b>Sorting complete!</b>" });
+        steps.push({ a: [...a], isDone: true, msg: "<b>Sorting complete!</b>" });
         cur = 0; render();
     }
 
-    // --- ИСПРАВЛЕННЫЙ RENDER ДЛЯ ПРАВИЛЬНОЙ ПОДСВЕТКИ ---
     function render() {
         const s = steps[cur], container = document.getElementById('array-box');
         document.getElementById('info').innerHTML = s.msg;
@@ -275,28 +260,27 @@
         s.a.forEach((val, idx) => {
             const bar = document.createElement('div');
             bar.className = 'bar';
-            bar.style.opacity = "1"; // Все элементы всегда видны (исправили "стало хуже")
+            
+            // Базовая логика диапазона (рамка)
+            if (s.range && idx >= s.range[0] && idx <= s.range[1]) bar.classList.add('active-range');
+            
+            // Если сейчас идет сравнение (оранжевый)
+            if (s.comparing && s.comparing.includes(idx)) bar.classList.add('comparing');
+            
+            // Если это только что вставленный элемент (фиолетовый акцент)
+            if (idx === s.activeIdx) {
+                bar.style.borderColor = "var(--accent)";
+                bar.style.backgroundColor = "var(--accent-soft)";
+            }
 
-            // Логика подсветки
-            if (s.isDoneAll) {
-                // Сортировка полностью завершена
+            // Если весь диапазон или весь массив готов (зеленый)
+            if (s.isDone || (s.isDoneRange && idx >= s.range[0] && idx <= s.range[1])) {
                 bar.classList.add('sorted');
-            } else if (s.comparing && s.comparing.includes(idx)) {
-                // Элементы сравниваются прямо сейчас
-                bar.classList.add('comparing');
-            } else if (idx === s.activeIdx) {
-                // Элемент только что встал на место k
-                bar.classList.add('current'); // Используем стиль Bubble Sort active
-            } else if (s.range && idx >= s.range[0] && idx <= s.range[1]) {
-                // Элемент находится внутри текущего обрабатываемого диапазона [L-R]
-                // Но он НЕ сравнивается и НЕ вставляется прямо сейчас.
-                // Оставляем его обычным, чтобы не путать пользователя.
             }
 
             bar.style.height = `${50 + (val/maxVal)*80}px`;
             bar.innerHTML = val;
 
-            // Метки (L, R, M)
             if (s.range && idx === s.range[0]) bar.innerHTML += `<div class="ptr-label">L</div>`;
             if (s.range && idx === s.range[1]) bar.innerHTML += `<div class="ptr-label">R</div>`;
             if (s.mid !== undefined && idx === s.mid) bar.innerHTML += `<div class="ptr-label" style="top: -40px;">M</div>`;
