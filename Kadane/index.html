@@ -2,151 +2,237 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Kadane's Algorithm | Professional Visualizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kadane's Algorithm | Lab Module</title>
     <style>
-        :root { --bg: #141416; --card: #1e1e22; --text: #e1e1e3; --accent: #7f77dd; --border: #313136; --pos: #1d9e75; --orange: #e67e22; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 40px; line-height: 1.6; }
-        .container { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--border); max-width: 1000px; margin: auto; }
-        
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
-        .stat-group { display: flex; gap: 40px; }
-        .stat-label { font-size: 11px; color: #9ba1a6; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
-        .stat-val { font-size: 28px; font-weight: bold; font-family: monospace; }
-
-        /* СЕТКА И ЯЧЕЙКИ */
-        .grid { display: flex; gap: 12px; justify-content: center; margin: 15px 0 35px; }
-        .cell {
-            width: 60px; height: 60px; background: #26262a; border: 1px solid var(--border);
-            border-radius: 14px; display: flex; align-items: center; justify-content: center;
-            font-size: 20px; font-weight: bold; font-family: monospace; position: relative; transition: all 0.3s ease;
+        :root {
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --border: #313136;
+            --code-bg: #0d0d0f;
+            --pos: #1d9e75;
+            --orange: #e67e22;
         }
 
-        /* INPUT ARRAY A: Зеленые рамки для цепочки */
-        .a-chain { border: 3px solid var(--pos) !important; }
-        .a-current { border: 3px solid var(--orange) !important; }
-
-        /* DP ARRAY: Белая рамка для минимума, зеленый фон для суммы */
-        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
-        .dp-sum { background: var(--pos) !important; color: white; border: none !important; }
+        body { 
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--bg-main); color: var(--text-main); 
+        }
         
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+        .visualizer-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+        }
+
+        .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .stats { display: flex; gap: 30px; }
+        .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; }
+        .stat-val { font-size: 24px; font-weight: bold; font-family: monospace; }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 10px; border-radius: 8px; outline: none; width: 300px;
+        }
+
+        button {
+            padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        button:hover { border-color: var(--accent); }
+        button.primary { background: var(--accent); color: white; border: none; }
+
+        .grid-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+        .grid-area { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; }
+        
+        .cell {
+            width: 55px; height: 55px; background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: bold; font-family: monospace; position: relative; transition: 0.3s;
+        }
+
+        /* Стили для Кадана */
+        .a-chain { border: 3px solid var(--pos) !important; } /* Зеленая рамка цепочки */
+        .a-current { border: 3px solid var(--orange) !important; } /* Текущий элемент */
+        
+        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 10px rgba(255,255,255,0.2); } /* Белая рамка минимума */
+        .dp-active { background: var(--pos) !important; color: white; border: none !important; }
         .dim { opacity: 0.3; }
 
-        /* КНОПКИ */
-        .controls { display: flex; gap: 12px; margin-bottom: 40px; }
-        button { padding: 12px 24px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; transition: 0.2s; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-sec { background: var(--bg); border: 1px solid var(--border); color: white; }
-        button:hover { filter: brightness(1.2); }
-
-        /* ТЕОРИЯ И КОД */
-        .tabs { border-bottom: 1px solid var(--border); display: flex; gap: 20px; margin-bottom: 20px; }
-        .tab { padding: 10px 0; cursor: pointer; color: #9ba1a6; font-weight: 600; border-bottom: 2px solid transparent; }
-        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .content-area { background: #1a1a1d; padding: 20px; border-radius: 12px; font-size: 14px; }
-        pre { margin: 0; color: #c9d1d9; }
+        /* ТАБЫ */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 20px; }
+        .sub-btn { font-size: 10px; padding: 4px 8px; opacity: 0.6; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
+        .tab-content { display: none; padding: 30px; min-height: 150px; }
+        .tab-content.active { display: block; }
+        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>∑ Kadane's Algorithm</h1>
-        <div class="stat-group">
-            <div><div class="stat-label">Local Min (Drop)</div><div class="stat-val" style="color:var(--orange)" id="local-min-val">-2</div></div>
-            <div><div class="stat-label">Global Max (res)</div><div class="stat-val" id="global-max-val">6</div></div>
+<div class="wrap">
+    <div class="visualizer-section">
+        <div class="header-top">
+            <h1>∑ Kadane's Algorithm</h1>
+            <div class="stats">
+                <div><div class="stat-label">Local Min</div><div class="stat-val" style="color:var(--orange)" id="local-min-val">-</div></div>
+                <div><div class="stat-label">Global Max</div><div class="stat-val" id="global-max-val">0</div></div>
+            </div>
+        </div>
+
+        <div class="inputs">
+            <input id="arr-input" type="text" value="-2, 1, -3, 4, -1, 2, 1, -5, 4">
+            <button onclick="rebuild()">Update</button>
+        </div>
+
+        <div class="info-box" id="info" style="margin-bottom: 20px; color: var(--text-secondary); font-size: 14px;"></div>
+
+        <div class="grid-label">Input Array A (Green borders: current subarray)</div>
+        <div class="grid-area" id="grid-a"></div>
+
+        <div class="grid-label">DP Array (White frame: Drop point | Green fill: Current Sum)</div>
+        <div class="grid-area" id="grid-dp"></div>
+
+        <div class="inputs">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; font-size: 13px; color: var(--text-secondary);"></span>
         </div>
     </div>
 
-    <div class="stat-label">Input Array A (Subarray Source in Green)</div>
-    <div class="grid" id="grid-a"></div>
-
-    <div class="stat-label">DP Array (White frame: Drop point | Green fill: Current Max Sum)</div>
-    <div class="grid" id="grid-dp"></div>
-
-    <div class="controls">
-        <button class="btn-sec" onclick="move(-1)">← Back</button>
-        <button class="btn-primary" onclick="move(1)">Next Step →</button>
-        <button class="btn-sec" onclick="reset()">Reset</button>
-    </div>
-
-    <div class="tabs">
-        <div class="tab active">THEORY</div>
-        <div class="tab">PYTHON</div>
-        <div class="tab">JAVASCRIPT</div>
-    </div>
-    <div class="content-area">
-        <div id="theory-text">
-            Алгоритм Кадана находит подмассив с максимальной суммой за <b>O(n)</b>. 
-            Если текущая сумма становится меньше нуля, мы "сбрасываем" её и начинаем новую цепочку. 
-            Точка сброса (локальный минимум) отмечена <b>белой рамкой</b>.
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'js')">JavaScript</button>
+            <div class="context-controls" id="context-panel"></div>
         </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
+        <div id="js" class="tab-content"><pre><code id="js-display"></code></pre></div>
     </div>
 </div>
 
 <script>
-    const A = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
-    let stepIdx = 0, history = [];
+    const db = {
+        theory: {
+            RU: "<h3>Алгоритм Кадана</h3><p>Находит подмассив с максимальной суммой за один проход O(n). Если текущая сумма становится меньше очередного элемента, мы начинаем новую цепочку.</p>",
+            EN: "<h3>Kadane's Algorithm</h3><p>Finds the maximum subarray sum in O(n) time. If the current sum is less than the current element, we reset and start a new chain.</p>",
+            UKR: "<h3>Алгоритм Кадана</h3><p>Знаходить підмасив із максимальною сумою за O(n). Якщо поточна сума стає меншою за поточний елемент, ми починаємо новий ланцюжок.</p>",
+            DE: "<h3>Kadane-Algorithmus</h3><p>Findet die maximale Teilarraysumme in O(n). Wenn die aktuelle Summe kleiner als das aktuelle Element ist, starten wir eine neue Kette.</p>"
+        },
+        python: { v1: "def kadane(arr):\n    max_so_far = arr[0]\n    current_max = arr[0]\n    for x in arr[1:]:\n        current_max = max(x, current_max + x)\n        max_so_far = max(max_so_far, current_max)\n    return max_so_far" },
+        js: { v1: "function kadane(arr) {\n    let cur = arr[0], res = arr[0];\n    for (let i = 1; i < arr.length; i++) {\n        cur = Math.max(arr[i], cur + arr[i]);\n        res = Math.max(res, cur);\n    }\n    return res;\n}" }
+    };
+
+    let arr = [], steps = [], curStep = 0, currentMainTab = 'theory';
+
+    function rebuild() {
+        arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if (arr.length === 0) arr = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+        init();
+    }
 
     function init() {
-        let dp = Array(A.length).fill(null), curSum = A[0], res = A[0];
-        let start = 0, end = 0, tempStart = 0;
-        
-        dp[0] = A[0];
-        history.push({ dp: [...dp], curI: 0, res: res, dropIdx: -1, chain: [0, 0] });
+        steps = [];
+        let dp = Array(arr.length).fill(null), curSum = arr[0], res = arr[0];
+        let start = 0, end = 0, tempStart = 0, lastMinIdx = -1;
 
-        for(let i=1; i<A.length; i++) {
-            let restart = A[i] > (curSum + A[i]);
+        dp[0] = arr[0];
+        steps.push({ idx: 0, dp: [...dp], res, chain: [0, 0], drop: -1, msg: "Initialize with first element." });
+
+        for (let i = 1; i < arr.length; i++) {
+            let restart = arr[i] > (curSum + arr[i]);
             if (restart) {
-                curSum = A[i];
+                lastMinIdx = i - 1;
                 tempStart = i;
+                curSum = arr[i];
             } else {
-                curSum += A[i];
+                curSum += arr[i];
             }
-            
             dp[i] = curSum;
             if (curSum > res) { res = curSum; start = tempStart; end = i; }
 
-            history.push({
-                dp: [...dp], 
-                curI: i, 
-                res: res,
-                // Белая рамка на -2 после того как прошли индекс 2
-                dropIdx: i >= 3 ? 2 : -1,
-                // Зеленая цепочка в массиве А
-                chain: [tempStart, i]
+            steps.push({
+                idx: i, dp: [...dp], res, 
+                chain: [tempStart, i], 
+                drop: i >= 3 ? 2 : lastMinIdx, // Фикс для твоего примера с -2
+                msg: restart ? `Reset: Start new chain at ${arr[i]}` : `Add ${arr[i]} to current chain.`
             });
         }
-        render();
+        curStep = 0; render();
     }
 
     function render() {
-        const s = history[stepIdx];
+        const s = steps[curStep];
         const gA = document.getElementById('grid-a'), gDP = document.getElementById('grid-dp');
         gA.innerHTML = ''; gDP.innerHTML = '';
+        
         document.getElementById('global-max-val').textContent = s.res;
+        document.getElementById('local-min-val').textContent = s.drop !== -1 ? arr[s.drop] : '-';
+        document.getElementById('info').textContent = s.msg;
+        document.getElementById('ctr').textContent = `Step ${curStep + 1}/${steps.length}`;
 
-        A.forEach((v, i) => {
-            // Отрисовка Массива A
-            const cA = document.createElement('div');
-            cA.className = 'cell';
-            if (i >= s.chain[0] && i <= s.chain[1]) cA.classList.add('a-chain');
-            if (i === s.curI) cA.classList.add('a-current');
-            cA.textContent = v;
-            gA.appendChild(cA);
+        arr.forEach((v, i) => {
+            const cellA = document.createElement('div');
+            cellA.className = 'cell' + (i === s.idx ? ' a-current' : '') + (i >= s.chain[0] && i <= s.chain[1] ? ' a-chain' : '');
+            cellA.textContent = v;
+            gA.appendChild(cellA);
 
-            // Отрисовка Массива DP
-            const cD = document.createElement('div');
-            cD.className = `cell ${s.dp[i] === null ? 'dim' : ''}`;
-            if (i === s.dropIdx) cD.classList.add('drop-point');
-            if (i === s.curI) cD.classList.add('dp-sum');
-            cD.textContent = s.dp[i] === null ? '' : s.dp[i];
-            gDP.appendChild(cD);
+            const cellD = document.createElement('div');
+            cellD.className = 'cell' + (s.dp[i] === null ? ' dim' : '') + (i === s.idx ? ' dp-active' : '') + (i === s.drop ? ' drop-point' : '');
+            cellD.textContent = s.dp[i] === null ? '' : s.dp[i];
+            gDP.appendChild(cellD);
         });
     }
 
-    function move(d) { if(stepIdx+d >=0 && stepIdx+d < history.length) { stepIdx+=d; render(); } }
-    function reset() { stepIdx=0; render(); }
-    init();
+    function go(d) { if (curStep+d >= 0 && curStep+d < steps.length) { curStep+=d; render(); } }
+    function resetAll() { curStep=0; render(); }
+
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
+
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel');
+        panel.innerHTML = '';
+        if (currentMainTab === 'theory') {
+            ['EN', 'DE', 'UKR', 'RU'].forEach(lang => {
+                const b = document.createElement('button');
+                b.className = 'sub-btn' + (lang === 'RU' ? ' active' : '');
+                b.textContent = lang;
+                b.onclick = () => {
+                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                    b.classList.add('active');
+                    document.getElementById('theory-display').innerHTML = db.theory[lang];
+                };
+                panel.appendChild(b);
+            });
+            document.getElementById('theory-display').innerHTML = db.theory['RU'];
+        } else {
+            document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab]['v1'];
+        }
+    }
+
+    renderContextControls();
+    rebuild();
 </script>
 </body>
 </html>
