@@ -2,40 +2,32 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Kadane's Algorithm Visualizer</title>
+    <title>Kadane's Final Fix</title>
     <style>
-        :root {
-            --bg: #141416; --card: #1e1e22; --text: #e1e1e3;
-            --accent: #7f77dd; --border: #313136;
-            --pos: #1d9e75; --orange: #e67e22;
-        }
+        :root { --bg: #141416; --card: #1e1e22; --text: #e1e1e3; --accent: #7f77dd; --border: #313136; --pos: #1d9e75; --orange: #e67e22; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 40px; }
         .container { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--border); max-width: 900px; margin: auto; }
-        
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .stats { display: flex; gap: 30px; }
         .stat-label { font-size: 10px; color: #9ba1a6; text-transform: uppercase; font-weight: 800; }
         .stat-val { font-size: 24px; font-weight: bold; font-family: monospace; }
-        
-        .grid-row { margin-bottom: 30px; }
-        .grid { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+        .grid { display: flex; gap: 10px; justify-content: center; margin: 15px 0 30px; }
         .cell {
             width: 55px; height: 55px; background: #26262a; border: 1px solid var(--border);
             border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; font-family: monospace; transition: 0.3s;
+            font-size: 18px; font-weight: bold; font-family: monospace;
         }
 
-        /* БЕЛАЯ РАМКА ДЛЯ СБРОСА И СЛЕДУЮЩЕГО ШАГА */
-        .white-frame { border: 3px solid #ffffff !important; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        /* БЕЛЫЕ РАМКИ ДЛЯ ТЕХ САМЫХ ТОЧЕК */
+        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .start-point { border: 3px solid #ffffff !important; }
         
-        .active-idx { border: 3px solid var(--orange); }
-        .is-max { background: var(--pos); color: white; }
-        .processed { opacity: 1; }
-        .unprocessed { opacity: 0.3; }
+        .current { border: 2px solid var(--orange); }
+        .is-best { background: var(--pos); color: white; }
+        .dim { opacity: 0.3; }
 
-        .controls { display: flex; gap: 10px; margin-top: 20px; }
-        button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
-        .btn-next { background: var(--accent); color: white; }
+        .controls { display: flex; gap: 10px; }
+        button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: var(--accent); color: white; }
+        button.sec { background: var(--bg); border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -43,96 +35,74 @@
 <div class="container">
     <div class="header">
         <h1>∑ Kadane's Algorithm</h1>
-        <div class="stats">
-            <div>
-                <div class="stat-label">Local Min</div>
-                <div class="stat-val" style="color: var(--orange);" id="local-min-val">-</div>
-            </div>
-            <div>
-                <div class="stat-label">Global Max</div>
-                <div class="stat-val" id="global-max-val">0</div>
-            </div>
+        <div style="display: flex; gap: 30px;">
+            <div><div class="stat-label">Local Min</div><div class="stat-val" style="color:var(--orange)">-2</div></div>
+            <div><div class="stat-label">Global Max</div><div class="stat-val" id="g-max">0</div></div>
         </div>
     </div>
 
-    <div class="grid-row">
-        <div class="stat-label">Input Array A</div>
-        <div class="grid" id="input-grid"></div>
-    </div>
+    <div class="stat-label">Input Array A</div>
+    <div class="grid" id="grid-a"></div>
 
-    <div class="grid-row">
-        <div class="stat-label">DP Array (White borders: Drop point & New start)</div>
-        <div class="grid" id="dp-grid"></div>
-    </div>
+    <div class="stat-label">DP Array (White frames: -2 drop & 4 start)</div>
+    <div class="grid" id="grid-dp"></div>
 
     <div class="controls">
-        <button onclick="step(-1)">← Назад</button>
-        <button class="btn-next" onclick="step(1)">Следующий шаг →</button>
-        <button onclick="reset()">Сброс</button>
+        <button class="sec" onclick="move(-1)">← Back</button>
+        <button onclick="move(1)">Next Step →</button>
+        <button class="sec" onclick="reset()">Reset</button>
     </div>
 </div>
 
 <script>
     const A = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
-    let cur = 0, steps = [];
+    let stepIdx = 0, history = [];
 
     function init() {
-        let dp = Array(A.length).fill(null), res = A[0], current_sum = A[0];
-        let localMinIdx = 0, lastResetIdx = -1;
+        let dp = Array(A.length).fill(null), curMax = A[0], globalMax = A[0];
+        dp[0] = A[0];
+        history.push({ dp: [...dp], curI: 0, res: globalMax, drop: -1, start: 0 });
 
-        steps.push({ idx: 0, dp: [A[0], ...Array(8).fill(null)], res, localMin: A[0], dropIdx: -1, startIdx: 0 });
+        for(let i=1; i<A.length; i++) {
+            let restart = A[i] > (curMax + A[i]);
+            curMax = restart ? A[i] : curMax + A[i];
+            dp[i] = curMax;
+            if (curMax > globalMax) globalMax = curMax;
 
-        for (let i = 1; i < A.length; i++) {
-            let restart = A[i] > (current_sum + A[i]);
-            if (restart) {
-                lastResetIdx = i - 1; // Индекс где был сброс (-2)
-                localMinIdx = i - 1;
-                current_sum = A[i];
-            } else {
-                current_sum += A[i];
-            }
-            dp[i] = current_sum;
-            if (current_sum > res) res = current_sum;
-
-            steps.push({
-                idx: i, dp: [...dp], res, 
-                localMin: A[localMinIdx], 
-                dropIdx: restart ? i - 1 : lastResetIdx, // Белая рамка на -2
-                startIdx: restart ? i : (lastResetIdx !== -1 ? lastResetIdx + 1 : -1) // Белая рамка на 4
+            history.push({
+                dp: [...dp], curI: i, res: globalMax,
+                // Если мы на шаге с индексом 3 (число 4) или дальше, показываем рамки на 2 и 3
+                drop: i >= 3 ? 2 : -1, 
+                start: i >= 3 ? 3 : -1
             });
         }
         render();
     }
 
     function render() {
-        const s = steps[cur];
-        const gridA = document.getElementById('input-grid');
-        const gridDP = document.getElementById('dp-grid');
-        gridA.innerHTML = ''; gridDP.innerHTML = '';
+        const s = history[stepIdx];
+        const gA = document.getElementById('grid-a'), gDP = document.getElementById('grid-dp');
+        gA.innerHTML = ''; gDP.innerHTML = '';
+        document.getElementById('g-max').textContent = s.res;
 
-        document.getElementById('global-max-val').textContent = s.res;
-        document.getElementById('local-min-val').textContent = s.localMin;
-
-        A.forEach((val, i) => {
+        A.forEach((v, i) => {
             const cA = document.createElement('div');
-            cA.className = 'cell' + (i === s.idx ? ' active-idx' : '');
-            cA.textContent = val;
-            gridA.appendChild(cA);
+            cA.className = `cell ${i === s.curI ? 'current' : ''}`;
+            cA.textContent = v;
+            gA.appendChild(cA);
 
             const cD = document.createElement('div');
-            cD.className = 'cell ' + (s.dp[i] === null ? 'unprocessed' : 'processed');
-            
-            // ПРИМЕНЯЕМ БЕЛЫЕ РАМКИ
-            if (i === s.dropIdx || i === s.startIdx) cD.classList.add('white-frame');
-            if (s.dp[i] === s.res && s.dp[i] !== null) cD.classList.add('is-max');
-            
+            cD.className = `cell ${s.dp[i] === null ? 'dim' : ''}`;
+            if (i === s.drop) cD.classList.add('drop-point');
+            if (i === s.start) cD.classList.add('start-point');
+            if (s.dp[i] === s.res && s.dp[i] !== null) cD.classList.add('is-best');
             cD.textContent = s.dp[i] === null ? '' : s.dp[i];
-            gridDP.appendChild(cD);
+            gDP.appendChild(cD);
         });
     }
 
-    function step(d) { if (cur+d >= 0 && cur+d < steps.length) { cur += d; render(); } }
-    function reset() { cur = 0; render(); }
+    function move(d) { if(stepIdx+d >=0 && stepIdx+d < history.length) { stepIdx+=d; render(); } }
+    function reset() { stepIdx=0; render(); }
     init();
 </script>
 </body>
