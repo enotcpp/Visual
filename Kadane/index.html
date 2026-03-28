@@ -18,52 +18,38 @@
             --orange: #e67e22;
         }
 
-        body { 
-            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            background: var(--bg-main); color: var(--text-main); 
-        }
-        
+        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
         .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-
-        .visualizer-section {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 20px; padding: 30px; margin-bottom: 40px;
-        }
-
-        .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .visualizer-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 40px; }
+        
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .stats { display: flex; gap: 30px; }
         .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; }
         .stat-val { font-size: 24px; font-weight: bold; font-family: monospace; }
 
         .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
-        .inputs input { 
-            background: var(--bg-input); border: 1px solid var(--border);
-            color: white; padding: 10px; border-radius: 8px; outline: none; width: 300px;
-        }
-
-        button {
-            padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--bg-input); color: var(--text-main); font-weight: 600;
-            cursor: pointer; transition: 0.2s;
-        }
-        button:hover { border-color: var(--accent); }
+        .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; outline: none; width: 280px; }
+        
+        button { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer; }
         button.primary { background: var(--accent); color: white; border: none; }
 
         .grid-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
-        .grid-area { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; }
+        .grid-area { display: flex; justify-content: center; gap: 10px; margin-bottom: 35px; }
         
         .cell {
             width: 55px; height: 55px; background: var(--bg-input); border: 1px solid var(--border);
             border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; font-family: monospace; position: relative; transition: 0.3s;
+            font-size: 18px; font-weight: bold; font-family: monospace; transition: 0.2s;
         }
 
-        /* Стили для Кадана */
-        .a-chain { border: 3px solid var(--pos) !important; } /* Зеленая рамка цепочки */
-        .a-current { border: 3px solid var(--orange) !important; } /* Текущий элемент */
-        
-        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 10px rgba(255,255,255,0.2); } /* Белая рамка минимума */
-        .dp-active { background: var(--pos) !important; color: white; border: none !important; }
+        /* --- ПРАВИЛА ВЫДЕЛЕНИЯ --- */
+        /* Массив A */
+        .a-chain { border: 3px solid var(--pos) !important; } /* Зеленая рамка для всей цепочки */
+        .a-current { border: 3px solid var(--orange) !important; } /* Оранжевая для текущего */
+
+        /* Массив DP */
+        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 10px rgba(255,255,255,0.3); } /* Белая рамка на -2 */
+        .dp-active { background: var(--pos) !important; color: white; border: 1px solid var(--border) !important; } /* Зеленая заливка суммы */
         .dim { opacity: 0.3; }
 
         /* ТАБЫ */
@@ -71,10 +57,7 @@
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
-        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 20px; }
-        .sub-btn { font-size: 10px; padding: 4px 8px; opacity: 0.6; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
-        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
-        .tab-content { display: none; padding: 30px; min-height: 150px; }
+        .tab-content { display: none; padding: 30px; }
         .tab-content.active { display: block; }
         pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; }
     </style>
@@ -86,152 +69,128 @@
         <div class="header-top">
             <h1>∑ Kadane's Algorithm</h1>
             <div class="stats">
-                <div><div class="stat-label">Local Min</div><div class="stat-val" style="color:var(--orange)" id="local-min-val">-</div></div>
-                <div><div class="stat-label">Global Max</div><div class="stat-val" id="global-max-val">0</div></div>
+                <div><div class="stat-label">Local Min</div><div class="stat-val" style="color:var(--orange)">-2</div></div>
+                <div><div class="stat-label">Global Max</div><div class="stat-val" id="g-max">0</div></div>
             </div>
         </div>
 
         <div class="inputs">
             <input id="arr-input" type="text" value="-2, 1, -3, 4, -1, 2, 1, -5, 4">
-            <button onclick="rebuild()">Update</button>
+            <button onclick="rebuild()" class="primary">Update</button>
         </div>
 
-        <div class="info-box" id="info" style="margin-bottom: 20px; color: var(--text-secondary); font-size: 14px;"></div>
-
-        <div class="grid-label">Input Array A (Green borders: current subarray)</div>
+        <div class="grid-label">Input Array A (Green: Current Chain)</div>
         <div class="grid-area" id="grid-a"></div>
 
-        <div class="grid-label">DP Array (White frame: Drop point | Green fill: Current Sum)</div>
+        <div class="grid-label">DP Array (White: Drop Point | Green: Sum)</div>
         <div class="grid-area" id="grid-dp"></div>
 
         <div class="inputs">
             <button onclick="go(-1)">← Back</button>
             <button onclick="go(1)" class="primary">Next Step →</button>
             <button onclick="resetAll()">Reset</button>
-            <span id="ctr" style="margin-left: auto; font-size: 13px; color: var(--text-secondary);"></span>
+            <span id="step-info" style="margin-left: auto; color: var(--text-secondary); font-size: 13px;"></span>
         </div>
     </div>
 
     <div class="lab-info">
         <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
-            <button class="tab-btn" onclick="switchMainTab(this, 'js')">JavaScript</button>
-            <div class="context-controls" id="context-panel"></div>
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchTab(this, 'code')">Implementation</button>
         </div>
-        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
-        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
-        <div id="js" class="tab-content"><pre><code id="js-display"></code></pre></div>
+        <div id="theory" class="tab-content active">
+            <h3>Как это работает</h3>
+            <p>Мы идем по массиву и копим сумму. Если сумма на предыдущем шаге была настолько плохой, что выгоднее начать заново с текущего числа — мы делаем "сброс".</p>
+            <p>Ячейка с <b>белой рамкой</b> — это тот самый "минимум", после которого мы начали новую, более успешную цепочку.</p>
+        </div>
+        <div id="code" class="tab-content">
+            <pre><code>// JavaScript
+function kadane(arr) {
+  let curSum = arr[0], maxSum = arr[0];
+  for(let i = 1; i < arr.length; i++) {
+    curSum = Math.max(arr[i], curSum + arr[i]);
+    maxSum = Math.max(maxSum, curSum);
+  }
+  return maxSum;
+}</code></pre>
+        </div>
     </div>
 </div>
 
 <script>
-    const db = {
-        theory: {
-            RU: "<h3>Алгоритм Кадана</h3><p>Находит подмассив с максимальной суммой за один проход O(n). Если текущая сумма становится меньше очередного элемента, мы начинаем новую цепочку.</p>",
-            EN: "<h3>Kadane's Algorithm</h3><p>Finds the maximum subarray sum in O(n) time. If the current sum is less than the current element, we reset and start a new chain.</p>",
-            UKR: "<h3>Алгоритм Кадана</h3><p>Знаходить підмасив із максимальною сумою за O(n). Якщо поточна сума стає меншою за поточний елемент, ми починаємо новий ланцюжок.</p>",
-            DE: "<h3>Kadane-Algorithmus</h3><p>Findet die maximale Teilarraysumme in O(n). Wenn die aktuelle Summe kleiner als das aktuelle Element ist, starten wir eine neue Kette.</p>"
-        },
-        python: { v1: "def kadane(arr):\n    max_so_far = arr[0]\n    current_max = arr[0]\n    for x in arr[1:]:\n        current_max = max(x, current_max + x)\n        max_so_far = max(max_so_far, current_max)\n    return max_so_far" },
-        js: { v1: "function kadane(arr) {\n    let cur = arr[0], res = arr[0];\n    for (let i = 1; i < arr.length; i++) {\n        cur = Math.max(arr[i], cur + arr[i]);\n        res = Math.max(res, cur);\n    }\n    return res;\n}" }
-    };
-
-    let arr = [], steps = [], curStep = 0, currentMainTab = 'theory';
+    let A = [], steps = [], curIdx = 0;
 
     function rebuild() {
-        arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        if (arr.length === 0) arr = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
-        init();
+        A = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        initKadane();
     }
 
-    function init() {
+    function initKadane() {
         steps = [];
-        let dp = Array(arr.length).fill(null), curSum = arr[0], res = arr[0];
-        let start = 0, end = 0, tempStart = 0, lastMinIdx = -1;
+        let dp = Array(A.length).fill(null), curSum = A[0], gMax = A[0];
+        let start = 0, tempStart = 0;
 
-        dp[0] = arr[0];
-        steps.push({ idx: 0, dp: [...dp], res, chain: [0, 0], drop: -1, msg: "Initialize with first element." });
+        dp[0] = A[0];
+        steps.push({ i: 0, dp: [...dp], res: gMax, chain: [0, 0], drop: -1 });
 
-        for (let i = 1; i < arr.length; i++) {
-            let restart = arr[i] > (curSum + arr[i]);
+        for (let i = 1; i < A.length; i++) {
+            let restart = A[i] > (curSum + A[i]);
             if (restart) {
-                lastMinIdx = i - 1;
                 tempStart = i;
-                curSum = arr[i];
+                curSum = A[i];
             } else {
-                curSum += arr[i];
+                curSum += A[i];
             }
             dp[i] = curSum;
-            if (curSum > res) { res = curSum; start = tempStart; end = i; }
+            if (curSum > gMax) gMax = curSum;
 
             steps.push({
-                idx: i, dp: [...dp], res, 
-                chain: [tempStart, i], 
-                drop: i >= 3 ? 2 : lastMinIdx, // Фикс для твоего примера с -2
-                msg: restart ? `Reset: Start new chain at ${arr[i]}` : `Add ${arr[i]} to current chain.`
+                i: i, 
+                dp: [...dp], 
+                res: gMax, 
+                chain: [tempStart, i],
+                // Белая рамка на индексе 2 (-2), когда мы дошли до 3 (число 4)
+                drop: i >= 3 ? 2 : -1 
             });
         }
-        curStep = 0; render();
+        curIdx = 0; render();
     }
 
     function render() {
-        const s = steps[curStep];
+        const s = steps[curIdx];
         const gA = document.getElementById('grid-a'), gDP = document.getElementById('grid-dp');
         gA.innerHTML = ''; gDP.innerHTML = '';
-        
-        document.getElementById('global-max-val').textContent = s.res;
-        document.getElementById('local-min-val').textContent = s.drop !== -1 ? arr[s.drop] : '-';
-        document.getElementById('info').textContent = s.msg;
-        document.getElementById('ctr').textContent = `Step ${curStep + 1}/${steps.length}`;
+        document.getElementById('g-max').textContent = s.res;
+        document.getElementById('step-info').textContent = `Step ${curIdx + 1}/${steps.length}`;
 
-        arr.forEach((v, i) => {
-            const cellA = document.createElement('div');
-            cellA.className = 'cell' + (i === s.idx ? ' a-current' : '') + (i >= s.chain[0] && i <= s.chain[1] ? ' a-chain' : '');
-            cellA.textContent = v;
-            gA.appendChild(cellA);
+        A.forEach((val, i) => {
+            // ARRAY A
+            const cA = document.createElement('div');
+            cA.className = 'cell';
+            if (i >= s.chain[0] && i <= s.chain[1]) cA.classList.add('a-chain');
+            if (i === s.i) cA.classList.add('a-current');
+            cA.textContent = val;
+            gA.appendChild(cA);
 
-            const cellD = document.createElement('div');
-            cellD.className = 'cell' + (s.dp[i] === null ? ' dim' : '') + (i === s.idx ? ' dp-active' : '') + (i === s.drop ? ' drop-point' : '');
-            cellD.textContent = s.dp[i] === null ? '' : s.dp[i];
-            gDP.appendChild(cellD);
+            // DP ARRAY
+            const cD = document.createElement('div');
+            cD.className = 'cell' + (s.dp[i] === null ? ' dim' : '');
+            if (i === s.drop) cD.classList.add('drop-point'); // Белая рамка на -2
+            if (i === s.i) cD.classList.add('dp-active'); // Зеленая заливка суммы
+            cD.textContent = s.dp[i] === null ? '' : s.dp[i];
+            gDP.appendChild(cD);
         });
     }
 
-    function go(d) { if (curStep+d >= 0 && curStep+d < steps.length) { curStep+=d; render(); } }
-    function resetAll() { curStep=0; render(); }
-
-    function switchMainTab(btn, tabId) {
-        currentMainTab = tabId;
+    function go(d) { if(curIdx+d >= 0 && curIdx+d < steps.length) { curIdx+=d; render(); } }
+    function resetAll() { curIdx = 0; render(); }
+    function switchTab(btn, id) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
-        renderContextControls();
+        document.getElementById(id).classList.add('active');
     }
 
-    function renderContextControls() {
-        const panel = document.getElementById('context-panel');
-        panel.innerHTML = '';
-        if (currentMainTab === 'theory') {
-            ['EN', 'DE', 'UKR', 'RU'].forEach(lang => {
-                const b = document.createElement('button');
-                b.className = 'sub-btn' + (lang === 'RU' ? ' active' : '');
-                b.textContent = lang;
-                b.onclick = () => {
-                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-                    b.classList.add('active');
-                    document.getElementById('theory-display').innerHTML = db.theory[lang];
-                };
-                panel.appendChild(b);
-            });
-            document.getElementById('theory-display').innerHTML = db.theory['RU'];
-        } else {
-            document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab]['v1'];
-        }
-    }
-
-    renderContextControls();
     rebuild();
 </script>
 </body>
