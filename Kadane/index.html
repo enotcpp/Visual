@@ -11,11 +11,13 @@
             --bg-input: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
-            --accent: #7f77dd;
+            --accent: #7f77dd; /* Purple */
+            --accent-soft: rgba(127, 119, 221, 0.1);
             --border: #313136;
             --code-bg: #0d0d0f;
-            --pos: #1d9e75;
-            --neg: #e74c3c;
+            --pos: #1d9e75; /* Green */
+            --neg: #e74c3c; /* Red */
+            --highlight: #e67e22; /* Orange for selection */
         }
 
         body { 
@@ -30,39 +32,58 @@
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 20px; padding: 30px; margin-bottom: 40px;
         }
-        .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
+        .inputs { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
             color: white; padding: 10px; border-radius: 8px; outline: none; flex-grow: 1;
+            font-family: monospace; font-size: 14px;
         }
         button {
             padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
             background: var(--bg-input); color: var(--text-main); font-weight: 600;
-            cursor: pointer; transition: 0.2s;
+            cursor: pointer; transition: 0.2s; font-size: 14px;
         }
         button:hover { border-color: var(--accent); }
         button.primary { background: var(--accent); color: white; border: none; }
 
-        /* KADANE AREA */
-        .viz-container { display: flex; flex-direction: column; gap: 40px; margin: 60px 0; }
-        .row-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; }
+        /* STATS PANEL */
+        .stats-panel {
+            display: flex; justify-content: flex-end; gap: 20px; margin-bottom: 20px;
+        }
+        .stat-item { text-align: right; }
+        .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; font-weight: 800; }
+        .stat-val { font-size: 22px; font-weight: 800; color: white; font-family: monospace; }
+        .stat-val.new-max { color: var(--accent); animation: pulse-blue 0.5s; }
+
+        /* KADANE AREA (Two honest grids) */
+        .viz-container { display: flex; flex-direction: column; gap: 20px; margin: 40px 0; }
+        .row-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; }
         
-        .bars-area { display: flex; justify-content: center; align-items: flex-end; gap: 8px; height: 100px; }
+        .grid-area { display: flex; justify-content: center; gap: 10px; }
         
-        .bar-stack { display: flex; flex-direction: column; align-items: center; width: 45px; }
-        .bar { 
-            width: 100%; border-radius: 6px; position: relative;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: bold; transition: all 0.3s;
-            border: 1px solid var(--border); background: var(--bg-input);
+        .cell {
+            width: 55px; height: 55px; background: var(--bg-input); border: 1px solid var(--border);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: bold; font-family: monospace; transition: all 0.2s;
+            color: var(--text-main); position: relative;
         }
         
-        /* State Styles */
-        .bar.active { border-color: var(--accent); transform: scale(1.05); z-index: 2; box-shadow: 0 0 15px rgba(127, 119, 221, 0.3); }
-        .bar.in-max { border: 2px solid white; }
-        .bar.current-chain { background: var(--accent); color: white; border: none; }
-        .bar.pos { border-color: var(--pos); color: var(--pos); }
-        .bar.neg { border-color: var(--neg); color: var(--neg); }
+        /* Cell States */
+        .grid-a .cell.active { border: 3px solid var(--highlight); color: var(--highlight); transform: scale(1.05); }
+        .grid-a .cell.in-global-max { border: 3px solid var(--accent); box-shadow: 0 0 15px rgba(127, 119, 221, 0.4); }
+
+        .grid-dp .cell { opacity: 0.3; }
+        .grid-dp .cell.processed { opacity: 1; border-color: #4a4a4d; background: #2a2a2d; }
+        .grid-dp .cell.current-dp { opacity: 1; border: 3px solid var(--accent); background: var(--bg-card); color: var(--accent); font-weight: 800; }
+        
+        /* Highlight selection logic: continuation (green) or reset (red/orange) */
+        .cell.option-continue { border: 2px solid var(--pos); color: var(--pos); }
+        .cell.option-reset { border: 2px solid var(--highlight); color: var(--highlight); }
+        .cell.selected-option { background: var(--accent-soft); }
+
+        /* Pointer labels */
+        .ptr { position: absolute; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; color: white; text-transform: uppercase; }
+        .ptr-i { top: -35px; background: var(--highlight); }
 
         /* LAB INFO PANEL */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
@@ -78,12 +99,18 @@
             font-size: 10px; padding: 4px 8px; opacity: 0.6; border: 1px solid var(--border);
             background: transparent; color: var(--text-secondary); border-radius: 4px; cursor: pointer;
         }
-        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
+        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 
         .tab-content { display: none; padding: 30px; min-height: 200px; line-height: 1.6; }
         .tab-content.active { display: block; }
         pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; font-size: 14px; }
         .math { color: var(--accent); font-family: monospace; font-weight: bold; }
+
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 0 0 rgba(127, 119, 221, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(127, 119, 221, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(127, 119, 221, 0); }
+        }
     </style>
 </head>
 <body>
@@ -91,26 +118,34 @@
 <div class="wrap">
     <div class="visualizer-section">
         <h1>∑ Kadane's Algorithm</h1>
+        
         <div class="inputs">
             <input id="arr-input" type="text" value="-2, 1, -3, 4, -1, 2, 1, -5, 4">
-            <button onclick="rebuild()" class="primary">Update</button>
+            <button onclick="rebuild()" class="primary">Load Data</button>
             <button onclick="randomize()">Random</button>
         </div>
         
-        <div class="info-box" id="info" style="margin-bottom: 20px; color: var(--text-secondary);">Ready.</div>
-        
-        <div class="viz-container">
-            <div>
-                <div class="row-label">Input Array (Current Element i)</div>
-                <div class="bars-area" id="input-area"></div>
-            </div>
-            <div>
-                <div class="row-label">Current Accumulation (Local Max)</div>
-                <div class="bars-area" id="acc-area"></div>
+        <div class="stats-panel">
+            <div class="stat-item">
+                <div class="stat-label">Global Max (res)</div>
+                <div class="stat-val" id="global-max-val">-∞</div>
             </div>
         </div>
 
-        <div class="inputs">
+        <div class="info-box" id="info" style="margin-bottom: 20px; color: var(--text-secondary); border-left: 3px solid var(--border); padding-left: 15px; font-size: 14px; min-height: 40px;">Ready.</div>
+        
+        <div class="viz-container">
+            <div>
+                <div class="row-label">Input Array A</div>
+                <div class="grid-area grid-a" id="input-grid"></div>
+            </div>
+            <div>
+                <div class="row-label">DP Array (current_max sums)</div>
+                <div class="grid-area grid-dp" id="dp-grid"></div>
+            </div>
+        </div>
+
+        <div class="inputs" style="margin-top: 30px; margin-bottom: 0;">
             <button onclick="go(-1)">← Back</button>
             <button onclick="go(1)" class="primary">Next Step →</button>
             <button onclick="resetAll()">Reset</button>
@@ -132,19 +167,23 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
 <script>
     // DATABASE - Strict Lab Module Style
     const db = {
         theory: {
-            EN: "<h3>Kadane's Algorithm</h3><p>Used to find the maximum sum of a contiguous subarray. It operates in $O(N)$ time by maintaining a <span class='math'>local_max</span> (best sum ending at current index) and a <span class='math'>global_max</span> (best sum seen so far).</p>",
-            RU: "<h3>Алгоритм Кадана</h3><p>Используется для поиска подмассива с максимальной суммой за $O(N)$. Алгоритм сравнивает, что выгоднее: прибавить текущее число к накопленной сумме или начать новый подмассив с текущего числа.</p>"
+            v1: "<h3>Maximum Subarray Sum</h3><p>Kadane's algorithm is a greedy/dynamic programming approach that finds the maximum sum of a contiguous subarray in $O(N)$ time. In one pass, it decides at each element whether to append it to the current running sum or start a new subarray from that element.</p><p>Formula: <span class='math'>cur = max(A[i], cur + A[i])</span></p>",
+            v2: "<h3>Why it works</h3><p>The core idea is that if the running sum (<span class='math'>cur</span>) becomes negative, it will only drag down any future elements. In that case, we are better off starting a 'fresh' subarray from the current element <span class='math'>A[i]</span>.</p>"
         },
         python: {
-            v1: "def kadane(arr):\n    max_so_far = arr[0]\n    current_max = arr[0]\n    \n    for i in range(1, len(arr)):\n        current_max = max(arr[i], current_max + arr[i])\n        max_so_far = max(max_so_far, current_max)\n        \n    return max_so_far",
-            v2: "# Concise version\ndef kadane(arr):\n    cur = res = arr[0]\n    for x in arr[1:]: \n        cur = max(x, cur + x)\n        res = max(res, cur)\n    return res"
+            v1: "def kadane(A):\n    # Standard greedy implementation\n    res = A[0] # Global max\n    cur = A[0] # Local max\n    \n    for i in range(1, len(A)):\n        # Decide: continue chain or start new\n        cur = max(A[i], cur + A[i])\n        res = max(res, cur)\n        \n    return res",
+            v2: "# Concise version\ndef kadane(A):\n    cur = res = A[0]\n    for x in A[1:]: \n        cur = max(x, cur + x)\n        res = max(res, cur)\n    return res"
         },
         cpp: {
-            v1: "int maxSubArray(vector<int>& nums) {\n    int res = nums[0], cur = nums[0];\n    for(int i = 1; i < nums.size(); i++) {\n        cur = max(nums[i], cur + nums[i]);\n        res = max(res, cur);\n    }\n    return res;\n}"
+            v1: "// Using vectors\nint maxSubArray(vector<int>& nums) {\n    int res = nums[0], cur = nums[0];\n    for(int i = 1; i < nums.size(); i++) {\n        // Formula applied directly\n        cur = max(nums[i], cur + nums[i]);\n        res = max(res, cur);\n    }\n    return res;\n}"
         }
     };
 
@@ -161,7 +200,7 @@
     function renderContextControls() {
         const panel = document.getElementById('context-panel');
         panel.innerHTML = '';
-        const options = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        const options = currentMainTab === 'theory' ? ['Theory', 'Greedy Logic'] : ['v1', 'v2'];
         
         options.forEach((opt, idx) => {
             const b = document.createElement('button');
@@ -170,18 +209,25 @@
             b.onclick = () => {
                 document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
                 b.classList.add('active');
-                if (currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[opt];
-                else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][opt] || db[currentMainTab]['v1'];
+                if (currentMainTab === 'theory') {
+                    document.getElementById('theory-display').innerHTML = (opt === 'Theory' ? db.theory.v1 : db.theory.v2);
+                } else {
+                    document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][opt] || db[currentMainTab]['v1'];
+                    Prism.highlightElement(document.getElementById(currentMainTab + '-display'));
+                }
             };
             panel.appendChild(b);
         });
         // Initial load
-        if (currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[options[0]];
-        else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][options[0]];
+        if (currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory.v1;
+        else {
+            document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][options[0]];
+            Prism.highlightElement(document.getElementById(currentMainTab + '-display'));
+        }
     }
 
     // VISUALIZATION LOGIC
-    let arr = [], steps = [], cur = 0;
+    let A = [], dp = [], steps = [], cur = 0;
 
     function randomize() {
         const r = Array.from({length: 10}, () => Math.floor(Math.random() * 21) - 10);
@@ -190,83 +236,130 @@
     }
 
     function rebuild() {
-        arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        A = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        // Simple default if empty
+        if (A.length === 0) A = [1, -2, 3];
         init();
     }
 
     function init() {
         steps = [];
-        let currentMax = -Infinity;
-        let globalMax = -Infinity;
+        dp = Array(A.length).fill(null);
+        let res = A[0];
+        let cur_max = A[0];
         let start = 0, end = 0, tempStart = 0;
 
-        steps.push({ idx: -1, curSum: 0, bestSum: -Infinity, range: [-1, -1], msg: "Click Next to start scanning." });
+        // Step 0: Initialize
+        steps.push({ 
+            idx: -1, cur_max: null, global_max: null, dp: [...dp], range: [-1, -1],
+            msg: "Initialize: <span class='math'>res = A[0]</span>, <span class='math'>cur = A[0]</span>." 
+        });
 
-        for (let i = 0; i < arr.length; i++) {
-            let prevSum = currentMax;
-            if (currentMax < 0) {
-                currentMax = arr[i];
+        dp[0] = A[0];
+        // Step 0.5: First element handled
+        steps.push({ 
+            idx: 0, cur_max: A[0], global_max: A[0], dp: [...dp], range: [0, 0],
+            msg: `Index 0: Local max is <b>${A[0]}</b>. res is initialized.` 
+        });
+
+        for (let i = 1; i < A.length; i++) {
+            let prev_cur_max = cur_max;
+            let valA = A[i];
+            
+            // --- SUB-STEP: DECISION TIME ---
+            let choiceContinue = prev_cur_max + valA;
+            let choiceReset = valA;
+            
+            let reset = (choiceReset > choiceContinue);
+            cur_max = Math.max(choiceReset, choiceContinue);
+            dp[i] = cur_max;
+
+            // Step I.1: The Comparison
+            steps.push({
+                idx: i, cur_max: cur_max, global_max: res, dp: [...dp], range: [start, end], 
+                comp: { continue: choiceContinue, reset: choiceReset, resetSelected: reset, currentK: i },
+                msg: `Step ${i}: Is it better to start a new subarray (<b>${choiceReset}</b>) or continue (<b>${choiceContinue}</b>)?`
+            });
+
+            // Step I.2: The decision and assignment
+            let stepMsg = `Local max is now <b>${cur_max}</b>. `;
+            if (reset) {
+                stepMsg += `Started new chain from A[${i}].`;
                 tempStart = i;
             } else {
-                currentMax += arr[i];
+                stepMsg += `Extended chain.`;
             }
 
-            let msg = `Step ${i}: Value is <b>${arr[i]}</b>. `;
-            if (arr[i] > prevSum + arr[i] && i > 0) msg += `Discarding previous negative sum. New chain starts here.`;
-            else msg += `Adding to current chain. Total: <b>${currentMax}</b>.`;
-
-            if (currentMax > globalMax) {
-                globalMax = currentMax;
+            let newGlobalMax = false;
+            if (cur_max > res) {
+                res = cur_max;
                 start = tempStart;
                 end = i;
-                msg += ` <span style="color:var(--accent)">New Global Max!</span>`;
+                newGlobalMax = true;
+                stepMsg += ` <span style="color:var(--accent)">New Global Max res = <b>${res}</b>!</span>`;
             }
 
-            steps.push({ idx: i, curSum: currentMax, bestSum: globalMax, range: [start, end], msg: msg });
+            steps.push({
+                idx: i, cur_max: cur_max, global_max: res, dp: [...dp], range: [start, end],
+                highlightGlobalMax: newGlobalMax,
+                msg: stepMsg
+            });
         }
-        steps.push({ ...steps[steps.length-1], msg: `Finished. Max Subarray Sum is <b>${globalMax}</b>.` });
+        steps.push({ ...steps[steps.length-1], done: true, msg: `Finished! Maximum Subarray Sum is <b>${res}</b>.` });
         cur = 0; render();
+    }
+
+    function createGrid(containerId, data, s, type) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        if (!data || data.length === 0) return;
+
+        data.forEach((val, i) => {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.textContent = val === null ? '' : val;
+
+            if (type === 'A') {
+                if (i === s.idx) {
+                    cell.classList.add('active');
+                    cell.innerHTML += `<div class="ptr ptr-i">A[${i}]</div>`;
+                }
+                // Check if inside global max range
+                if (s.range && i >= s.range[0] && i <= s.range[1]) {
+                    cell.classList.add('in-global-max');
+                }
+                // Highlight comparison options
+                if (s.comp && s.comp.currentK === i) {
+                    cell.classList.add('option-reset'); // Compare against A[i]
+                }
+            } else if (type === 'DP') {
+                if (val !== null) cell.classList.add('processed');
+                if (i === s.idx) cell.classList.add('current-dp');
+                
+                // Highlight comparison option (previous DP cell)
+                if (s.comp && i === s.comp.currentK - 1) {
+                    cell.classList.add('option-continue');
+                }
+            }
+
+            container.appendChild(cell);
+        });
     }
 
     function render() {
         const s = steps[cur];
-        const inputArea = document.getElementById('input-area');
-        const accArea = document.getElementById('acc-area');
-        inputArea.innerHTML = ''; accArea.innerHTML = '';
-        
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
 
-        arr.forEach((val, i) => {
-            // Row 1: Input
-            const b1 = document.createElement('div');
-            b1.className = 'bar ' + (val >= 0 ? 'pos' : 'neg');
-            if (i === s.idx) b1.classList.add('active');
-            if (i >= s.range[0] && i <= s.range[1]) b1.classList.add('in-max');
-            b1.style.height = (Math.abs(val) * 3 + 30) + 'px';
-            b1.textContent = val;
-            inputArea.appendChild(b1);
+        // Create grids for A and DP
+        createGrid('input-grid', A, s, 'A');
+        createGrid('dp-grid', s.dp, s, 'DP');
 
-            // Row 2: Accumulation
-            const b2 = document.createElement('div');
-            b2.className = 'bar';
-            if (i <= s.idx) {
-                // We show the "local_max" history for each step
-                // To keep it simple, we only show the value at current step i
-                if (i === s.idx) {
-                    b2.classList.add('current-chain');
-                    b2.style.height = (Math.abs(s.curSum) * 2 + 30) + 'px';
-                    b2.textContent = s.curSum;
-                } else {
-                    b2.style.height = '10px';
-                    b2.style.opacity = '0.1';
-                }
-            } else {
-                b2.style.height = '2px';
-                b2.style.opacity = '0.1';
-            }
-            accArea.appendChild(b2);
-        });
+        // Global Max Panel
+        const gMaxEl = document.getElementById('global-max-val');
+        gMaxEl.textContent = s.global_max === null ? '-∞' : s.global_max;
+        if (s.highlightGlobalMax) gMaxEl.classList.add('new-max');
+        else gMaxEl.classList.remove('new-max');
     }
 
     function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
