@@ -195,26 +195,33 @@
         initSort();
     }
 
-    function initSort() {
+   function initSort() {
         steps = [];
         let a = [...items], n = a.length;
         
-        steps.push({ a: [...a], keyIdx: -1, compIdx: -1, sortedCount: 1, msg: "First element is considered sorted." });
+        // Начальное состояние
+        steps.push({ a: [...a], keyIdx: -1, compIdx: -1, sortedCount: 1, keyVal: null, msg: "First element is considered sorted." });
 
         for (let i = 1; i < n; i++) {
             let key = a[i];
             let j = i - 1;
-            steps.push({ a: [...a], keyIdx: i, compIdx: j, sortedCount: i, msg: `Picking <b>${key}</b> as the current key.` });
+            
+            // Шаг 1: Поднимаем ключ (теперь мы запомнили его значение отдельно)
+            steps.push({ a: [...a], keyIdx: i, compIdx: j, sortedCount: i, keyVal: key, isShifting: false, msg: `Picking <b>${key}</b> as the current key.` });
 
             while (j >= 0 && a[j] > key) {
-                steps.push({ a: [...a], keyIdx: j + 1, compIdx: j, sortedCount: i, msg: `Shift: ${a[j]} > ${key}. Moving <b>${a[j]}</b> to the right.` });
+                // Шаг 2: Сдвигаем элемент вправо
                 a[j + 1] = a[j];
                 j--;
+                // Здесь мы передаем j+1 как место, где сейчас "пусто" или находится дубликат
+                steps.push({ a: [...a], keyIdx: j + 1, compIdx: j + 1, sortedCount: i, keyVal: key, isShifting: true, msg: `Shift: Moving ${a[j+1]} to the right.` });
             }
+            
+            // Шаг 3: Вставляем ключ на место
             a[j + 1] = key;
-            steps.push({ a: [...a], keyIdx: j + 1, compIdx: -1, sortedCount: i + 1, msg: `Placed <b>${key}</b> at position ${j + 1}.` });
+            steps.push({ a: [...a], keyIdx: j + 1, compIdx: -1, sortedCount: i + 1, keyVal: null, isShifting: false, msg: `Placed <b>${key}</b> at position ${j + 1}.` });
         }
-        steps.push({ a: [...a], keyIdx: -1, compIdx: -1, sortedCount: n, msg: "<b>Sorting complete!</b>" });
+        steps.push({ a: [...a], keyIdx: -1, compIdx: -1, sortedCount: n, keyVal: null, msg: "<b>Sorting complete!</b>" });
         cur = 0; render();
     }
 
@@ -228,20 +235,31 @@
         s.a.forEach((val, idx) => {
             const bar = document.createElement('div');
             bar.className = 'bar';
-            if (idx < s.sortedCount) bar.classList.add('sorted');
-            if (idx === s.keyIdx) bar.classList.add('is-key');
-            if (idx === s.compIdx) bar.classList.add('comparing');
+            
+            // Логика отображения: если это место ключа во время сдвига, 
+            // показываем пустую ячейку или ключ
+            let displayVal = val;
+            if (idx === s.keyIdx && s.keyVal !== null) {
+                bar.classList.add('is-key');
+                displayVal = s.keyVal;
+            } else if (idx < s.sortedCount) {
+                bar.classList.add('sorted');
+            }
 
-            bar.style.height = `${50 + (val/maxVal)*80}px`;
-            bar.innerHTML = val;
+            // Подсвечиваем ячейку, которая сравнивается/сдвигается
+            if (idx === s.compIdx && s.isShifting) bar.classList.add('comparing');
 
-            if (idx === s.keyIdx) bar.innerHTML += `<div class="ptr-label">Key</div>`;
-            if (idx === s.compIdx) bar.innerHTML += `<div class="ptr-label">J</div>`;
+            bar.style.height = `${50 + (displayVal/maxVal)*80}px`;
+            bar.innerHTML = displayVal;
+
+            if (idx === s.keyIdx && s.keyVal !== null) {
+                bar.innerHTML += `<div class="ptr-label">Key</div>`;
+            }
 
             container.appendChild(bar);
         });
     }
-
+    
     function go(dir) { 
         if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); }
         else if (timer) toggleAuto();
