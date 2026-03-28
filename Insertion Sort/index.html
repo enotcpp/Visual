@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insertion Sort | AlgoView Lab</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-soft: rgba(127, 119, 221, 0.1);
+            --border: #313136;
+            --code-bg: #0d0d0f;
+            --key-highlight: #e67e22; 
+            --accent-secondary: #1d9e75;
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        h1 { font-size: 22px; margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+
+        .visualizer-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 10px 15px; border-radius: 8px; outline: none; width: 220px;
+        }
+        
+        button {
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button.primary { background: var(--accent); color: white; border: none; }
+
+        .info-box { min-height: 40px; color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+        .info-box b { color: var(--accent); }
+
+        .array-container { 
+            display: flex; justify-content: center; align-items: flex-end; 
+            gap: 10px; margin: 40px 0; height: 160px; 
+        }
+
+        .bar {
+            width: 50px; background: var(--bg-main); border: 1px solid var(--border);
+            border-radius: 8px; display: flex; flex-direction: column; align-items: center; 
+            justify-content: flex-end; padding-bottom: 10px; font-size: 14px; font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+        }
+
+        .bar.sorted { background: var(--accent-secondary); border-color: transparent; color: white; }
+        .bar.is-key { background: var(--key-highlight); border-color: transparent; color: white; transform: translateY(-15px); box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4); }
+        .bar.comparing { border-color: var(--accent); background: var(--accent-soft); }
+
+        .ptr-label {
+            position: absolute; top: -25px; font-size: 9px;
+            text-transform: uppercase; font-weight: 800; color: var(--text-secondary);
+        }
+
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; letter-spacing: 0.5px; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+        .tab-content { display: none; padding: 25px; line-height: 1.6; min-height: 200px; }
+        .tab-content.active { display: block; }
+        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="visualizer-card">
+        <h1>📥 Insertion Sort Visualizer</h1>
+        <div class="inputs">
+            <input id="arr-input" type="text" value="34, 8, 64, 51, 32, 21">
+            <button onclick="rebuild()" class="primary">Load Array</button>
+            <button onclick="randomize()">Random</button>
+        </div>
+
+        <div class="info-box" id="info">Press Next to start.</div>
+        
+        <div class="array-container" id="array-box"></div>
+
+        <div class="inputs" style="margin-top: 30px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code class="language-python" id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp" id="cpp-display"></code></pre></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
+<script>
+    const db = {
+        theory: {
+            EN: "<h3>Insertion Sort</h3><p>Builds the final sorted array one item at a time. It takes each element from the unsorted part and finds its appropriate position within the sorted part.</p><b>Complexity:</b> O(N²).",
+            RU: "<h3>Сортировка вставками</h3><p>Алгоритм постепенно формирует отсортированную часть массива. На каждом шаге берется элемент и вставляется в правильную позицию среди уже отсортированных элементов.</p><b>Сложность:</b> O(N²)."
+        },
+        python: {
+            v1: "def insertion_sort(arr):\n    for i in range(1, len(arr)):\n        key = arr[i]\n        j = i - 1\n        while j >= 0 and key < arr[j]:\n            arr[j + 1] = arr[j]\n            j -= 1\n        arr[j + 1] = key",
+            v2: "# Concise version\nfor i in range(1, len(arr)):\n    j = i\n    while j > 0 and arr[j-1] > arr[j]:\n        arr[j], arr[j-1] = arr[j-1], arr[j]\n        j -= 1"
+        },
+        cpp: {
+            v1: "void insertionSort(int arr[], int n) {\n    for (int i = 1; i < n; i++) {\n        int key = arr[i];\n        int j = i - 1;\n        while (j >= 0 && arr[j] > key) {\n            arr[j + 1] = arr[j];\n            j--;\n        }\n        arr[j + 1] = key;\n    }\n}",
+            v2: "// Using std::upper_bound\nfor (auto it = v.begin(); it != v.end(); ++it) {\n    std::rotate(std::upper_bound(v.begin(), it, *it), it, std::next(it));\n}"
+        }
+    };
+
+    let items = [], steps = [], cur = 0, timer = null, currentMainTab = 'theory';
+
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
+
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active'); updateContent(item);
+            };
+            panel.appendChild(b);
+        });
+        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
+    }
+
+    function updateContent(key) {
+        const display = document.getElementById(currentMainTab + '-display');
+        if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
+        else {
+            display.textContent = db[currentMainTab][key];
+            Prism.highlightElement(display);
+        }
+    }
+
+    function randomize() {
+        let r = [];
+        for(let i=0; i<6; i++) r.push(Math.floor(Math.random() * 50) + 5);
+        document.getElementById('arr-input').value = r.join(', ');
+        rebuild();
+    }
+
+    function rebuild() {
+        const val = document.getElementById('arr-input').value;
+        items = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if (timer) toggleAuto();
+        initSort();
+    }
+
+    function initSort() {
+        steps = [];
+        let a = [...items], n = a.length;
+        
+        steps.push({ a: [...a], keyIdx: -1, compIdx: -1, sortedCount: 1, msg: "First element is considered sorted." });
+
+        for (let i = 1; i < n; i++) {
+            let key = a[i];
+            let j = i - 1;
+            steps.push({ a: [...a], keyIdx: i, compIdx: j, sortedCount: i, msg: `Picking <b>${key}</b> as the current key.` });
+
+            while (j >= 0 && a[j] > key) {
+                steps.push({ a: [...a], keyIdx: j + 1, compIdx: j, sortedCount: i, msg: `Shift: ${a[j]} > ${key}. Moving <b>${a[j]}</b> to the right.` });
+                a[j + 1] = a[j];
+                j--;
+            }
+            a[j + 1] = key;
+            steps.push({ a: [...a], keyIdx: j + 1, compIdx: -1, sortedCount: i + 1, msg: `Placed <b>${key}</b> at position ${j + 1}.` });
+        }
+        steps.push({ a: [...a], keyIdx: -1, compIdx: -1, sortedCount: n, msg: "<b>Sorting complete!</b>" });
+        cur = 0; render();
+    }
+
+    function render() {
+        const s = steps[cur], container = document.getElementById('array-box');
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        container.innerHTML = '';
+        const maxVal = Math.max(...items);
+
+        s.a.forEach((val, idx) => {
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            if (idx < s.sortedCount) bar.classList.add('sorted');
+            if (idx === s.keyIdx) bar.classList.add('is-key');
+            if (idx === s.compIdx) bar.classList.add('comparing');
+
+            bar.style.height = `${50 + (val/maxVal)*80}px`;
+            bar.innerHTML = val;
+
+            if (idx === s.keyIdx) bar.innerHTML += `<div class="ptr-label">Key</div>`;
+            if (idx === s.compIdx) bar.innerHTML += `<div class="ptr-label">J</div>`;
+
+            container.appendChild(bar);
+        });
+    }
+
+    function go(dir) { 
+        if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); }
+        else if (timer) toggleAuto();
+    }
+
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 600); }
+    }
+
+    renderContextControls();
+    rebuild();
+</script>
+</body>
+</html>
