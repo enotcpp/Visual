@@ -18,48 +18,50 @@
             --orange: #e67e22;
         }
 
-        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-main); color: var(--text-main); }
         .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-        .visualizer-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 40px; }
         
+        .visualizer-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 40px; }
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .stats { display: flex; gap: 30px; }
         .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; }
         .stat-val { font-size: 24px; font-weight: bold; font-family: monospace; }
 
         .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
-        .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; outline: none; width: 280px; }
+        .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; outline: none; flex-grow: 1; }
         
-        button { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer; }
+        button { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button:hover { border-color: var(--accent); }
         button.primary { background: var(--accent); color: white; border: none; }
 
         .grid-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
-        .grid-area { display: flex; justify-content: center; gap: 10px; margin-bottom: 35px; }
+        .grid-area { display: flex; justify-content: center; gap: 10px; margin-bottom: 35px; min-height: 60px; }
         
         .cell {
             width: 55px; height: 55px; background: var(--bg-input); border: 1px solid var(--border);
             border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; font-family: monospace; transition: 0.2s;
+            font-size: 18px; font-weight: bold; font-family: monospace; transition: 0.3s;
         }
 
-        /* --- ПРАВИЛА ВЫДЕЛЕНИЯ --- */
-        /* Массив A */
-        .a-chain { border: 3px solid var(--pos) !important; } /* Зеленая рамка для всей цепочки */
-        .a-current { border: 3px solid var(--orange) !important; } /* Оранжевая для текущего */
+        /* Выделение */
+        .a-chain { border: 3px solid var(--pos) !important; } 
+        .a-current { border: 3px solid var(--orange) !important; color: var(--orange); }
+        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .dp-active { background: var(--pos) !important; color: white; border-color: transparent !important; }
+        .dim { opacity: 0.3; transform: scale(0.9); }
 
-        /* Массив DP */
-        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 10px rgba(255,255,255,0.3); } /* Белая рамка на -2 */
-        .dp-active { background: var(--pos) !important; color: white; border: 1px solid var(--border) !important; } /* Зеленая заливка суммы */
-        .dim { opacity: 0.3; }
-
-        /* ТАБЫ */
+        /* Табы и контекст */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
-        .tab-content { display: none; padding: 30px; }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 20px; }
+        .sub-btn { font-size: 10px; padding: 4px 8px; opacity: 0.6; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
+
+        .tab-content { display: none; padding: 30px; min-height: 180px; }
         .tab-content.active { display: block; }
-        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; }
+        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -69,8 +71,8 @@
         <div class="header-top">
             <h1>∑ Kadane's Algorithm</h1>
             <div class="stats">
-                <div><div class="stat-label">Local Min</div><div class="stat-val" style="color:var(--orange)">-2</div></div>
-                <div><div class="stat-label">Global Max</div><div class="stat-val" id="g-max">0</div></div>
+                <div><div class="stat-label">Local Min (Drop)</div><div class="stat-val" style="color:var(--text-main)">-2</div></div>
+                <div><div class="stat-label">Global Max (Res)</div><div class="stat-val" id="g-max" style="color:var(--pos)">0</div></div>
             </div>
         </div>
 
@@ -82,12 +84,13 @@
         <div class="grid-label">Input Array A (Green: Current Chain)</div>
         <div class="grid-area" id="grid-a"></div>
 
-        <div class="grid-label">DP Array (White: Drop Point | Green: Sum)</div>
+        <div class="grid-label">DP Array (White: Drop Point | Green Fill: Current Sum)</div>
         <div class="grid-area" id="grid-dp"></div>
 
         <div class="inputs">
             <button onclick="go(-1)">← Back</button>
             <button onclick="go(1)" class="primary">Next Step →</button>
+            <button onclick="autoPlay()">Auto Play</button>
             <button onclick="resetAll()">Reset</button>
             <span id="step-info" style="margin-left: auto; color: var(--text-secondary); font-size: 13px;"></span>
         </div>
@@ -95,30 +98,36 @@
 
     <div class="lab-info">
         <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'code')">Implementation</button>
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
         </div>
-        <div id="theory" class="tab-content active">
-            <h3>Как это работает</h3>
-            <p>Мы идем по массиву и копим сумму. Если сумма на предыдущем шаге была настолько плохой, что выгоднее начать заново с текущего числа — мы делаем "сброс".</p>
-            <p>Ячейка с <b>белой рамкой</b> — это тот самый "минимум", после которого мы начали новую, более успешную цепочку.</p>
-        </div>
-        <div id="code" class="tab-content">
-            <pre><code>// JavaScript
-function kadane(arr) {
-  let curSum = arr[0], maxSum = arr[0];
-  for(let i = 1; i < arr.length; i++) {
-    curSum = Math.max(arr[i], curSum + arr[i]);
-    maxSum = Math.max(maxSum, curSum);
-  }
-  return maxSum;
-}</code></pre>
-        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code id="cpp-display"></code></pre></div>
     </div>
 </div>
 
 <script>
-    let A = [], steps = [], curIdx = 0;
+    const db = {
+        theory: {
+            EN: "<h3>Maximum Subarray Sum</h3><p>Kadane's algorithm scans the array and at each position decides whether to extend the existing subarray or start a new one from the current element.</p>",
+            DE: "<h3>Maximale Teilsurmme</h3><p>Der Kadane-Algorithmus durchläuft das Array und entscheidet an jeder Position, ob die bestehende Teilfolge erweitert или eine neue begonnen wird.</p>",
+            UKR: "<h3>Алгоритм Кадана</h3><p>Ми шукаємо підмасив із максимальною сумою. Якщо попередня сума стає меншою за поточний елемент — ми починаємо нову цепочку.</p>",
+            RU: "<h3>Алгоритм Кадана</h3><p>Алгоритм находит подмассив с максимальной суммой. Если накопленная сумма становится хуже, чем просто текущее число — происходит «сброс» (Drop Point).</p>"
+        },
+        python: {
+            v1: "def kadane(arr):\n    max_so_far = current_max = arr[0]\n    for x in arr[1:]:\n        current_max = max(x, current_max + x)\n        max_so_far = max(max_so_far, current_max)\n    return max_so_far",
+            v2: "# With indices\ndef kadane_indices(arr):\n    # Returns (max_sum, start, end)\n    ..."
+        },
+        cpp: {
+            v1: "int kadane(vector<int>& nums) {\n    int cur = 0, res = nums[0];\n    for(int x : nums) {\n        cur = max(x, cur + x);\n        res = max(res, cur);\n    }\n    return res;\n}",
+            v2: "// Using std::max\n#include <algorithm>\n..."
+        }
+    };
+
+    let A = [], steps = [], curIdx = 0, playInterval = null;
 
     function rebuild() {
         A = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
@@ -134,23 +143,17 @@ function kadane(arr) {
         steps.push({ i: 0, dp: [...dp], res: gMax, chain: [0, 0], drop: -1 });
 
         for (let i = 1; i < A.length; i++) {
-            let restart = A[i] > (curSum + A[i]);
-            if (restart) {
-                tempStart = i;
-                curSum = A[i];
+            if (A[i] > (curSum + A[i])) {
+                tempStart = i; curSum = A[i];
             } else {
                 curSum += A[i];
             }
             dp[i] = curSum;
             if (curSum > gMax) gMax = curSum;
-
             steps.push({
-                i: i, 
-                dp: [...dp], 
-                res: gMax, 
+                i: i, dp: [...dp], res: gMax, 
                 chain: [tempStart, i],
-                // Белая рамка на индексе 2 (-2), когда мы дошли до 3 (число 4)
-                drop: i >= 3 ? 2 : -1 
+                drop: (i >= 3 && A[2] === -2) ? 2 : -1 // Фиксируем drop point на -2 для наглядности
             });
         }
         curIdx = 0; render();
@@ -164,7 +167,6 @@ function kadane(arr) {
         document.getElementById('step-info').textContent = `Step ${curIdx + 1}/${steps.length}`;
 
         A.forEach((val, i) => {
-            // ARRAY A
             const cA = document.createElement('div');
             cA.className = 'cell';
             if (i >= s.chain[0] && i <= s.chain[1]) cA.classList.add('a-chain');
@@ -172,26 +174,63 @@ function kadane(arr) {
             cA.textContent = val;
             gA.appendChild(cA);
 
-            // DP ARRAY
             const cD = document.createElement('div');
             cD.className = 'cell' + (s.dp[i] === null ? ' dim' : '');
-            if (i === s.drop) cD.classList.add('drop-point'); // Белая рамка на -2
-            if (i === s.i) cD.classList.add('dp-active'); // Зеленая заливка суммы
+            if (i === s.drop) cD.classList.add('drop-point');
+            if (i === s.i) cD.classList.add('dp-active');
             cD.textContent = s.dp[i] === null ? '' : s.dp[i];
             gDP.appendChild(cD);
         });
     }
 
-    function go(d) { if(curIdx+d >= 0 && curIdx+d < steps.length) { curIdx+=d; render(); } }
-    function resetAll() { curIdx = 0; render(); }
-    function switchTab(btn, id) {
+    function go(d) { 
+        if(curIdx+d >= 0 && curIdx+d < steps.length) { curIdx+=d; render(); } 
+        else { clearInterval(playInterval); }
+    }
+
+    function autoPlay() {
+        clearInterval(playInterval);
+        curIdx = 0;
+        playInterval = setInterval(() => go(1), 800);
+    }
+
+    function resetAll() { clearInterval(playInterval); curIdx = 0; render(); }
+
+    // ТАБЫ
+    let currentMainTab = 'theory';
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
-        document.getElementById(id).classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
+
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel');
+        panel.innerHTML = '';
+        const options = currentMainTab === 'theory' ? ['EN', 'DE', 'UKR', 'RU'] : ['v1', 'v2'];
+        
+        options.forEach((opt, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = opt;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active');
+                if(currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[opt];
+                else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][opt];
+            };
+            panel.appendChild(b);
+        });
+        
+        if(currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[options[0]];
+        else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][options[0]];
     }
 
     rebuild();
+    renderContextControls();
 </script>
 </body>
 </html>
