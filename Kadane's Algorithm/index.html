@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kadane's Algorithm | AlgoView Lab</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-soft: rgba(127, 119, 221, 0.1);
+            --border: #313136;
+            --code-bg: #0d0d0f;
+            --pos-glow: rgba(46, 204, 113, 0.2);
+            --neg-glow: rgba(231, 76, 60, 0.2);
+        }
+
+        body { 
+            margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        h1 { font-size: 22px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+
+        .visualizer-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+        }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 25px; }
+        input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 10px 15px; border-radius: 8px; flex-grow: 1;
+            font-family: monospace;
+        }
+        
+        button {
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        button.primary { background: var(--accent); color: white; border: none; }
+
+        .info-box { min-height: 50px; color: var(--text-secondary); font-size: 14px; margin-bottom: 30px; border-left: 3px solid var(--border); padding-left: 15px; line-height: 1.5; }
+        .info-box b { color: var(--accent); }
+
+        /* ARRAY VISUALIZATION */
+        .array-container {
+            display: flex; justify-content: center; gap: 10px; margin: 50px 0; height: 100px; align-items: flex-end;
+        }
+
+        .bar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; }
+        
+        .bar {
+            width: 50px; border: 1px solid var(--border); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg-input);
+        }
+
+        .bar.active { border-color: var(--accent); border-width: 2px; transform: translateY(-5px); }
+        .bar.in-range { background: var(--accent-soft); border-color: var(--accent); }
+        .bar.positive { box-shadow: 0 0 15px var(--pos-glow); }
+        .bar.negative { box-shadow: 0 0 15px var(--neg-glow); }
+
+        .label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; font-weight: bold; }
+
+        /* STATS PANEL */
+        .stats { display: flex; justify-content: center; gap: 40px; margin-bottom: 20px; }
+        .stat-item { text-align: center; }
+        .stat-val { font-size: 24px; font-weight: 800; color: var(--accent); font-family: monospace; }
+        .stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* TABS */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+        pre { margin: 0; border-radius: 10px; background: var(--code-bg) !important; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="visualizer-card">
+        <h1>∑ Kadane's Algorithm</h1>
+        
+        <div class="inputs">
+            <input type="text" id="array-input" value="-2, 1, -3, 4, -1, 2, 1, -5, 4">
+            <button onclick="rebuild()" class="primary">Load</button>
+            <button onclick="randomize()">Random</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Current Sum</div>
+                <div class="stat-val" id="curr-sum">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Max So Far</div>
+                <div class="stat-val" id="max-sum">0</div>
+            </div>
+        </div>
+
+        <div class="info-box" id="info">Press Next Step to start the scan.</div>
+        
+        <div class="array-container" id="visualizer"></div>
+
+        <div class="inputs" style="margin-top: 30px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchTab(this, 'code')">Implementation</button>
+        </div>
+        <div id="theory" class="tab-content active">
+            <h3>Maximum Subarray Sum</h3>
+            <p>Kadane's algorithm scans the array once. At each position, it decides: "Should I add the current element to my existing chain, or start a new chain from here?"</p>
+            <p>Formula: <code style="color: var(--accent)">current_sum = max(x, current_sum + x)</code></p>
+        </div>
+        <div id="code" class="tab-content">
+            <pre><code class="language-python">def kadane(arr):
+    max_so_far = float('-inf')
+    current_max = 0
+    
+    for x in arr:
+        current_max = max(x, current_max + x)
+        max_so_far = max(max_so_far, current_max)
+        
+    return max_so_far</code></pre>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+<script>
+    let array = [], steps = [], cur = 0, timer = null;
+
+    function randomize() {
+        const arr = Array.from({length: 9}, () => Math.floor(Math.random() * 20) - 10);
+        document.getElementById('array-input').value = arr.join(', ');
+        rebuild();
+    }
+
+    function rebuild() {
+        array = document.getElementById('array-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        initSteps();
+    }
+
+    function initSteps() {
+        steps = [];
+        let max_so_far = -Infinity;
+        let current_max = 0;
+        let start = 0, end = 0, s = 0;
+
+        steps.push({ curr: 0, max: 0, idx: -1, range: [-1, -1], msg: "Initialize: current_sum = 0, max_so_far = -∞" });
+
+        for (let i = 0; i < array.length; i++) {
+            current_max += array[i];
+            
+            let reset = false;
+            if (current_max < array[i]) {
+                current_max = array[i];
+                s = i;
+                reset = true;
+            }
+
+            let newMax = false;
+            if (max_so_far < current_max) {
+                max_so_far = current_max;
+                start = s;
+                end = i;
+                newMax = true;
+            }
+
+            steps.push({
+                curr: current_max,
+                max: max_so_far,
+                idx: i,
+                range: [start, end],
+                msg: reset ? 
+                    `Element <b>${array[i]}</b> is better than the previous sum. Starting new chain.` : 
+                    `Adding <b>${array[i]}</b> to current chain. Current sum: <b>${current_max}</b>.`,
+                highlightMax: newMax
+            });
+        }
+        steps.push({ ...steps[steps.length-1], done: true, msg: `Finished! Maximum sum is <b>${max_so_far}</b>.` });
+        cur = 0; render();
+    }
+
+    function render() {
+        const step = steps[cur];
+        const container = document.getElementById('visualizer');
+        container.innerHTML = '';
+
+        array.forEach((val, i) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'bar-wrapper';
+
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.textContent = val;
+            bar.style.height = (Math.abs(val) * 3 + 40) + 'px';
+            
+            if (val >= 0) bar.classList.add('positive');
+            else bar.classList.add('negative');
+
+            if (i === step.idx) bar.classList.add('active');
+            if (i >= step.range[0] && i <= step.range[1]) bar.classList.add('in-range');
+
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.textContent = `i=${i}`;
+
+            wrapper.appendChild(bar);
+            wrapper.appendChild(label);
+            container.appendChild(wrapper);
+        });
+
+        document.getElementById('curr-sum').textContent = step.curr;
+        document.getElementById('max-sum').textContent = step.max === -Infinity ? 0 : step.max;
+        document.getElementById('info').innerHTML = step.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+    }
+
+    function go(dir) {
+        cur = Math.max(0, Math.min(steps.length - 1, cur + dir));
+        render();
+    }
+
+    function toggleAuto() {
+        if (timer) { clearInterval(timer); timer = null; document.getElementById('auto-btn').textContent = "Auto Play"; }
+        else { timer = setInterval(() => { if (cur < steps.length-1) go(1); else toggleAuto(); }, 800); document.getElementById('auto-btn').textContent = "Stop"; }
+    }
+
+    function switchTab(btn, id) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+    }
+
+    rebuild();
+</script>
+</body>
+</html>
