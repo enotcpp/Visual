@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kadane's Algorithm | AlgoView Lab</title>
+    <title>Kadane's Algorithm | Lab Module</title>
     <style>
         :root {
             --bg-main: #141416;
@@ -13,46 +13,66 @@
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
             --border: #313136;
-            --pos: #1d9e75; /* Green */
-            --highlight: #e67e22; /* Orange */
+            --pos: #1d9e75; /* Зеленый */
+            --highlight: #e67e22; /* Оранжевый */
         }
 
-        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
+        body { 
+            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--bg-main); color: var(--text-main); 
+        }
+        
         .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-        .visualizer-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; }
 
-        /* STATS PANEL */
-        .stats-panel { display: flex; justify-content: flex-end; gap: 30px; margin-bottom: 20px; }
+        .visualizer-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+        }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 10px; border-radius: 8px; outline: none; flex-grow: 1;
+            font-family: monospace;
+        }
+
+        .stats-panel { display: flex; justify-content: flex-end; gap: 25px; margin-bottom: 20px; }
         .stat-item { text-align: right; }
-        .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; font-weight: 800; }
-        .stat-val { font-size: 24px; font-weight: 800; color: white; font-family: monospace; }
+        .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-secondary); font-weight: 800; }
+        .stat-val { font-size: 22px; font-weight: 800; font-family: monospace; }
         .stat-val.orange { color: var(--highlight); }
 
-        /* GRID */
-        .viz-container { display: flex; flex-direction: column; gap: 25px; margin: 30px 0; }
+        .viz-container { display: flex; flex-direction: column; gap: 20px; margin: 40px 0; }
         .row-label { font-size: 11px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; }
         .grid-area { display: flex; justify-content: center; gap: 10px; }
         
         .cell {
             width: 55px; height: 55px; background: var(--bg-input); border: 1px solid var(--border);
             border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; font-family: monospace; position: relative;
+            font-size: 18px; font-weight: bold; font-family: monospace; transition: 0.2s;
         }
         
-        /* Состояния ячеек */
+        /* Стили для верхнего массива A */
         .grid-a .cell.active { border: 3px solid var(--highlight); }
         .grid-a .cell.in-max-range { border: 3px solid var(--pos); color: var(--pos); }
 
-        .grid-dp .cell { opacity: 0.4; }
+        /* Стили для нижнего массива DP */
+        .grid-dp .cell { opacity: 0.3; }
         .grid-dp .cell.processed { opacity: 1; }
-        .grid-dp .cell.is-global-winner { background: var(--pos); color: white; border-color: white; }
         
         /* ТА САМАЯ ОРАНЖЕВАЯ РАМКА ДЛЯ ЛОКАЛЬНОГО МИНИМУМА */
-        .grid-dp .cell.chain-start { border: 3px solid var(--highlight); opacity: 1; box-shadow: 0 0 10px rgba(230, 126, 34, 0.3); }
-        /* Подсветка текущего шага заливкой при сбросе */
-        .grid-dp .cell.current-step.reset-trigger { background: var(--highlight); color: white; }
+        .grid-dp .cell.local-min-frame { border: 3px solid var(--highlight); opacity: 1; }
+        
+        /* Оранжевая заливка для точки сброса (нового старта) */
+        .grid-dp .cell.reset-trigger { background: var(--highlight); color: white; border-color: white; opacity: 1; }
+        
+        /* Зеленая заливка для глобального рекорда */
+        .grid-dp .cell.is-global-winner { background: var(--pos); color: white; border-color: white; opacity: 1; }
 
-        button { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: white; cursor: pointer; }
+        button {
+            padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: white; cursor: pointer; font-weight: 600;
+        }
         button.primary { background: var(--accent); border: none; }
     </style>
 </head>
@@ -60,118 +80,158 @@
 
 <div class="wrap">
     <div class="visualizer-section">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
             <h1>∑ Kadane's Algorithm</h1>
             <div class="stats-panel">
                 <div class="stat-item">
-                    <div class="stat-label">Local Start Point</div>
-                    <div class="stat-val orange" id="local-min-val">-</div>
+                    <div class="stat-label">Local Min (Start Point)</div>
+                    <div class="stat-val orange" id="local-min-display">-</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Global Max (res)</div>
-                    <div class="stat-val" id="global-max-val">0</div>
+                    <div class="stat-val" id="global-max-display">0</div>
                 </div>
             </div>
         </div>
+        
+        <div class="inputs">
+            <input id="arr-input" type="text" value="-2, 1, -3, 4, -1, 2, 1, -5, 4">
+            <button onclick="rebuild()" class="primary">Загрузить</button>
+            <button onclick="randomize()">Случайные</button>
+        </div>
 
-        <div id="info" style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;"></div>
-
+        <div id="info" style="margin-bottom: 20px; color: var(--text-secondary); border-left: 3px solid var(--border); padding-left: 15px;"></div>
+        
         <div class="viz-container">
             <div>
-                <div class="row-label">Input Array A</div>
-                <div id="input-grid" class="grid-area"></div>
+                <div class="row-label">Массив A (Источник)</div>
+                <div class="grid-area grid-a" id="input-grid"></div>
             </div>
             <div>
-                <div class="row-label">DP Array (Orange frame = Local Minimum start)</div>
-                <div id="dp-grid" class="grid-area"></div>
+                <div class="row-label">DP Array (Оранжевая рамка: локальный минимум)</div>
+                <div class="grid-area grid-dp" id="dp-grid"></div>
             </div>
         </div>
 
-        <div style="display: flex; gap: 10px;">
-            <button onclick="go(-1)">← Back</button>
-            <button onclick="go(1)" class="primary">Next Step →</button>
-            <button onclick="reset()">Reset</button>
+        <div style="display: flex; gap: 12px;">
+            <button onclick="go(-1)">← Назад</button>
+            <button onclick="go(1)" class="primary">Следующий шаг →</button>
+            <button onclick="resetAll()">Сброс</button>
+            <span id="step-counter" style="margin-left: auto; align-self: center; color: var(--text-secondary);"></span>
         </div>
     </div>
 </div>
 
 <script>
-    let A = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+    let A = [];
     let steps = [];
-    let curStep = 0;
+    let currentStep = 0;
 
-    function init() {
+    function randomize() {
+        const r = Array.from({length: 9}, () => Math.floor(Math.random() * 21) - 10);
+        document.getElementById('arr-input').value = r.join(', ');
+        rebuild();
+    }
+
+    function rebuild() {
+        A = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if (A.length === 0) A = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+        initSteps();
+    }
+
+    function initSteps() {
         steps = [];
         let dp = Array(A.length).fill(null);
-        let res = A[0], current_sum = A[0];
-        let start = 0, end = 0, temp_start = 0;
-        let last_reset_idx = 0; // Индекс локального минимума
+        let res = A[0];
+        let cur_max = A[0];
+        let start = 0, end = 0, tempStart = 0;
+        let localMinIdx = 0; // Индекс ячейки локального минимума
 
-        // Step 0
+        // Начальное состояние
         dp[0] = A[0];
-        steps.push({ idx: 0, dp: [...dp], res, range: [0, 0], winner: 0, localMinIdx: 0, reset: false, msg: "Initialize with A[0]" });
+        steps.push({
+            idx: 0, dp: [...dp], res, range: [0, 0], 
+            localMinIdx: 0, reset: false, winnerIdx: 0,
+            msg: `Инициализация: res = ${A[0]}`
+        });
 
         for (let i = 1; i < A.length; i++) {
-            let restart = A[i] > current_sum + A[i];
+            let restart = (A[i] > cur_max + A[i]);
             
             if (restart) {
-                last_reset_idx = i - 1; // Мы фиксируем точку, ПОСЛЕ которой начался рост
-                temp_start = i;
-                current_sum = A[i];
+                localMinIdx = i - 1; // Предыдущая ячейка была "дном"
+                tempStart = i;
+                cur_max = A[i];
             } else {
-                current_sum += A[i];
+                cur_max += A[i];
             }
-            
-            dp[i] = current_sum;
-            if (current_sum > res) {
-                res = current_sum; start = temp_start; end = i;
+
+            dp[i] = cur_max;
+
+            if (cur_max > res) {
+                res = cur_max;
+                start = tempStart;
+                end = i;
             }
 
             steps.push({
-                idx: i, dp: [...dp], res, range: [start, end], 
-                winner: (dp[i] === res) ? i : steps[steps.length-1].winner, 
-                localMinIdx: last_reset_idx,
+                idx: i, 
+                dp: [...dp], 
+                res, 
+                range: [start, end], 
+                localMinIdx: localMinIdx, 
                 reset: restart,
-                msg: restart ? `Reset! Starting new chain from ${A[i]}` : `Adding ${A[i]} to chain`
+                winnerIdx: dp.indexOf(res),
+                msg: restart ? `Сброс! Новая цепочка с A[${i}]` : `Добавляем A[${i}] к сумме`
             });
         }
+        currentStep = 0;
         render();
     }
 
     function render() {
-        const s = steps[curStep];
+        const s = steps[currentStep];
         const gridA = document.getElementById('input-grid');
         const gridDP = document.getElementById('dp-grid');
         gridA.innerHTML = ''; gridDP.innerHTML = '';
 
-        document.getElementById('global-max-val').textContent = s.res;
-        document.getElementById('local-min-val').textContent = A[s.localMinIdx];
+        document.getElementById('global-max-display').textContent = s.res;
+        document.getElementById('local-min-display').textContent = A[s.localMinIdx];
         document.getElementById('info').textContent = s.msg;
+        document.getElementById('step-counter').textContent = `Шаг ${currentStep + 1} / ${steps.length}`;
 
         A.forEach((val, i) => {
+            // Отрисовка верхнего ряда (A)
             const cellA = document.createElement('div');
-            cellA.className = 'cell' + (i === s.idx ? ' active' : '') + (i >= s.range[0] && i <= s.range[1] ? ' in-max-range' : '');
+            cellA.className = 'cell';
+            if (i === s.idx) cellA.classList.add('active');
+            if (i >= s.range[0] && i <= s.range[1]) cellA.classList.add('in-max-range');
             cellA.textContent = val;
             gridA.appendChild(cellA);
 
+            // Отрисовка нижнего ряда (DP)
             const cellD = document.createElement('div');
             cellD.className = 'cell';
             if (s.dp[i] !== null) cellD.classList.add('processed');
-            if (i === s.winner) cellD.classList.add('is-global-winner');
-            if (i === s.idx && s.reset) cellD.classList.add('current-step', 'reset-trigger');
             
-            // ГЛАВНОЕ: Оранжевая рамка на локальном минимуме
-            if (i === s.localMinIdx) cellD.classList.add('chain-start');
+            // 1. Оранжевая рамка на локальный минимум
+            if (i === s.localMinIdx) cellD.classList.add('local-min-frame');
+            
+            // 2. Оранжевая заливка на текущий элемент при сбросе
+            if (i === s.idx && s.reset) cellD.classList.add('reset-trigger');
+            
+            // 3. Зеленая заливка для лучшего результата
+            if (i === s.winnerIdx && s.dp[i] !== null) cellD.classList.add('is-global-winner');
 
             cellD.textContent = s.dp[i] === null ? '' : s.dp[i];
             gridDP.appendChild(cellD);
         });
     }
 
-    function go(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
-    function reset() { curStep = 0; render(); }
+    function go(dir) { if (currentStep + dir >= 0 && currentStep + dir < steps.length) { currentStep += dir; render(); } }
+    function resetAll() { currentStep = 0; render(); }
 
-    init();
+    rebuild();
 </script>
 </body>
 </html>
