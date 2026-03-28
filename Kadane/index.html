@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Kadane's Final Fix</title>
+    <title>Kadane's Correct Visual</title>
     <style>
         :root { --bg: #141416; --card: #1e1e22; --text: #e1e1e3; --accent: #7f77dd; --border: #313136; --pos: #1d9e75; --orange: #e67e22; }
         body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 40px; }
@@ -14,17 +14,19 @@
         .cell {
             width: 55px; height: 55px; background: #26262a; border: 1px solid var(--border);
             border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; font-family: monospace;
+            font-size: 18px; font-weight: bold; font-family: monospace; position: relative;
         }
 
-        /* БЕЛЫЕ РАМКИ ДЛЯ ТЕХ САМЫХ ТОЧЕК */
-        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 10px rgba(255,255,255,0.3); }
-        .start-point { border: 3px solid #ffffff !important; }
+        /* БЕЛАЯ РАМКА ТОЛЬКО ДЛЯ ТОЧКИ СБРОСА (-2) */
+        .drop-node { border: 3px solid #ffffff !important; }
         
-        .current { border: 2px solid var(--orange); }
-        .is-best { background: var(--pos); color: white; }
+        /* ЗЕЛЕНАЯ ЗАЛИВКА ДЛЯ ТЕКУЩЕЙ СУММЫ (БЕЗ РАМКИ) */
+        .dp-current-sum { background: var(--pos) !important; color: white; border: 1px solid var(--border) !important; }
+        
+        /* ОРАНЖЕВАЯ РАМКА ДЛЯ ТЕКУЩЕГО ИНДЕКСА В МАССИВЕ А */
+        .a-current { border: 3px solid var(--orange) !important; }
+        
         .dim { opacity: 0.3; }
-
         .controls { display: flex; gap: 10px; }
         button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; background: var(--accent); color: white; }
         button.sec { background: var(--bg); border: 1px solid var(--border); }
@@ -36,15 +38,15 @@
     <div class="header">
         <h1>∑ Kadane's Algorithm</h1>
         <div style="display: flex; gap: 30px;">
-            <div><div class="stat-label">Local Min</div><div class="stat-val" style="color:var(--orange)">-2</div></div>
-            <div><div class="stat-label">Global Max</div><div class="stat-val" id="g-max">0</div></div>
+            <div><div class="stat-label">Local Min (Drop Point)</div><div class="stat-val" style="color:var(--orange)">-2</div></div>
+            <div><div class="stat-label">Global Max (res)</div><div class="stat-val" id="g-max">0</div></div>
         </div>
     </div>
 
-    <div class="stat-label">Input Array A</div>
+    <div class="stat-label">INPUT ARRAY A</div>
     <div class="grid" id="grid-a"></div>
 
-    <div class="stat-label">DP Array (White frames: -2 drop & 4 start)</div>
+    <div class="stat-label">DP ARRAY (White border: -2 | Green fill: Current Sum)</div>
     <div class="grid" id="grid-dp"></div>
 
     <div class="controls">
@@ -59,21 +61,20 @@
     let stepIdx = 0, history = [];
 
     function init() {
-        let dp = Array(A.length).fill(null), curMax = A[0], globalMax = A[0];
+        let dp = Array(A.length).fill(null), curSum = A[0], res = A[0];
         dp[0] = A[0];
-        history.push({ dp: [...dp], curI: 0, res: globalMax, drop: -1, start: 0 });
+        history.push({ dp: [...dp], curI: 0, res: res, dropIdx: -1 });
 
         for(let i=1; i<A.length; i++) {
-            let restart = A[i] > (curMax + A[i]);
-            curMax = restart ? A[i] : curMax + A[i];
-            dp[i] = curMax;
-            if (curMax > globalMax) globalMax = curMax;
+            let restart = A[i] > (curSum + A[i]);
+            curSum = restart ? A[i] : curSum + A[i];
+            dp[i] = curSum;
+            if (curSum > res) res = curSum;
 
             history.push({
-                dp: [...dp], curI: i, res: globalMax,
-                // Если мы на шаге с индексом 3 (число 4) или дальше, показываем рамки на 2 и 3
-                drop: i >= 3 ? 2 : -1, 
-                start: i >= 3 ? 3 : -1
+                dp: [...dp], curI: i, res: res,
+                // Фиксируем белую рамку на -2 (индекс 2), если мы прошли этот момент
+                dropIdx: i >= 3 ? 2 : -1 
             });
         }
         render();
@@ -86,16 +87,22 @@
         document.getElementById('g-max').textContent = s.res;
 
         A.forEach((v, i) => {
+            // МАССИВ A
             const cA = document.createElement('div');
-            cA.className = `cell ${i === s.curI ? 'current' : ''}`;
+            cA.className = `cell ${i === s.curI ? 'a-current' : ''}`;
             cA.textContent = v;
             gA.appendChild(cA);
 
+            // МАССИВ DP
             const cD = document.createElement('div');
             cD.className = `cell ${s.dp[i] === null ? 'dim' : ''}`;
-            if (i === s.drop) cD.classList.add('drop-point');
-            if (i === s.start) cD.classList.add('start-point');
-            if (s.dp[i] === s.res && s.dp[i] !== null) cD.classList.add('is-best');
+            
+            // Белая рамка на точку сброса
+            if (i === s.dropIdx) cD.classList.add('drop-node');
+            
+            // Зеленая заливка на текущую сумму (без белой рамки)
+            if (i === s.curI) cD.classList.add('dp-current-sum');
+            
             cD.textContent = s.dp[i] === null ? '' : s.dp[i];
             gDP.appendChild(cD);
         });
