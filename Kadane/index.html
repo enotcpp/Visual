@@ -181,19 +181,29 @@
         document.getElementById('global-max-val').textContent = s.res;
 
         A.forEach((val, i) => {
+            // INPUT ARRAY A
             const cellA = document.createElement('div');
             cellA.className = 'cell' + (i === s.idx ? ' active' : '') + (i >= s.range[0] && i <= s.range[1] ? ' in-max-range' : '');
             cellA.textContent = val;
             gridA.appendChild(cellA);
 
+            // DP ARRAY
             const cellD = document.createElement('div');
             cellD.className = 'cell';
             if (s.dp[i] !== null) cellD.classList.add('processed');
             if (i === s.idx) cellD.classList.add('current-dp');
+            
+            // Если на этом шаге был старт новой цепочки (restart), 
+            // оранжевая ЗАЛИВКА на текущем элементе
             if (i === s.idx && s.restart) cellD.classList.add('option-reset');
+            
             if (i === s.winnerIdx) cellD.classList.add('is-global-winner');
-            // Вот этот момент: выделяем начало текущей цепочки
-            if (i === s.localStart) cellD.classList.add('local-start-node');
+
+            // ИСПРАВЛЕННАЯ ЛОГИКА: 
+            // Оранжевая РАМКА теперь четко на локальном минимуме (начале)
+            if (i === s.localStart) {
+                cellD.classList.add('local-start-node');
+            }
             
             cellD.textContent = s.dp[i] === null ? '' : s.dp[i];
             gridDP.appendChild(cellD);
