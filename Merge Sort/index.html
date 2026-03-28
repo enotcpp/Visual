@@ -201,7 +201,14 @@
         function mergeSort(arr, left, right) {
             if (left >= right) return;
             let mid = Math.floor((left + right) / 2);
-            steps.push({ a: [...arr], range: [left, right], mid, msg: `Dividing range [${left}-${right}].` });
+            
+            // Сохраняем шаг разделения с указателем M
+            steps.push({ 
+                a: [...arr], 
+                range: [left, right], 
+                mid: mid, 
+                msg: `Dividing range [${left}-${right}] at index ${mid}.` 
+            });
             
             mergeSort(arr, left, mid);
             mergeSort(arr, mid + 1, right);
@@ -212,35 +219,32 @@
             let L = arr.slice(left, mid + 1);
             let R = arr.slice(mid + 1, right + 1);
 
-            // ШАГ 1: Показываем, что мы сравниваем ПЕРВЫЕ элементы двух подмассивов
+            // Шаг сравнения: показываем L, R и M (границу между половинками)
             steps.push({ 
                 a: [...arr], 
                 range: [left, right], 
+                mid: mid, 
                 comparing: [left, mid + 1], 
-                msg: `Comparing elements to merge.` 
+                msg: `Comparing elements from left and right halves.` 
             });
 
             let i = 0, j = 0, k = left;
             while (i < L.length && j < R.length) {
-                if (L[i] <= R[j]) {
-                    arr[k] = L[i]; i++;
-                } else {
-                    arr[k] = R[j]; j++;
-                }
+                if (L[i] <= R[j]) { arr[k] = L[i]; i++; } 
+                else { arr[k] = R[j]; j++; }
                 k++;
             }
 
-            // Дозаписываем остатки сразу
             while (i < L.length) { arr[k] = L[i]; i++; k++; }
             while (j < R.length) { arr[k] = R[j]; j++; k++; }
             
-            // ШАГ 2: МГНОВЕННОЕ ОБНОВЛЕНИЕ. 
-            // Мы не делаем промежуточных шагов с дублями, а сразу показываем результат слияния этого диапазона.
+            // Финальный шаг слияния для этого диапазона
             steps.push({ 
                 a: [...arr], 
                 range: [left, right], 
+                mid: mid,
                 isDoneRange: true, 
-                msg: `Range [${left}-${right}] merged and reordered.` 
+                msg: `Range [${left}-${right}] merged successfully.` 
             });
         }
 
@@ -260,17 +264,8 @@
             const bar = document.createElement('div');
             bar.className = 'bar';
             
-            // Подсветка диапазона
-            if (s.range && idx >= s.range[0] && idx <= s.range[1]) {
-                bar.classList.add('active-range');
-            }
-            
-            // Подсветка сравнения
-            if (s.comparing && s.comparing.includes(idx)) {
-                bar.classList.add('comparing');
-            }
-            
-            // Если диапазон уже слит (в этом шаге) — красим в зеленый
+            if (s.range && idx >= s.range[0] && idx <= s.range[1]) bar.classList.add('active-range');
+            if (s.comparing && s.comparing.includes(idx)) bar.classList.add('comparing');
             if (s.isDone || (s.isDoneRange && s.range && idx >= s.range[0] && idx <= s.range[1])) {
                 bar.classList.add('sorted');
             }
@@ -281,6 +276,11 @@
             // Указатели
             if (s.range && idx === s.range[0]) bar.innerHTML += `<div class="ptr-label">L</div>`;
             if (s.range && idx === s.range[1]) bar.innerHTML += `<div class="ptr-label">R</div>`;
+            
+            // Возвращаем указатель M (середина)
+            if (s.mid !== undefined && idx === s.mid) {
+                bar.innerHTML += `<div class="ptr-label" style="top: -40px; color: var(--highlight);">M</div>`;
+            }
 
             container.appendChild(bar);
         });
