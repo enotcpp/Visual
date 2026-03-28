@@ -81,10 +81,12 @@
             display: flex; align-items: center; justify-content: center;
             font-family: monospace; font-size: 18px; font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            color: var(--text-main); border: 1px solid transparent; /* default transparent border */
+            color: var(--text-main); 
+            /* --- FIX: Added base border to define dividers --- */
+            border: 1px solid var(--border); 
         }
 
-        /* --- FIX: Semi-transparent backgrounds and clear values --- */
+        /* Logic highlighters - semitransparent backgrounds and borders for text clarity */
         .grid-a .cell-active { background-color: rgba(230, 126, 34, 0.1); border: 1px dashed var(--highlight-a); color: var(--highlight-a); }
         .grid-b .cell-active { background-color: rgba(29, 158, 117, 0.1); border: 1px dashed var(--highlight-b); color: var(--highlight-b); }
         
@@ -196,10 +198,10 @@
         },
         python: {
             v1: "# Iterative O(rowsA * colsA * colsB)\ndef multiply(A, B):\n    rowsA, colsA = len(A), len(A[0])\n    colsB = len(B[0])\n    C = [[0] * colsB for _ in range(rowsA)]\n    for i in range(rowsA):\n        for j in range(colsB):\n            for k in range(colsA):\n                C[i][j] += A[i][k] * B[k][j]\n    return C",
-            v2: "# Vectorized zip version\nC = [[sum(a*b for a, b in zip(rowA, colB))\n     for colB in zip(*B)] for rowA in A]"
+            v2: "# Concise vectorization version using zip\ndef multiply(A, B):\n    return [[sum(a*b for a, b in zip(rowA, colB))\n            for colB in zip(*B)] for rowA in A]"
         },
         cpp: {
-            v1: "// Naive 3rd loop implementation\nvector<vector<int>> multiply(Mat A, Mat B) {\n    int rA = A.size(), cA = A[0].size(), cB = B[0].size();\n    vector<vector<int>> C(rA, vector<int>(cB, 0));\n    for (int i=0; i<rA; i++)\n        for (int j=0; j<cB; j++)\n            for (int k=0; k<cA; k++)\n                C[i][j] += A[i][k] * B[k][j];\n    return C;\n}"
+            v1: "// Naive 3-loop implementation\nvector<vector<int>> multiply(Mat A, Mat B) {\n    int rA = A.size(), cA = A[0].size(), cB = B[0].size();\n    vector<vector<int>> C(rA, vector<int>(cB, 0));\n    for (int i=0; i<rA; i++)\n        for (int j=0; j<cB; j++)\n            for (int k=0; k<cA; k++)\n                C[i][j] += A[i][k] * B[k][j];\n    return C;\n}"
         }
     };
 
@@ -313,11 +315,18 @@
                 const val = data[i][j];
                 cell.textContent = val === null ? '' : val;
 
+                // Reset specific pair and result styles
+                cell.style.borderWidth = '1px';
+                cell.style.borderStyle = 'solid';
+
+                // --- Base dividing style: always visible ---
+                // (Already handled by createGrid re-instantiating cells and CSS .matrix-cell)
+
                 // Highlight Logic - semitransparent backgrounds
                 if (container.classList.contains('grid-a') && i === activeRow) cell.classList.add('cell-active');
                 if (container.classList.contains('grid-b') && j === activeCol) cell.classList.add('cell-active');
                 
-                // --- FIX: Specific pair highlight doesn't hide text ---
+                // --- Highlight specific pair without hiding text ---
                 if (pairs) {
                    if (container.classList.contains('grid-a') && i === pairs.A_cell[0] && j === pairs.A_cell[1]) {
                        cell.classList.add('cell-pair');
@@ -369,7 +378,7 @@
 
     function renderContextControls() {
         const panel = document.getElementById('context-panel'); panel.innerHTML = '';
-        // Only v1 (Theory), v1/v2 (Code)
+        // v1/v2 tabs are used for code examples only in this Lab
         let list;
         if (currentMainTab === 'theory') list = ['Theory'];
         else list = ['v1', 'v2'];
