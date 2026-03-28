@@ -2,22 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selection Sort | AlgoView Lab</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     
     <style>
         :root {
-            --bg-main: #1a1a1c;
-            --bg-card: #242426;
-            --bg-input: #2d2d30;
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --accent-secondary: #1d9e75;
-            --border: #3e3e42;
+            --accent-soft: rgba(127, 119, 221, 0.1);
+            --border: #313136;
             --code-bg: #0d0d0f;
-            --min-highlight: #e67e22; /* Оранжевый для текущего минимума */
+            --min-highlight: #e67e22; 
+            --accent-secondary: #1d9e75;
         }
 
         * { box-sizing: border-box; }
@@ -27,117 +29,93 @@
             background-color: var(--bg-main); color: var(--text-main); 
         }
         
-        .wrap { max-width: 850px; margin: 0 auto; padding: 20px; }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
 
-        .header-top {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-top: 10px;
-        }
-        h1 { font-size: 24px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
+        h1 { font-size: 22px; margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
 
         /* VISUALIZER CARD */
         .visualizer-card {
             background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 20px; padding: 30px; margin-bottom: 30px;
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
+        .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
         .inputs input { 
             background: var(--bg-input); border: 1px solid var(--border);
-            color: white; padding: 10px; border-radius: 8px; font-size: 14px;
-            outline: none; font-family: monospace; width: 250px;
+            color: white; padding: 10px 15px; border-radius: 8px; outline: none; width: 220px;
         }
         
         button {
-            padding: 10px 18px; border-radius: 8px; border: none;
-            background: var(--accent); color: white; font-weight: 600; cursor: pointer;
-            transition: opacity 0.2s; font-size: 14px;
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s;
         }
-        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        button:hover { opacity: 0.9; }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button.primary { background: var(--accent); color: white; border: none; }
 
         .info-box {
-            background: var(--bg-main); border-left: 4px solid var(--accent);
-            padding: 20px; min-height: 85px; margin-bottom: 40px; font-size: 14px; line-height: 1.6;
+            min-height: 40px; color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;
         }
         .info-box b { color: var(--accent); }
 
         /* SORTING AREA */
         .array-container { 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-end; 
-            gap: 10px; 
-            margin: 60px 0; 
-            min-height: 150px; 
+            display: flex; justify-content: center; align-items: flex-end; 
+            gap: 10px; margin: 40px 0; height: 160px; 
         }
 
         .bar {
-            width: 50px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px 8px 4px 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            padding-bottom: 10px;
-            font-weight: bold;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            width: 50px; background: var(--bg-main); border: 1px solid var(--border);
+            border-radius: 8px; display: flex; flex-direction: column; align-items: center; 
+            justify-content: flex-end; padding-bottom: 10px; font-size: 14px; font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
         }
 
         .bar.sorted { background: var(--accent-secondary); border-color: transparent; color: white; }
-        .bar.current { border: 2px solid var(--accent); box-shadow: 0 0 15px rgba(127, 119, 221, 0.3); }
-        .bar.is-min { background: var(--min-highlight); border-color: transparent; color: white; }
-        .bar.comparing { background: #444; }
+        .bar.current { border-color: var(--accent); transform: translateY(-5px); z-index: 2; }
+        .bar.is-min { background: var(--min-highlight); border-color: transparent; color: white; box-shadow: 0 5px 15px rgba(230, 126, 34, 0.3); }
+        .bar.comparing { border-color: #666; background: var(--bg-input); }
 
         .ptr-label {
-            position: absolute;
-            top: -30px;
-            font-size: 10px;
-            text-transform: uppercase;
-            font-weight: 800;
-            color: var(--text-secondary);
+            position: absolute; top: -25px; font-size: 9px;
+            text-transform: uppercase; font-weight: 800; color: var(--text-secondary);
         }
 
         /* TABS */
-        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 50px; }
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; letter-spacing: 0.5px; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        
         .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
         .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
-        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
-        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+        .tab-content { display: none; padding: 25px; line-height: 1.6; min-height: 200px; }
         .tab-content.active { display: block; }
-        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; }
+        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
-    <header class="header-top">
-        <h1>Selection Sort</h1>
-    </header>
-
     <div class="visualizer-card">
+        <h1>✨ Selection Sort Visualizer</h1>
         <div class="inputs">
             <input id="arr-input" type="text" value="29, 10, 14, 37, 13">
-            <button onclick="rebuild()">Generate</button>
-            <button class="secondary" onclick="randomize()">Random</button>
+            <button onclick="rebuild()" class="primary">Load Array</button>
+            <button onclick="randomize()">Random</button>
         </div>
 
-        <div class="info-box" id="info">Ready to sort.</div>
+        <div class="info-box" id="info">Press Next to start.</div>
         
         <div class="array-container" id="array-box"></div>
 
-        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
-            <button class="secondary" onclick="go(-1)">< Back</button>
-            <button onclick="go(1)">Next Step ></button>
-            <button class="secondary" onclick="resetAll()">Reset</button>
+        <div class="inputs" style="margin-top: 30px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
             <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
         </div>
     </div>
@@ -162,20 +140,20 @@
 <script>
     const db = {
         theory: {
-            EN: "<h3>Selection Sort</h3><p>An in-place comparison sorting algorithm. It divides the input into a sorted and an unsorted region, and repeatedly picks the smallest element from the unsorted region to move it to the sorted region. <b>Complexity:</b> O(N²).</p>",
-            RU: "<h3>Сортировка выбором</h3><p>Алгоритм сортировки, который разделяет массив на две части: отсортированную и неотсортированную. На каждом шаге выбирается минимальный элемент из неотсортированной части и меняется местами с первым элементом этой части. <b>Сложность:</b> O(N²).</p>"
+            EN: "<h3>Selection Sort</h3><p>An in-place comparison sorting algorithm. It divides the input into a sorted and an unsorted region, and repeatedly picks the smallest element from the unsorted region to move it to the sorted region.</p><b>Complexity:</b> O(N²).",
+            RU: "<h3>Сортировка выбором</h3><p>Алгоритм разделяет массив на две части. На каждом шаге выбирается минимальный элемент из неотсортированной части и меняется местами с первым элементом этой части.</p><b>Сложность:</b> O(N²)."
         },
         python: {
-            v1: "def selection_sort(arr):\n    n = len(arr)\n    for i in range(n):\n        min_idx = i\n        for j in range(i+1, n):\n            if arr[j] < arr[min_idx]:\n                min_idx = j\n        arr[i], arr[min_idx] = arr[min_idx], arr[i]\n    return arr",
-            v2: "# Concise version\nfor i in range(len(arr)):\n    m = min(range(i, len(arr)), key=arr.__getitem__)\n    arr[i], arr[m] = arr[m], arr[i]"
+            v1: "def selection_sort(arr):\n    n = len(arr)\n    for i in range(n):\n        min_idx = i\n        for j in range(i+1, n):\n            if arr[j] < arr[min_idx]:\n                min_idx = j\n        arr[i], arr[min_idx] = arr[min_idx], arr[i]",
+            v2: "# Optimized using min function\nfor i in range(len(arr)):\n    m = min(range(i, len(arr)), key=arr.__getitem__)\n    arr[i], arr[m] = arr[m], arr[i]"
         },
         cpp: {
             v1: "void selectionSort(int arr[], int n) {\n    for (int i = 0; i < n-1; i++) {\n        int min_idx = i;\n        for (int j = i+1; j < n; j++)\n            if (arr[j] < arr[min_idx])\n                min_idx = j;\n        swap(arr[min_idx], arr[i]);\n    }\n}",
-            v2: "#include <algorithm>\n\n// Using STL\nfor (auto it = v.begin(); it != v.end(); ++it) {\n    auto m = std::min_element(it, v.end());\n    std::iter_swap(it, m);\n}"
+            v2: "// Using STL min_element\nfor (auto it = v.begin(); it != v.end(); ++it) {\n    auto m = std::min_element(it, v.end());\n    std::iter_swap(it, m);\n}"
         }
     };
 
-    let items = [], steps = [], cur = 0, currentMainTab = 'theory';
+    let items = [], steps = [], cur = 0, timer = null, currentMainTab = 'theory';
 
     function switchMainTab(btn, tabId) {
         currentMainTab = tabId;
@@ -212,7 +190,7 @@
 
     function randomize() {
         let r = [];
-        for(let i=0; i<7; i++) r.push(Math.floor(Math.random() * 45) + 5);
+        for(let i=0; i<6; i++) r.push(Math.floor(Math.random() * 45) + 5);
         document.getElementById('arr-input').value = r.join(', ');
         rebuild();
     }
@@ -220,40 +198,38 @@
     function rebuild() {
         const val = document.getElementById('arr-input').value;
         items = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if (timer) toggleAuto();
         initSort();
     }
 
     function initSort() {
         steps = [];
-        let a = [...items];
-        let n = a.length;
+        let a = [...items], n = a.length, sortedIndices = [];
 
-        steps.push({ a: [...a], i: -1, j: -1, min: -1, msg: "Let's start Selection Sort." });
+        steps.push({ a: [...a], i: -1, j: -1, min: -1, sorted: [], msg: "Starting Selection Sort." });
 
         for (let i = 0; i < n; i++) {
             let minIdx = i;
-            steps.push({ a: [...a], i, j: -1, min: minIdx, msg: `Iteration ${i+1}: Assume <b>${a[i]}</b> is the minimum.` });
+            steps.push({ a: [...a], i, j: -1, min: minIdx, sorted: [...sortedIndices], msg: `Outer loop: searching for min starting at index ${i}.` });
 
             for (let j = i + 1; j < n; j++) {
-                steps.push({ a: [...a], i, j, min: minIdx, msg: `Comparing <b>${a[j]}</b> with current minimum <b>${a[minIdx]}</b>.` });
+                steps.push({ a: [...a], i, j, min: minIdx, sorted: [...sortedIndices], msg: `Comparing <b>${a[j]}</b> with current min <b>${a[minIdx]}</b>.` });
                 if (a[j] < a[minIdx]) {
                     minIdx = j;
-                    steps.push({ a: [...a], i, j, min: minIdx, msg: `New minimum found: <b>${a[minIdx]}</b>.` });
+                    steps.push({ a: [...a], i, j, min: minIdx, sorted: [...sortedIndices], msg: `New minimum found: <b>${a[minIdx]}</b>.` });
                 }
             }
 
             if (minIdx !== i) {
-                steps.push({ a: [...a], i, j: -1, min: minIdx, swap: [i, minIdx], msg: `Swapping <b>${a[i]}</b> and <b>${a[minIdx]}</b>.` });
+                steps.push({ a: [...a], i, j: -1, min: minIdx, sorted: [...sortedIndices], msg: `Swapping <b>${a[i]}</b> and <b>${a[minIdx]}</b>.` });
                 [a[i], a[minIdx]] = [a[minIdx], a[i]];
-            } else {
-                steps.push({ a: [...a], i, j: -1, min: minIdx, msg: `Smallest element was already at index ${i}. No swap needed.` });
             }
-            steps.push({ a: [...a], sortedUntil: i, i: -1, j: -1, min: -1, msg: `Index <b>${i}</b> is now sorted.` });
+            sortedIndices.push(i);
+            steps.push({ a: [...a], i: -1, j: -1, min: -1, sorted: [...sortedIndices], msg: `Element <b>${a[i]}</b> is now in its final position.` });
         }
         
-        steps.push({ a: [...a], sortedUntil: n, i: -1, j: -1, min: -1, msg: "<b>Sorting complete!</b>" });
-        cur = 0;
-        render();
+        steps.push({ a: [...a], i: -1, j: -1, min: -1, sorted: [...sortedIndices], msg: "<b>Sorting complete!</b>" });
+        cur = 0; render();
     }
 
     function render() {
@@ -261,33 +237,37 @@
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
         container.innerHTML = '';
-
         const maxVal = Math.max(...items);
 
         s.a.forEach((val, idx) => {
             const bar = document.createElement('div');
             bar.className = 'bar';
-            
-            // Динамическая высота
-            const height = (val / maxVal) * 100 + 30;
-            bar.style.height = `${height}px`;
-            bar.textContent = val;
-
-            if (idx <= s.sortedUntil) bar.classList.add('sorted');
+            if (s.sorted.includes(idx)) bar.classList.add('sorted');
             if (idx === s.i) bar.classList.add('current');
             if (idx === s.min) bar.classList.add('is-min');
             if (idx === s.j) bar.classList.add('comparing');
 
+            bar.style.height = `${50 + (val/maxVal)*80}px`;
+            bar.innerHTML = val;
+
             if (idx === s.i) bar.innerHTML += `<div class="ptr-label">I</div>`;
-            if (idx === s.min) bar.innerHTML += `<div class="ptr-label" style="top: -45px; color: var(--min-highlight)">Min</div>`;
+            if (idx === s.min && idx !== s.i) bar.innerHTML += `<div class="ptr-label" style="top: -40px; color: var(--min-highlight)">Min</div>`;
             if (idx === s.j) bar.innerHTML += `<div class="ptr-label">J</div>`;
 
             container.appendChild(bar);
         });
     }
 
-    function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
-    function resetAll() { cur=0; render(); }
+    function go(dir) { 
+        if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); }
+        else if (timer) toggleAuto();
+    }
+
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 600); }
+    }
 
     renderContextControls();
     rebuild();
