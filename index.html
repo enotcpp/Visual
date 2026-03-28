@@ -11,7 +11,7 @@
             --bg-hover: #26262a;
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
-            --accent: #7f77dd; /* Наш фиолетовый */
+            --accent: #7f77dd;
             --border: #313136;
             --font-stack: 'Inter', -apple-system, system-ui, sans-serif;
         }
@@ -24,9 +24,8 @@
             padding-bottom: 120px;
         }
 
-        /* ОБНОВЛЕННОЕ СТРОГОЕ СТАТИЧНОЕ ЛОГО */
         header {
-            padding: 50px 20px; /* Немного уменьшил отступ сверху */
+            padding: 50px 20px;
             text-align: center;
             border-bottom: 1px solid var(--border);
             background: radial-gradient(circle at 50% -100px, #2a2a30 0%, var(--bg-main) 70%);
@@ -47,13 +46,10 @@
             color: var(--text-main);
         }
 
-        .logo span {
-            color: var(--accent);
-        }
+        .logo span { color: var(--accent); }
 
         .logo-box {
-            width: 12px;
-            height: 12px;
+            width: 12px; height: 12px;
             background: var(--accent);
             border-radius: 2px;
             margin-right: 8px;
@@ -77,7 +73,6 @@
             padding: 0 20px;
         }
 
-        /* Секции-Аккордеоны */
         .category-wrapper {
             margin-bottom: 18px;
             border: 1px solid var(--border);
@@ -121,7 +116,6 @@
             color: #555;
         }
 
-        /* Список алгоритмов внутри */
         .algo-list {
             display: none;
             padding: 10px 15px 25px;
@@ -153,8 +147,7 @@
         }
 
         .algo-icon-circle {
-            width: 36px;
-            height: 36px;
+            width: 36px; height: 36px;
             background: #28282c;
             border-radius: 8px;
             display: flex;
@@ -168,31 +161,7 @@
         .algo-name { font-weight: 600; font-size: 15px; }
         .algo-complexity { font-size: 11px; color: var(--text-secondary); opacity: 0.7; }
 
-        /* Кнопки-заглушки */
-        .algo-actions {
-            display: flex;
-            gap: 6px;
-            margin-left: auto;
-        }
-
-        .action-btn {
-            font-size: 10px;
-            text-transform: uppercase;
-            font-weight: 800;
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-            background: #141416;
-            padding: 4px 8px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .action-btn:hover {
-            color: #fff;
-            border-color: var(--accent);
-            background: var(--accent);
-        }
+        /* УБРАНЫ СТИЛИ КНОПОК-ЗАГЛУШЕК */
     </style>
 </head>
 <body>
@@ -216,35 +185,11 @@
             <div class="algo-list">
                 <a href="Binary Search/index.html" class="algo-card">
                     <div class="algo-icon-circle">🔍</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Binary Search</div>
-                    </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button>
-                        <button class="action-btn">CPP</button>
-                        <button class="action-btn">Doc</button>
-                    </div>
-                </a>
-                <a href="Binary Jump Search/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🦘</div>
-                    <div class="algo-details"><div class="algo-name">Binary Jump Search</div></div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
+                    <div class="algo-details"><div class="algo-name">Binary Search</div></div>
                 </a>
                 <a href="Lower Bound/index.html" class="algo-card">
                     <div class="algo-icon-circle">🎯</div>
                     <div class="algo-details"><div class="algo-name">Lower Bound</div></div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
-                </a>
-                <a href="Upper Bound/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🎯</div>
-                    <div class="algo-details"><div class="algo-name">Upper Bound</div></div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
                 </a>
             </div>
         </div>
@@ -261,10 +206,14 @@
                         <div class="algo-name">Bubble Sort</div>
                         <div class="algo-complexity">O(N²)</div>
                     </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
                 </a>
+                <a href="Selection Sort/index.html" class="algo-card">
+                    <div class="algo-icon-circle">📊</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Selection Sort</div>
+                        <div class="algo-complexity">O(N²)</div>
+                    </div>
+                </a>                
             </div>
         </div>
 
@@ -275,77 +224,8 @@
             </div>
             <div class="algo-list">
                 <a href="Longest Common Subsequence/index.html" class="algo-card">
-                    <div class="algo-icon-circle">📉</div>
+                    <div class="algo-icon-circle">🧬</div>
                     <div class="algo-details"><div class="algo-name">Longest Common Subsequence</div></div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
-                </a>
-                <a href="Wagner-Fischer/index.html" class="algo-card">
-                    <div class="algo-icon-circle">📉</div>
-                    <div class="algo-details"><div class="algo-name">Edit Distance</div></div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
-                </a>
-                <a href="Longest Arithmetic Subsequence/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🧬</div>
-                    <div class="algo-details"><div class="algo-name">Longest Arithmetic Subsequence</div></div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
-                </a>
-                <a href="Climbing Stairs/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🪜</div>
-                    <div class="algo-details"><div class="algo-name">Climbing Stairs</div></div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
-                </a>
-                <a href="Minimum Path Sum/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🛣️</div>
-                    <div class="algo-details"><div class="algo-name">Minimum Path Sum</div></div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <div class="category-wrapper">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <div class="category-title">🧬 Number Theory</div>
-                <div class="category-icon">▼</div>
-            </div>
-            <div class="algo-list">
-                <a href="Sieve of Eratosthenes/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🧬</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Sieve of Eratosthenes</div>
-                        <div class="algo-complexity">O(N log log N)</div>
-                    </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-        <div class="category-wrapper">
-            <div class="category-header" onclick="toggleCategory(this)">
-                <div class="category-title">🔄 Combinatorics</div>
-                <div class="category-icon">▼</div>
-            </div>
-            <div class="algo-list">
-                <a href="Narayana/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🔄</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Narayana's Permutation</div>
-                        <div class="algo-complexity">Next Lex Order</div>
-                    </div>
-                    <div class="algo-actions">
-                        <button class="action-btn">PY</button><button class="action-btn">CPP</button><button class="action-btn">Doc</button>
-                    </div>
                 </a>
             </div>
         </div>
@@ -357,15 +237,6 @@
             const wrapper = header.parentElement;
             wrapper.classList.toggle('active');
         }
-
-        // Заглушка для кнопок
-        document.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault(); 
-                e.stopPropagation();
-                alert('This section is coming soon!');
-            });
-        });
     </script>
 </body>
 </html>
