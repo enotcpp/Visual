@@ -160,8 +160,6 @@
         .algo-details { flex-grow: 1; }
         .algo-name { font-weight: 600; font-size: 15px; }
         .algo-complexity { font-size: 11px; color: var(--text-secondary); opacity: 0.7; }
-
-        /* УБРАНЫ СТИЛИ КНОПОК-ЗАГЛУШЕК */
     </style>
 </head>
 <body>
@@ -187,9 +185,17 @@
                     <div class="algo-icon-circle">🔍</div>
                     <div class="algo-details"><div class="algo-name">Binary Search</div></div>
                 </a>
+                <a href="Binary Jump Search/index.html" class="algo-card">
+                    <div class="algo-icon-circle">🦘</div>
+                    <div class="algo-details"><div class="algo-name">Binary Jump Search</div></div>
+                </a>
                 <a href="Lower Bound/index.html" class="algo-card">
                     <div class="algo-icon-circle">🎯</div>
                     <div class="algo-details"><div class="algo-name">Lower Bound</div></div>
+                </a>
+                <a href="Upper Bound/index.html" class="algo-card">
+                    <div class="algo-icon-circle">🎯</div>
+                    <div class="algo-details"><div class="algo-name">Upper Bound</div></div>
                 </a>
             </div>
         </div>
@@ -200,6 +206,13 @@
                 <div class="category-icon">▼</div>
             </div>
             <div class="algo-list">
+                <a href="Selection Sort/index.html" class="algo-card">
+                    <div class="algo-icon-circle">📊</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Selection Sort</div>
+                        <div class="algo-complexity">O(N²)</div>
+                    </div>
+                </a>
                 <a href="Bubble Sort/index.html" class="algo-card">
                     <div class="algo-icon-circle">🔵</div>
                     <div class="algo-details">
@@ -207,13 +220,6 @@
                         <div class="algo-complexity">O(N²)</div>
                     </div>
                 </a>
-                <a href="Selection Sort/index.html" class="algo-card">
-                    <div class="algo-icon-circle">📊</div>
-                    <div class="algo-details">
-                        <div class="algo-name">Selection Sort</div>
-                        <div class="algo-complexity">O(N²)</div>
-                    </div>
-                </a>                
             </div>
         </div>
 
@@ -224,8 +230,56 @@
             </div>
             <div class="algo-list">
                 <a href="Longest Common Subsequence/index.html" class="algo-card">
-                    <div class="algo-icon-circle">🧬</div>
+                    <div class="algo-icon-circle">📉</div>
                     <div class="algo-details"><div class="algo-name">Longest Common Subsequence</div></div>
+                </a>
+                <a href="Wagner-Fischer/index.html" class="algo-card">
+                    <div class="algo-icon-circle">📉</div>
+                    <div class="algo-details"><div class="algo-name">Edit Distance</div></div>
+                </a>
+                <a href="Longest Arithmetic Subsequence/index.html" class="algo-card">
+                    <div class="algo-icon-circle">🧬</div>
+                    <div class="algo-details"><div class="algo-name">Longest Arithmetic Subsequence</div></div>
+                </a>
+                <a href="Climbing Stairs/index.html" class="algo-card">
+                    <div class="algo-icon-circle">🪜</div>
+                    <div class="algo-details"><div class="algo-name">Climbing Stairs</div></div>
+                </a>
+                <a href="Minimum Path Sum/index.html" class="algo-card">
+                    <div class="algo-icon-circle">🛣️</div>
+                    <div class="algo-details"><div class="algo-name">Minimum Path Sum</div></div>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-wrapper">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <div class="category-title">🧬 Number Theory</div>
+                <div class="category-icon">▼</div>
+            </div>
+            <div class="algo-list">
+                <a href="Sieve of Eratosthenes/index.html" class="algo-card">
+                    <div class="algo-icon-circle">🧬</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Sieve of Eratosthenes</div>
+                        <div class="algo-complexity">O(N log log N)</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-wrapper">
+            <div class="category-header" onclick="toggleCategory(this)">
+                <div class="category-title">🔄 Combinatorics</div>
+                <div class="category-icon">▼</div>
+            </div>
+            <div class="algo-list">
+                <a href="Narayana/index.html" class="algo-card">
+                    <div class="algo-icon-circle">🔄</div>
+                    <div class="algo-details">
+                        <div class="algo-name">Narayana's Permutation</div>
+                        <div class="algo-complexity">Next Lex Order</div>
+                    </div>
                 </a>
             </div>
         </div>
