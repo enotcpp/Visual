@@ -23,39 +23,13 @@
 
         * { box-sizing: border-box; }
         body { 
-            margin: 0; padding: 0; 
+            margin: 0; padding: 2rem 0; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-main); color: var(--text-main); 
         }
         
-        /* КОНТЕЙНЕР */
-        .wrap { 
-            max-width: 850px; 
-            margin: 0 auto; 
-            padding: 20px; 
-        }  
+        .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
         
-        /* ЛОГОТИП В УГЛУ */
-        .header-top {
-            display: flex;
-            align-items: center;
-            margin-bottom: 40px;
-            padding-top: 10px;
-        }
-
-        .logo-image {
-            height: 28px;
-            display: block;
-            margin-right: 20px;
-        }
-
-        h1 { 
-            font-size: 24px; 
-            margin: 0; 
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
         /* VISUALIZER SECTION */
         .visualizer-card {
             background: var(--bg-card); border: 1px solid var(--border);
@@ -120,7 +94,7 @@
         .ptr-m { bottom: -38px; background: var(--mid-color); }
 
         /* LAB TABS */
-        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 50px;}
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
@@ -135,11 +109,6 @@
 <body>
 
 <div class="wrap">
-    <header class="header-top">
-        <img src="image_0.png" alt="AlgoView Logo" class="logo-image">
-        <h1>Lower Bound</h1>
-    </header>
-
     <div class="visualizer-card">
         <div class="inputs">
             <input id="arr-input" type="text" value="1, 3, 3, 3, 5, 8, 10" style="width: 250px;">
@@ -229,8 +198,7 @@
     }
 
     function rebuild() {
-        const val = document.getElementById('arr-input').value;
-        arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)).sort((a,b)=>a-b);
+        arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)).sort((a,b)=>a-b);
         target = parseInt(document.getElementById('target-input').value);
         init();
     }
