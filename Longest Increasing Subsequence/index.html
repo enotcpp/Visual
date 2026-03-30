@@ -20,7 +20,6 @@
         
         .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 18px; border-radius: 4px; min-height: 60px; margin-bottom: 40px; font-size: 15px; line-height: 1.5; }
         .info-box b { color: #fff; }
-        .info-box .formula { color: var(--accent); font-family: monospace; font-weight: bold; }
 
         .workspace { display: flex; justify-content: center; gap: 30px; }
         .main-grid { display: flex; flex-direction: column; gap: var(--gap); }
@@ -38,7 +37,6 @@
         .dp-target { border: 2px solid var(--accent) !important; color: var(--accent) !important; box-shadow: 0 0 15px rgba(127,119,221,0.3); }
         .dp-title { color: var(--accent); font-size: 11px; font-weight: 800; text-align: center; width: var(--cell-size); }
 
-        /* Tabs System */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 6px; }
         .tab-btn { background: none; border: none; padding: 12px 20px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; text-transform: uppercase; }
@@ -46,7 +44,6 @@
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
-        /* CODE FORMATTING */
         .code-view { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #0d0d0f; padding: 20px; border-radius: 10px; color: #9ba1a6; white-space: pre; overflow-x: auto; line-height: 1.5; }
         .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; }
         .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
@@ -91,24 +88,19 @@
             <h3 style="margin-top:0">Longest Increasing Subsequence (LIS)</h3>
             <p>Finds the length of the longest subsequence where elements are in increasing order.</p>
         </div>
-        <div id="python" class="tab-content">
-            <div class="code-view" id="python-code"></div>
-        </div>
-        <div id="cpp" class="tab-content">
-            <div class="code-view" id="cpp-code"></div>
-        </div>
+        <div id="python" class="tab-content"><div class="code-view" id="python-code"></div></div>
+        <div id="cpp" class="tab-content"><div class="code-view" id="cpp-code"></div></div>
     </div>
 </div>
 
 <script>
-
     const codeDb = {
         python: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">lengthOfLIS</span>(nums):</span>` +
                 `<span class="code-line" data-l="2"><span class="indent"></span>n = <span class="fn">len</span>(nums)</span>` +
                 `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">if</span> n == <span class="num">0</span>: <span class="kw">return</span> <span class="num">0</span></span>` +
                 `<span class="code-line" data-l="4"><span class="indent"></span>dp = [<span class="num">1</span>] * n</span>` +
                 `<span class="code-line" data-l="5"><span class="indent"></span>overall_max = <span class="num">1</span></span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n):</span>` +
+                `<span class="code-line" data-l="6"><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n):</span>` +
                 `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i):</span>` +
                 `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> nums[i] &gt; nums[j]:</span>` +
                 `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = <span class="fn">max</span>(dp[i], dp[j] + <span class="num">1</span>)</span>` +
@@ -141,34 +133,34 @@
         activeTab = id;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active'); 
-        document.getElementById(id).classList.add('active');
-        if (id !== 'theory') {
-            document.getElementById(id + '-code').innerHTML = codeDb[id];
-        }
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+        if (id !== 'theory') document.getElementById(id + '-code').innerHTML = codeDb[id];
         syncCode();
     }
 
     function init() {
         nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if(nums.length === 0) return;
         let dp = Array(nums.length).fill(1);
-        steps = [{ i: 0, j: -1, dp: [...dp], line: 6, msg: "Initializing DP array with 1s." }];
+        let overallMax = 1;
+        
+        steps = [{ i: 0, j: -1, dp: [...dp], lCpp: 5, lPy: 4, msg: "Initializing DP array." }];
 
-        for (let i = 0; i < nums.length; i++) {
+        for (let i = 1; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
                 let isMatch = nums[i] > nums[j];
                 if (isMatch) dp[i] = Math.max(dp[i], dp[j] + 1);
-                
                 steps.push({ 
                     i, j, dp: [...dp], isMatch, 
-                    line: isMatch ? (activeTab === 'cpp' ? 13 : 7) : (activeTab === 'cpp' ? 10 : 6),
-                    // Привязка к номерам строк твоего C++ кода
-                    lineCpp: isMatch ? 13 : 10,
-                    linePy: isMatch ? 7 : 6,
-                    msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Updating DP[${i}]` : `<b>${nums[i]} ≤ ${nums[j]}</b>: No update.` 
+                    lCpp: isMatch ? 12 : 10, lPy: isMatch ? 9 : 8,
+                    msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Update dp[${i}]` : `<b>${nums[i]} ≤ ${nums[j]}</b>: Skip.` 
                 });
             }
+            overallMax = Math.max(overallMax, dp[i]);
+            steps.push({ i, j: -1, dp: [...dp], lCpp: 15, lPy: 10, msg: `Update overall max to ${overallMax}.` });
         }
+        steps.push({ i: -1, j: -1, dp: [...dp], lCpp: 17, lPy: 11, msg: "Return result." });
+        
         curStep = 0; 
         document.getElementById('python-code').innerHTML = codeDb.python;
         document.getElementById('cpp-code').innerHTML = codeDb.cpp;
@@ -179,11 +171,10 @@
         if (activeTab === 'theory') return;
         const container = document.getElementById(activeTab + '-code');
         if (!container) return;
-        
         container.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
         const s = steps[curStep];
         if (s) {
-            const lineId = activeTab === 'cpp' ? s.lineCpp : s.linePy;
+            const lineId = (activeTab === 'cpp') ? s.lCpp : s.lPy;
             const line = container.querySelector(`[data-l="${lineId}"]`);
             if (line) line.classList.add('active');
         }
