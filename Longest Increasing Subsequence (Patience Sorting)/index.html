@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LIS | Patience Sorting Visualizer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
+            --text-main: #e1e1e3; --text-secondary: #9ba1a6;
+            --accent: #7f77dd; --border: #313136; --green: #1d9e75; --orange: #e67e22;
+            --cell-size: 60px; --gap: 15px;
+        }
+        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 40px; border: 1px solid var(--border); margin-bottom: 24px; }
+        .header { display: flex; gap: 10px; margin-bottom: 30px; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; flex-grow: 1; outline: none; font-size: 16px; }
+        
+        .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px; min-height: 80px; margin-bottom: 40px; font-size: 16px; line-height: 1.6; }
+        .formula { color: var(--accent); font-family: monospace; font-weight: bold; background: rgba(127,119,221,0.1); padding: 2px 6px; border-radius: 4px; }
+
+        /* Patience Layout */
+        .array-label { font-size: 12px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        .array-row { display: flex; gap: var(--gap); margin-bottom: 40px; justify-content: center; min-height: var(--cell-size); }
+        
+        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 12px; border: 1px solid var(--border); font-size: 18px; font-weight: 600; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-secondary); position: relative; }
+        
+        /* Highlight States */
+        .active-num { border: 3px solid #fff !important; color: #fff !important; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .tails-update { background: var(--green) !important; border-color: #fff !important; color: white !important; animation: pulse 0.5s; }
+        .tails-push { background: var(--accent) !important; border-color: #fff !important; color: white !important; }
+        .search-hit { border: 2px solid var(--orange) !important; color: var(--orange); }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .controls { display: flex; gap: 15px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 30px; }
+        button { padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
+        .main-btn { background: var(--accent); color: white; }
+        .main-btn:hover { background: #6b62c4; }
+        .secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        .secondary:hover { background: #323238; }
+
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 6px; }
+        .tab-btn { background: none; border: none; padding: 12px 20px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        .tab-btn.active { color: var(--accent); }
+        .tab-content { display: none; padding: 25px; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="visualizer-card">
+        <div class="header">
+            <input id="numsInput" type="text" value="10, 22, 9, 33, 21, 50">
+            <button class="main-btn" onclick="init()">Apply</button>
+        </div>
+
+        <div id="info" class="info-box">Binary Search (Patience Sorting) initialized. Press "Next Step".</div>
+
+        <div class="array-label">Input Array (nums)</div>
+        <div id="nums-row" class="array-row"></div>
+
+        <div class="array-label">LIS Tails (Minimal endings for each length)</div>
+        <div id="tails-row" class="array-row"></div>
+
+        <div class="controls">
+            <button class="secondary" onclick="step(-1)">← Back</button>
+            <button class="main-btn" onclick="step(1)">Next Step →</button>
+            <button class="secondary" onclick="init()">Reset</button>
+            <div id="stepCounter" style="margin-left: auto; color: var(--text-secondary); align-self: center;"></div>
+        </div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active">Theory (Patience Sorting)</button>
+        </div>
+        <div class="tab-content active">
+            <p>This algorithm maintains an array <b>tails</b>, where <code>tails[i]</code> is the smallest tail of all increasing subsequences of length <code>i+1</code>.</p>
+            <ul>
+                <li>For each <b>x</b> in <b>nums</b>, we find the first element in <b>tails</b> that is <b>≥ x</b> using Binary Search.</li>
+                <li>If such an element exists, we replace it with <b>x</b> (improving the "potential" for future elements).</li>
+                <li>If <b>x</b> is larger than all elements in <b>tails</b>, we append it (increasing the LIS length).</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    let nums = [], tailsSteps = [], curStep = 0;
+
+    function init() {
+        const input = document.getElementById('numsInput').value;
+        nums = input.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        tailsSteps = [];
+        let currentTails = [];
+
+        // Step 0: Initial state
+        tailsSteps.push({ 
+            idx: -1, 
+            tails: [], 
+            action: 'start',
+            msg: "Starting Patience Sorting. We will build the <b>tails</b> array." 
+        });
+
+        for (let i = 0; i < nums.length; i++) {
+            let n = nums[i];
+            // binary search: lower_bound logic
+            let low = 0, high = currentTails.length;
+            while (low < high) {
+                let mid = Math.floor((low + high) / 2);
+                if (currentTails[mid] < n) low = mid + 1;
+                else high = mid;
+            }
+
+            let actionType = '';
+            if (low === currentTails.length) {
+                currentTails.push(n);
+                actionType = 'push';
+                msg = `Number <b>${n}</b> is larger than all tails. <br>Extend LIS length: <span class="formula">tails.push_back(${n})</span>.`;
+            } else {
+                currentTails[low] = n;
+                actionType = 'update';
+                msg = `Binary search found <b>${n}</b> should replace <b>tails[${low}]</b>. <br>Optimizing "foundation" at length ${low + 1}.`;
+            }
+
+            tailsSteps.push({ 
+                idx: i, 
+                tails: [...currentTails], 
+                updateIdx: low,
+                action: actionType,
+                msg: msg 
+            });
+        }
+        curStep = 0; render();
+    }
+
+    function render() {
+        const s = tailsSteps[curStep];
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('stepCounter').textContent = `Step ${curStep} / ${tailsSteps.length - 1}`;
+
+        // Render Nums
+        const numsRow = document.getElementById('nums-row');
+        numsRow.innerHTML = nums.map((n, i) => `
+            <div class="cell ${i === s.idx ? 'active-num' : ''}">${n}</div>
+        `).join('');
+
+        // Render Tails
+        const tailsRow = document.getElementById('tails-row');
+        let tailsHtml = '';
+        for (let i = 0; i < Math.max(s.tails.length, 1); i++) {
+            let val = s.tails[i] !== undefined ? s.tails[i] : '';
+            let cls = 'cell';
+            if (val !== '' && i === s.updateIdx && s.action !== 'start') {
+                cls += (s.action === 'push') ? ' tails-push' : ' tails-update';
+            }
+            tailsHtml += `<div class="${cls}">${val}</div>`;
+        }
+        tailsRow.innerHTML = tailsHtml;
+    }
+
+    function step(dir) {
+        if (curStep + dir >= 0 && curStep + dir < tailsSteps.length) {
+            curStep += dir;
+            render();
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>
