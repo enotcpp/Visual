@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LIS Vertical DP | AlgoView Lab</title>
+    <title>LIS Lab | AlgoView</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
@@ -11,43 +11,40 @@
             --accent: #7f77dd; --border: #313136; --orange: #e67e22; --green: #1d9e75;
         }
         body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { max-width: 950px; margin: 0 auto; }
         
         .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); margin-bottom: 24px; }
         .header { display: flex; gap: 10px; margin-bottom: 20px; }
         input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; flex-grow: 1; outline: none; }
-        
-        .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px; min-height: 50px; margin-bottom: 30px; font-size: 15px; }
+        .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px; min-height: 50px; margin-bottom: 30px; font-size: 14px; }
 
-        /* Layout for Matrix + Vertical DP */
-        .workspace { display: flex; justify-content: center; gap: 40px; align-items: flex-start; }
-        
+        /* Unified Layout Matrix + Vertical DP */
+        .workspace { display: flex; justify-content: center; gap: 20px; align-items: flex-start; }
         .grid-matrix { display: block; }
-        .grid-row { display: grid; grid-template-columns: 60px repeat(auto-fill, 50px); gap: 8px; margin-bottom: 8px; }
+        .grid-row { display: grid; grid-template-columns: 50px repeat(auto-fill, 50px); gap: 10px; margin-bottom: 10px; }
         
-        .cell { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; transition: all 0.15s; color: #444; }
+        .cell { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; transition: 0.2s; color: var(--text-secondary); }
         .cell.empty { background: transparent; border: none; }
-        .label { color: var(--text-secondary); font-weight: bold; background: transparent; border: 1px solid transparent; }
+        .label { color: var(--text-secondary); font-weight: bold; background: transparent; border: none; }
 
         /* Highlights */
-        .active-border { border: 2px solid #fff !important; color: #fff !important; z-index: 10; }
-        .cell.init { color: var(--text-secondary); } 
-        .cell.match { background: #085041; border-color: var(--green); color: white; }
-        .cell.no-match { background: #3d1c1c; color: #a69b9b; opacity: 0.5; }
+        .active-white { border: 2px solid #fff !important; color: #fff !important; z-index: 10; }
+        .match { background: #085041 !important; border-color: var(--green) !important; color: #fff; }
+        .no-match { background: #3d1c1c !important; opacity: 0.6; }
         
-        /* Vertical DP Styles */
-        .dp-column { display: flex; flex-direction: column; gap: 8px; padding-top: 58px; } /* 58px to align with first row */
+        /* Vertical DP column */
+        .dp-column { display: flex; flex-direction: column; gap: 10px; padding-top: 60px; } 
         .dp-cell { background: var(--bg-input); font-weight: bold; color: var(--text-main); position: relative; }
-        .writing-target { border: 2px solid var(--accent) !important; color: var(--accent) !important; box-shadow: 0 0 15px rgba(127,119,221,0.2); }
-        .dp-label-top { position: absolute; top: -35px; width: 100%; text-align: center; font-size: 10px; color: var(--accent); letter-spacing: 1px; font-weight: 800; }
+        .dp-active { border: 2px solid var(--accent) !important; box-shadow: 0 0 15px rgba(127, 119, 221, 0.3); color: var(--accent) !important; }
+        .dp-header { font-size: 10px; color: var(--accent); text-align: center; margin-bottom: 5px; font-weight: 800; }
 
-        /* Lab Tabs */
+        /* Tabs (Styles from your image_1e3659.png) */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 8px; gap: 5px; align-items: center; }
-        .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 12px; font-weight: 800; text-transform: uppercase; cursor: pointer; border-radius: 8px; }
-        .tab-btn.active { color: var(--accent); background: #26262a; }
-        .tab-content { display: none; padding: 25px; line-height: 1.6; }
-        .tab-content.active { display: block; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 5px; gap: 5px; align-items: center; }
+        .tab-btn { background: none; border: none; padding: 10px 20px; color: var(--text-secondary); font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; border-radius: 8px; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-input); }
+        .lang-group { margin-left: auto; display: flex; gap: 5px; padding-right: 10px; }
+        .l-btn { background: none; border: 1px solid var(--border); color: var(--text-secondary); font-size: 10px; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
 
         .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
         button.main-btn { padding: 10px 20px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
@@ -63,11 +60,10 @@
             <button class="main-btn" onclick="init()">Apply</button>
         </div>
 
-        <div id="info" class="info-box">Longest Increasing Subsequence: $O(N^2)$ visualizer.</div>
+        <div id="info" class="info-box">Press "Next Step" to observe how <b>i</b> row updates <b>DP[i]</b>.</div>
 
         <div class="workspace">
             <div id="matrix-container" class="grid-matrix"></div>
-            
             <div id="dp-container" class="dp-column"></div>
         </div>
 
@@ -81,32 +77,30 @@
 
     <div class="lab-info">
         <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">THEORY</button>
+            <button class="tab-btn" onclick="switchTab(this, 'python')">PYTHON</button>
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
+            <div class="lang-group">
+                <button class="l-btn">EN</button><button class="l-btn">DE</button><button class="l-btn">RU</button>
+            </div>
         </div>
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0">LIS: Row-to-DP Mapping</h3>
-            <p>In this view, each <b>Row (i)</b> in the matrix corresponds to the calculation of <b>DP[i]</b>.</p>
-            <p>While moving through columns <b>j</b>, we compare <code>nums[i]</code> with <code>nums[j]</code>. The best result is then stored in the DP cell to the right of the row.</p>
+            <h3 style="margin-top:0">Longest Increasing Subsequence</h3>
+            <p>Each row <b>i</b> represents the search for the longest subsequence ending at that element. We look back at <b>DP[j]</b> values to find the maximum possible length to extend.</p>
         </div>
-        <div id="python" class="tab-content"><pre><code class="language-python"># Each i loop fills one dp[i]
-for i in range(len(nums)):
+        <div id="python" class="tab-content"><pre><code class="language-python">for i in range(len(nums)):
     for j in range(i):
         if nums[i] > nums[j]:
             dp[i] = max(dp[i], dp[j] + 1)</code></pre></div>
         <div id="cpp" class="tab-content"><pre><code class="language-cpp">for (int i = 0; i < n; i++) {
     for (int j = 0; j < i; j++) {
-        if (nums[i] > nums[j])
-            dp[i] = max(dp[i], dp[j] + 1);
+        if (nums[i] > nums[j]) dp[i] = max(dp[i], dp[j] + 1);
     }
 }</code></pre></div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
     let nums = [], steps = [], curStep = 0;
@@ -119,23 +113,14 @@ for i in range(len(nums)):
 
     function init() {
         nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = [];
+        steps = [{ i: 0, j: 0, dp: Array(nums.length).fill(1), msg: "Initial: DP[0] is set to 1." }];
         let dp = Array(nums.length).fill(1);
-
-        // First step: Base case for index 0
-        steps.push({ i: 0, j: 0, dp: [...dp], isMatch: true, msg: "Base Case: Row 0 initializes DP[0] to 1." });
 
         for (let i = 1; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
                 let isMatch = nums[i] > nums[j];
                 if (isMatch) dp[i] = Math.max(dp[i], dp[j] + 1);
-                
-                steps.push({ 
-                    i, j, 
-                    dp: [...dp], 
-                    isMatch, 
-                    msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Found increasing pair. Updating DP[${i}].` : `<b>${nums[i]} ≤ ${nums[j]}</b>: Ignoring.`
-                });
+                steps.push({ i, j, dp: [...dp], isMatch, msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Extend DP[${j}] → New DP[${i}] = ${dp[i]}` : `${nums[i]} ≤ ${nums[j]}: Skip.` });
             }
         }
         curStep = 0; render();
@@ -146,43 +131,38 @@ for i in range(len(nums)):
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('stepCounter').textContent = `Step ${curStep} / ${steps.length - 1}`;
 
-        // Matrix Rendering (Triangle from 0,0)
+        // Matrix
         let mHtml = `<div class="grid-row"><div class="cell label">i \\ j</div>`;
-        nums.forEach((n, idx) => mHtml += `<div class="cell label ${idx === s.j ? 'active-border' : ''}">${n}</div>`);
+        nums.forEach((n, idx) => mHtml += `<div class="cell label ${idx === s.j ? 'active-white' : ''}">${n}</div>`);
         mHtml += `</div>`;
 
         for (let i = 0; i < nums.length; i++) {
-            mHtml += `<div class="grid-row"><div class="cell label ${i === s.i ? 'active-border' : ''}">${nums[i]}</div>`;
+            mHtml += `<div class="grid-row"><div class="cell label ${i === s.i ? 'active-white' : ''}">${nums[i]}</div>`;
             for (let j = 0; j < nums.length; j++) {
                 let cls = 'cell', content = '';
                 if (j <= i) {
-                    const stepIdx = steps.findIndex(st => st.i === i && st.j === j);
-                    if (stepIdx !== -1 && stepIdx <= curStep) {
-                        if (i === j) { content = '1'; cls += ' init'; }
-                        else {
-                            cls += (steps[stepIdx].isMatch) ? ' match' : ' no-match';
-                            content = steps[stepIdx].dp[i];
-                        }
-                    } else { content = '1'; cls += ' init'; }
-                    if (i === s.i && j === s.j) cls += ' active-border';
-                } else { cls += ' empty'; }
+                    const stIdx = steps.findIndex(x => x.i === i && x.j === j);
+                    if (stIdx !== -1 && stIdx <= curStep) {
+                        content = (i === j) ? '1' : steps[stIdx].dp[i];
+                        if (i !== j) cls += steps[stIdx].isMatch ? ' match' : ' no-match';
+                    } else { content = '1'; }
+                    if (i === s.i && j === s.j) cls += ' active-white';
+                } else cls += ' empty';
                 mHtml += `<div class="${cls}">${content}</div>`;
             }
             mHtml += `</div>`;
         }
         document.getElementById('matrix-container').innerHTML = mHtml;
 
-        // Vertical DP Rendering
-        let dpHtml = '';
+        // Vertical DP
+        let dpHtml = '<div class="dp-header">DP[i]</div>';
         s.dp.forEach((v, idx) => {
             let cls = 'cell dp-cell';
-            if (idx === 0) dpHtml += '<div class="dp-label-top">DP ARRAY</div>';
-            if (idx === s.i) cls += ' writing-target';
-            if (idx === s.j) cls += ' active-border'; // Reading from DP[j]
+            if (idx === s.i) cls += ' dp-active'; // Destination
+            if (idx === s.j) cls += ' active-white'; // Source
             dpHtml += `<div class="${cls}">${v}</div>`;
         });
         document.getElementById('dp-container').innerHTML = dpHtml;
-        Prism.highlightAll();
     }
 
     function step(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
