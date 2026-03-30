@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LIS Triangle Visualizer | AlgoView</title>
+    <title>LIS Full Triangle | AlgoView</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
@@ -15,33 +15,35 @@
         
         .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); margin-bottom: 24px; }
         .header { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; flex-grow: 1; outline: none; font-family: monospace; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; flex-grow: 1; outline: none; }
         
         .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px; min-height: 50px; margin-bottom: 30px; font-size: 15px; }
 
-        /* Grid System */
         .grid-row { display: grid; grid-template-columns: 60px repeat(auto-fill, 50px); gap: 8px; justify-content: center; margin-bottom: 8px; }
         .cell { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; transition: all 0.15s; color: #444; }
         .cell.empty { background: transparent; border: none; }
         .label { color: var(--text-secondary); font-weight: bold; background: transparent; border: 1px solid transparent; }
 
-        /* Active States */
         .active-border { border: 2px solid #fff !important; color: #fff !important; z-index: 10; }
-        .cell.init { color: var(--text-secondary); } /* Default 1 */
+        .cell.init { color: var(--text-secondary); } 
         .cell.match { background: #085041; border-color: var(--green); color: white; }
         .cell.no-match { background: #3d1c1c; color: #a69b9b; opacity: 0.5; }
         
         .dp-cell { background: var(--bg-input); font-weight: bold; color: var(--text-main); }
         .writing-target { border: 2px solid var(--accent) !important; color: var(--accent) !important; box-shadow: 0 0 15px rgba(127,119,221,0.2); }
 
-        /* Tabs Style */
+        /* Tabs from image_1e3659.png */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 5px; gap: 5px; }
-        .tab-btn { background: none; border: none; padding: 10px 20px; color: var(--text-secondary); font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; border-radius: 8px; }
-        .tab-btn.active { color: var(--accent); background: var(--bg-input); }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 8px; gap: 5px; align-items: center; }
+        .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 12px; font-weight: 800; text-transform: uppercase; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .tab-btn.active { color: var(--accent); background: #26262a; }
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
         
+        .lang-group { margin-left: auto; display: flex; gap: 4px; padding-right: 10px; }
+        .l-btn { background: none; border: 1px solid var(--border); color: var(--text-secondary); font-size: 10px; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: 700; }
+        .l-btn.active { border-color: var(--accent); color: var(--accent); }
+
         .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
         button.main-btn { padding: 10px 20px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer;}
@@ -56,7 +58,7 @@
             <button class="main-btn" onclick="init()">Apply</button>
         </div>
 
-        <div id="info" class="info-box">Press "Next Step" to start.</div>
+        <div id="info" class="info-box">Visualizing LIS dynamic programming...</div>
 
         <div id="matrix-container"></div>
         <div style="height: 1px; background: var(--border); margin: 25px 0;"></div>
@@ -76,27 +78,28 @@
             <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
             <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
+            <div class="lang-group">
+                <button class="l-btn active">EN</button>
+                <button class="l-btn">DE</button>
+                <button class="l-btn">UKR</button>
+                <button class="l-btn">RU</button>
+            </div>
         </div>
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0">Longest Increasing Subsequence (DP)</h3>
-            <p>We use an array <b>DP</b> where <code>DP[i]</code> stores the length of the longest increasing subsequence ending at index <b>i</b>.</p>
-            <p><b>Initial State:</b> Every element is a subsequence of length 1 by itself.</p>
-            <p><b>Transition:</b> For each <code>i</code>, we check all <code>j < i</code>. If <code>nums[i] > nums[j]</code>, we update: <br>
-            <code style="color: var(--accent); font-size: 1.1em;">DP[i] = max(DP[i], DP[j] + 1)</code></p>
+            <h3 style="margin-top:0">Longest Increasing Subsequence</h3>
+            <p>Every cell in the matrix represents a comparison. We start from <b>(0,0)</b> where the sequence length is always 1.</p>
+            <p>The <b>DP[i]</b> value is the maximum length of an increasing subsequence ending at index <b>i</b>.</p>
         </div>
-        <div id="python" class="tab-content"><pre><code class="language-python"># O(N^2) Implementation
-def lengthOfLIS(nums):
+        <div id="python" class="tab-content"><pre><code class="language-python">def lengthOfLIS(nums):
     dp = [1] * len(nums)
     for i in range(len(nums)):
         for j in range(i):
             if nums[i] > nums[j]:
                 dp[i] = max(dp[i], dp[j] + 1)
     return max(dp)</code></pre></div>
-        <div id="cpp" class="tab-content"><pre><code class="language-cpp">// O(N^2) Implementation
-int lengthOfLIS(vector<int>& nums) {
-    int n = nums.size();
-    vector<int> dp(n, 1);
-    for (int i = 0; i < n; i++) {
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp">int lengthOfLIS(vector<int>& nums) {
+    vector<int> dp(nums.size(), 1);
+    for (int i = 0; i < nums.size(); i++) {
         for (int j = 0; j < i; j++) {
             if (nums[i] > nums[j])
                 dp[i] = max(dp[i], dp[j] + 1);
@@ -122,21 +125,22 @@ int lengthOfLIS(vector<int>& nums) {
 
     function init() {
         nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = [{ i: 0, j: -1, dp: Array(nums.length).fill(1), msg: "Start: DP[0] is initialized to 1." }];
+        steps = [];
         let dp = Array(nums.length).fill(1);
+
+        // Step for (0,0) - Base case
+        steps.push({ i: 0, j: 0, dp: [...dp], isMatch: true, msg: "Base Case: The first element always has a LIS of 1." });
 
         for (let i = 1; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
                 let isMatch = nums[i] > nums[j];
-                let oldVal = dp[i];
                 if (isMatch) dp[i] = Math.max(dp[i], dp[j] + 1);
                 
                 steps.push({ 
                     i, j, 
                     dp: [...dp], 
                     isMatch, 
-                    wasUpdated: dp[i] > oldVal,
-                    msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Current length at j is ${dp[j]}. New potential length: ${dp[j]+1}.` : `<b>${nums[i]} ≤ ${nums[j]}</b>: Condition not met.`
+                    msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Current max length at i updated to ${dp[i]}.` : `<b>${nums[i]} ≤ ${nums[j]}</b>: No update.`
                 });
             }
         }
@@ -148,20 +152,24 @@ int lengthOfLIS(vector<int>& nums) {
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('stepCounter').textContent = `Step ${curStep} / ${steps.length - 1}`;
 
-        // Matrix Triangle
+        // Matrix Triangle starting from 0,0
         let mHtml = `<div class="grid-row"><div class="cell label">i \\ j</div>`;
-        nums.forEach((n, idx) => mHtml += `<div class="cell label ${curStep > 0 && idx === s.j ? 'active-border' : ''}">${n}</div>`);
+        nums.forEach((n, idx) => mHtml += `<div class="cell label ${curStep >= 0 && idx === s.j ? 'active-border' : ''}">${n}</div>`);
         mHtml += `</div>`;
 
         for (let i = 0; i < nums.length; i++) {
-            mHtml += `<div class="grid-row"><div class="cell label ${curStep > 0 && i === s.i ? 'active-border' : ''}">${nums[i]}</div>`;
+            mHtml += `<div class="grid-row"><div class="cell label ${curStep >= 0 && i === s.i ? 'active-border' : ''}">${nums[i]}</div>`;
             for (let j = 0; j < nums.length; j++) {
                 let cls = 'cell', content = '';
-                if (j < i) {
+                if (j <= i) { // Now including j == i for the diagonal
                     const stepIdx = steps.findIndex(st => st.i === i && st.j === j);
                     if (stepIdx !== -1 && stepIdx <= curStep) {
-                        cls += (steps[stepIdx].isMatch) ? ' match' : ' no-match';
-                        content = steps[stepIdx].dp[i];
+                        if (i === j) {
+                            cls += ' init'; content = '1';
+                        } else {
+                            cls += (steps[stepIdx].isMatch) ? ' match' : ' no-match';
+                            content = steps[stepIdx].dp[i];
+                        }
                     } else {
                         cls += ' init'; content = '1';
                     }
