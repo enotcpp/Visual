@@ -9,32 +9,36 @@
             --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
             --accent: #7f77dd; --border: #313136;
-            --ptr-curr: #7f77dd; --ptr-prev: #1D9E75; --ptr-next: #e5484d;
+            --ptr-prev: #1D9E75; --ptr-next: #e5484d;
+            --font-sans: 'Inter', system-ui, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
         }
-        body { margin: 0; padding: 20px; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
+
+        body { margin: 0; padding: 20px; font-family: var(--font-sans); background: var(--bg-main); color: var(--text-main); }
         .container { max-width: 1000px; margin: 0 auto; }
-        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 35px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.4); margin-bottom: 30px; }
-        .header-controls { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 180px; font-family: var(--font-mono); }
-        button { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 35px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        
+        .header-controls { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 180px; outline: none; font-family: var(--font-mono); font-size: 16px; }
+        button { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        button:disabled { opacity: 0.2; cursor: not-allowed; }
-        
-        .info-box { background: rgba(127,119,221,0.08); border-left: 4px solid var(--accent); padding: 15px; border-radius: 6px; min-height: 40px; margin-bottom: 20px; font-size: 14px; }
-        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 380px; }
-        
-        .step-ctrls { display: flex; gap: 10px; margin-top: 25px; align-items: center; justify-content: space-between; }
-        .pointer-legend { display: flex; gap: 15px; font-size: 12px; font-family: var(--font-mono); margin-bottom: 10px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        button:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.9; }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* Стили для теории и кода */
-        .desc-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .desc-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 15px; padding: 25px; }
-        .desc-box h3 { margin-top: 0; color: var(--accent); font-size: 18px; }
-        .desc-box p { font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
-        pre { margin: 0 !important; border-radius: 10px !important; font-size: 13px !important; }
+        .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 40px; margin-bottom: 25px; font-size: 15px; line-height: 1.6; }
+        
+        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 350px; margin-bottom: 25px; }
+
+        .step-ctrls { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 10px; }
+
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-top: 24px; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 8px; }
+        .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-input); }
+        .tab-content { display: none; padding: 35px; line-height: 1.7; }
+        .tab-content.active { display: block; }
+        pre { border-radius: 12px !important; margin: 0 !important; font-size: 13px !important; }
     </style>
 </head>
 <body>
@@ -42,20 +46,13 @@
 <div class="container">
     <div class="visualizer-card">
         <div class="header-controls">
-            <input id="list-input" type="text" value="1,2,3,4,5">
-            <button class="btn-secondary" onclick="buildList()">Build</button>
-            <button class="btn-primary" onclick="startReverse()">Start Reverse</button>
-            <button class="btn-secondary" onclick="resetAll()" style="margin-left: auto;">Reset</button>
+            <input id="list-vals" type="text" value="10, 20, 30, 40">
+            <button class="btn-primary" onclick="applyList()">Apply</button>
+            <button class="btn-secondary" onclick="resetAll()">Clear</button>
         </div>
 
-        <div id="info" class="info-box">Build a list then start the reverse process.</div>
-
-        <div class="pointer-legend">
-            <div><span class="dot" style="background:var(--ptr-curr)"></span>curr</div>
-            <div><span class="dot" style="background:var(--ptr-prev)"></span>prev</div>
-            <div><span class="dot" style="background:var(--ptr-next)"></span>next (temp)</div>
-        </div>
-
+        <div id="info" class="info-box">Enter comma-separated values and press Apply.</div>
+        
         <canvas id="listCanvas"></canvas>
 
         <div class="step-ctrls">
@@ -64,30 +61,33 @@
                 <button id="autoPlayBtn" class="btn-secondary" onclick="toggleAutoPlay()">▶ Auto Play</button>
                 <button id="nextBtn" class="btn-primary" onclick="changeStep(1)" disabled>Next Step →</button>
             </div>
-            <span id="stepCounter" style="font-family:var(--font-mono); color:var(--text-secondary)">Step 0/0</span>
+            <span id="stepCounter" style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 13px;">Step 0/0</span>
         </div>
     </div>
 
-    <div class="desc-section">
-        <div class="desc-box">
-            <h3>Algorithm Theory</h3>
-            <p>Для разворота односвязного списка мы используем итеративный подход с тремя указателями:</p>
-            <ul style="font-size: 13px; color: var(--text-secondary); padding-left: 20px;">
-                <li><b>curr</b>: текущий узел для обработки.</li>
-                <li><b>prev</b>: узел, на который мы перенаправим связь (предыдущий).</li>
-                <li><b>next</b>: временный указатель для сохранения ссылки на остаток списка.</li>
-            </ul>
-            <p>Сложность по времени: O(n). Сложность по памяти: O(1).</p>
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Implementation</button>
         </div>
-        <div class="desc-box" style="padding: 10px;">
+        <div id="theory" class="tab-content active">
+            <h3 style="margin-top:0; color:var(--accent)">Reverse Linked List Algorithm</h3>
+            <p>Задача — изменить направление всех указателей в списке на противоположное за один проход.</p>
+            <ul>
+                <li><b>Time Complexity:</b> O(n) — посещаем каждый узел один раз.</li>
+                <li><b>Space Complexity:</b> O(1) — используем только три дополнительных указателя.</li>
+                <li><b>Strategy:</b> На каждом шаге мы сохраняем ссылку на следующий узел, чтобы не потерять его, затем разворачиваем текущий узел назад.</li>
+            </ul>
+        </div>
+        <div id="cpp" class="tab-content">
 <pre><code class="language-cpp">ListNode* reverseList(ListNode* head) {
     ListNode* prev = nullptr;
     ListNode* curr = head;
-    while (curr) {
-        ListNode* next = curr->next;
-        curr->next = prev;
-        prev = curr;
-        curr = next;
+    while (curr != nullptr) {
+        ListNode* nextTemp = curr->next; // 1. Сохраняем
+        curr->next = prev;               // 2. Разворачиваем
+        prev = curr;                     // 3. Сдвигаем prev
+        curr = nextTemp;                 // 4. Сдвигаем curr
     }
     return prev;
 }</code></pre>
@@ -99,107 +99,135 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
-    const canvas = document.getElementById('listCanvas');
-    const ctx = canvas.getContext('2d');
-    let originalList = [1, 2, 3, 4, 5];
     let steps = [];
     let curStep = 0;
     let autoPlayInterval = null;
+    let rawVals = [];
 
-    function buildList() {
-        const val = document.getElementById('list-input').value;
-        originalList = val.split(',').map(s => s.trim()).filter(s => s !== "");
-        steps = [];
-        curStep = 0;
-        document.getElementById('info').textContent = "List ready. Click 'Start Reverse'.";
-        document.getElementById('nextBtn').disabled = true;
-        document.getElementById('backBtn').disabled = true;
-        drawStatic();
-    }
+    const canvas = document.getElementById('listCanvas');
+    const ctx = canvas.getContext('2d');
 
-    function startReverse() {
-        if (originalList.length === 0) return;
-        steps = generateSteps(originalList);
+    function applyList() {
+        const val = document.getElementById('list-vals').value;
+        rawVals = val.split(',').map(s => s.trim()).filter(s => s !== "");
+        if (rawVals.length === 0) return;
+        
+        steps = generateReverseSteps(rawVals);
         curStep = 0;
         updateUI();
     }
 
-    function generateSteps(arr) {
+    function generateReverseSteps(arr) {
         let s = [];
-        let nodes = arr.map((v, i) => ({ val: v, id: i, nextId: i < arr.length - 1 ? i + 1 : -1 }));
+        let nodes = arr.map((v, i) => ({ val: v, nextId: i < arr.length - 1 ? i + 1 : -1 }));
         let prev = -1, curr = 0;
-        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next: -1, msg: "Init: curr at Head, prev is NULL." });
+
+        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next: -1, msg: "<b>Initial:</b> curr is at Head, prev points to NULL." });
 
         while (curr !== -1) {
             let next = nodes[curr].nextId;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `1. Save next node: ${next !== -1 ? nodes[next].val : 'NULL'}.` });
+            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>Step 1:</b> Save next node <b>(${next !== -1 ? nodes[next].val : 'NULL'})</b>.` });
+            
             nodes[curr].nextId = prev;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `2. Reverse: Node ${nodes[curr].val} now points back to ${prev !== -1 ? nodes[prev].val : 'NULL'}.` });
+            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>Step 2:</b> Change pointer! Node <b>${nodes[curr].val}</b> now points to ${prev !== -1 ? nodes[prev].val : 'NULL'}.` });
+
             prev = curr;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `3. Move 'prev' to current node.` });
+            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>Step 3:</b> Advance <b>prev</b> to current node.` });
+
             curr = next;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `4. Move 'curr' to the saved next node.` });
+            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>Step 4:</b> Advance <b>curr</b> to next node.` });
         }
-        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr: -1, prev, next: -1, msg: "Done! 'prev' is the new head." });
+        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr: -1, prev, next: -1, msg: "<b>Done:</b> List is reversed. <b>prev</b> is the new head." });
         return s;
     }
 
     function draw() {
-        const W = canvas.offsetWidth, H = canvas.offsetHeight;
-        canvas.width = W * window.devicePixelRatio; canvas.height = H * window.devicePixelRatio;
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        ctx.clearRect(0, 0, W, H);
+        const W = canvas.clientWidth, H = canvas.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = W * dpr; canvas.height = H * dpr;
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0,0,W,H);
 
-        // УВЕЛИЧЕННЫЕ УЗЛЫ
-        const nodeW = 80, nodeH = 50, spacing = 80;
-        const totalW = originalList.length * nodeW + (originalList.length - 1) * spacing;
+        if (steps.length === 0) return;
+
+        const nodeW = 80, nodeH = 45, spacing = 60;
+        const totalW = rawVals.length * nodeW + (rawVals.length - 1) * spacing;
         const startX = (W - totalW) / 2;
-        const startY = H / 2 - 25;
+        const startY = H/2 - 22;
 
-        const state = steps[curStep] || { nodes: originalList.map((v, i) => ({ val: v, nextId: i + 1 < originalList.length ? i + 1 : -1 })), curr: -1, prev: -1, next: -1 };
+        const state = steps[curStep];
 
+        // 1. Draw arrows first
         state.nodes.forEach((node, i) => {
             const x1 = startX + i * (nodeW + spacing);
-            const y1 = startY + nodeH / 2;
+            const y1 = startY + nodeH/2;
+
             if (node.nextId !== -1) {
                 const x2 = startX + node.nextId * (nodeW + spacing);
-                const isReverse = node.nextId < i;
-                ctx.strokeStyle = isReverse ? '#1D9E75' : '#444';
-                ctx.lineWidth = 2;
-                if (!isReverse) drawArrow(x1 + nodeW, y1, x2, y1);
-                else drawArc(x1, y1 + nodeH / 2, x2 + nodeW, y1 + nodeH / 2);
+                const isBack = node.nextId < i;
+                
+                if (!isBack) {
+                    drawArrow(x1 + nodeW * 0.8, y1, x2, y1, false);
+                } else {
+                    drawArrow(x1 + nodeW * 0.2, y1 + nodeH/2, x2 + nodeW * 0.8, y1 + nodeH/2, true);
+                }
             } else {
-                ctx.fillStyle = '#555'; ctx.font = '10px monospace'; ctx.textAlign = 'left';
-                const nullX = (i === 0 && state.nodes[i].nextId === -1 && state.nodes.length > 1) ? x1 - 40 : x1 + nodeW + 10;
+                // NULL positioning
+                ctx.fillStyle = '#555';
+                ctx.font = '10px var(--font-mono)';
+                const nullX = (i === 0 && curStep > 2) ? x1 - 45 : x1 + nodeW + 15;
                 ctx.fillText("NULL", nullX, y1 + 5);
             }
         });
 
+        // 2. Draw nodes
         state.nodes.forEach((node, i) => {
             const x = startX + i * (nodeW + spacing);
             const y = startY;
             const isC = state.curr === i, isP = state.prev === i, isN = state.next === i;
+
+            ctx.strokeStyle = isC ? varColor('--accent') : (isP ? varColor('--ptr-prev') : (isN ? varColor('--ptr-next') : '#313136'));
             ctx.fillStyle = '#26262a';
-            ctx.strokeStyle = isC ? '#7f77dd' : (isP ? '#1D9E75' : (isN ? '#e5484d' : '#313136'));
-            ctx.lineWidth = (isC || isP || isN) ? 3 : 1;
-            ctx.beginPath(); ctx.roundRect(x, y, nodeW, nodeH, 8); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 16px monospace'; ctx.textAlign = 'center';
-            ctx.fillText(node.val, x + nodeW/2, y + nodeH/2 + 5);
-            ctx.font = '10px monospace';
-            if (isC) { ctx.fillStyle = '#7f77dd'; ctx.fillText("curr", x + nodeW/2, y + nodeH + 15); }
-            if (isP) { ctx.fillStyle = '#1D9E75'; ctx.fillText("prev", x + nodeW/2, y + nodeH + 28); }
-            if (isN) { ctx.fillStyle = '#e5484d'; ctx.fillText("next", x + nodeW/2, y - 10); }
+            ctx.lineWidth = (isC || isP || isN) ? 3 : 2;
+
+            // Node structure
+            ctx.strokeRect(x, y, nodeW * 0.65, nodeH);
+            ctx.fillRect(x, y, nodeW * 0.65, nodeH);
+            ctx.strokeRect(x + nodeW * 0.65, y, nodeW * 0.35, nodeH);
+
+            // Data
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 15px "JetBrains Mono"';
+            ctx.textAlign = 'center';
+            ctx.fillText(node.val, x + nodeW * 0.32, y + nodeH/2 + 6);
+
+            // Pointer Dot
+            ctx.beginPath();
+            ctx.arc(x + nodeW * 0.82, y + nodeH/2, 4, 0, Math.PI*2);
+            ctx.fillStyle = isC ? varColor('--accent') : (isP ? varColor('--ptr-prev') : '#444');
+            ctx.fill();
+
+            // Labels
+            ctx.font = 'bold 10px var(--font-sans)';
+            if (isC) { ctx.fillStyle = varColor('--accent'); ctx.fillText("CURR", x + nodeW*0.32, y + nodeH + 20); }
+            if (isP) { ctx.fillStyle = varColor('--ptr-prev'); ctx.fillText("PREV", x + nodeW*0.32, y + nodeH + 35); }
+            if (isN) { ctx.fillStyle = varColor('--ptr-next'); ctx.fillText("NEXT", x + nodeW*0.32, y - 12); }
         });
     }
 
-    function drawArrow(x1, y1, x2, y2) {
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-        const head = 7; ctx.beginPath(); ctx.moveTo(x2, y1); ctx.lineTo(x2-head, y1-head/2); ctx.lineTo(x2-head, y1+head/2); ctx.fill();
-    }
+    function drawArrow(x1, y1, x2, y2, arc) {
+        ctx.strokeStyle = ctx.fillStyle = (arc) ? varColor('--ptr-prev') : varColor('--accent');
+        ctx.lineWidth = 2;
+        const head = 8;
 
-    function drawArc(x1, y1, x2, y2) {
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.bezierCurveTo(x1, y1 + 40, x2, y2 + 40, x2, y2); ctx.stroke();
-        const head = 7; ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2+head, y2+head/2); ctx.lineTo(x2+head, y2-head/2); ctx.fill();
+        if (!arc) {
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2-head, y2-head/1.5); ctx.lineTo(x2-head, y2+head/1.5); ctx.fill();
+        } else {
+            ctx.beginPath(); ctx.moveTo(x1, y1); 
+            ctx.bezierCurveTo(x1, y1 + 50, x2, y2 + 50, x2, y2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2+head, y2+head/1.5); ctx.lineTo(x2+head, y2-head/1.5); ctx.fill();
+        }
     }
 
     function toggleAutoPlay() {
@@ -212,22 +240,41 @@
             autoPlayInterval = setInterval(() => {
                 if (curStep < steps.length - 1) changeStep(1);
                 else toggleAutoPlay();
-            }, 800);
+            }, 900);
         }
     }
 
-    function changeStep(dir) { curStep += dir; updateUI(); }
+    function changeStep(dir) {
+        curStep += dir;
+        updateUI();
+    }
+
     function updateUI() {
         draw();
-        document.getElementById('info').textContent = steps[curStep].msg;
-        document.getElementById('stepCounter').textContent = `Step ${curStep + 1}/${steps.length}`;
-        document.getElementById('backBtn').disabled = curStep === 0;
-        document.getElementById('nextBtn').disabled = curStep === steps.length - 1;
+        document.getElementById('info').innerHTML = steps[curStep].msg;
+        document.getElementById('stepCounter').textContent = `Step ${curStep + 1} / ${steps.length}`;
+        document.getElementById('backBtn').disabled = (curStep === 0);
+        document.getElementById('nextBtn').disabled = (curStep === steps.length - 1);
     }
-    function drawStatic() { draw(); }
-    function resetAll() { location.reload(); }
-    window.addEventListener('resize', draw);
-    buildList();
+
+    function resetAll() {
+        steps = []; curStep = 0; rawVals = [];
+        document.getElementById('list-vals').value = "";
+        document.getElementById('info').innerHTML = "Enter comma-separated values and press Apply.";
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('backBtn').disabled = true;
+        draw();
+    }
+
+    function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+    function switchTab(btn, id) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+    }
+
+    window.onresize = draw;
+    applyList();
 </script>
 </body>
 </html>
