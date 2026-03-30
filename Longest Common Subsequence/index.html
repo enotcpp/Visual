@@ -4,73 +4,31 @@
     <meta charset="UTF-8">
     <title>LCS Visualizer | AlgoView Lab</title>
     
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    
     <style>
         :root {
-            --bg-main: #1a1a1c;
-            --bg-card: #242426;
-            --bg-input: #2d2d30;
-            --text-main: #e1e1e3;
-            --text-secondary: #9ba1a6;
-            --accent: #7f77dd;
-            --accent-secondary: #1d9e75;
-            --border: #3e3e42;
-            --code-bg: #0d0d0f;
+            --bg-main: #1a1a1c; --bg-card: #242426; --bg-input: #2d2d30;
+            --text-main: #e1e1e3; --text-secondary: #9ba1a6;
+            --accent: #7f77dd; --accent-secondary: #1d9e75;
+            --border: #3e3e42; --code-bg: #0d0d0f;
+            --line-hl: rgba(127, 119, 221, 0.2);
         }
 
         * { box-sizing: border-box; }
-        body { 
-            margin: 0; padding: 2rem 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg-main); color: var(--text-main); 
-        }
-        
+        body { margin: 0; padding: 2rem 0; font-family: sans-serif; background-color: var(--bg-main); color: var(--text-main); }
         .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
         
-        /* VISUALIZER SECTION */
-        .visualizer-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 20px; padding: 30px; margin-bottom: 30px;
-        }
-
+        /* VISUALIZER */
+        .visualizer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 30px; }
         .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
-        .inputs input { 
-            background: var(--bg-input); border: 1px solid var(--border);
-            color: var(--text-main); padding: 8px 12px; border-radius: 8px; width: 140px; 
-            font-family: monospace;
-        }
-        
-        button {
-            padding: 10px 18px; border-radius: 8px; border: none;
-            background: var(--accent); color: white; font-weight: 600; cursor: pointer;
-            transition: opacity 0.2s; font-size: 14px;
-        }
+        .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; border-radius: 8px; width: 140px; font-family: monospace; }
+        button { padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        button:hover { opacity: 0.9; }
-
-        .info-box {
-            background: var(--bg-main); border-left: 4px solid var(--accent-secondary);
-            padding: 16px; min-height: 85px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;
-        }
-        .info-box b { color: var(--accent-secondary); }
-
-        .legend { display: flex; gap: 15px; flex-wrap: wrap; font-size: 11px; color: var(--text-secondary); margin-bottom: 20px; }
-        .leg { display: flex; align-items: center; gap: 6px; }
-        .ldot { width: 14px; height: 14px; border-radius: 4px; }
-
-        /* TABLE LOGIC - Полное восстановление оригинала */
+        .info-box { background: var(--bg-main); border-left: 4px solid var(--accent-secondary); padding: 16px; min-height: 85px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
         .tbl-wrap { overflow-x: auto; margin-bottom: 25px; }
         table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
-        th, .rlbl { font-size: 13px; color: var(--text-secondary); min-width: 48px; text-align: center; }
-
-        .cell {
-            width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--bg-card); text-align: center; font-size: 16px; transition: all .2s;
-            color: var(--text-secondary); vertical-align: middle;
-        }
+        .cell { width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); text-align: center; font-size: 16px; transition: all .2s; color: var(--text-secondary); vertical-align: middle; }
         .cell.filled { background: var(--bg-input); color: var(--text-main); }
-        .cell.cur { border: 2.5px solid var(--accent) !important; color: white !important; transform: scale(1.05); z-index: 2; }
+        .cell.cur { border: 2.5px solid var(--accent) !important; color: white !important; transform: scale(1.05); }
         .cell.match { background: #085041; border-color: var(--accent-secondary); color: white; }
         .cell.source { background: #3c3489; border-color: #7f77dd; color: white; }
         .cell.path { background: #1d9e75; border-color: #fff; color: white; box-shadow: 0 0 10px var(--accent-secondary); }
@@ -85,7 +43,13 @@
         .sub-btn.active { border-color: var(--accent); color: var(--accent); }
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
-        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; }
+
+        /* CODE FORMATTING */
+        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 15px; border-radius: 10px; color: #9ba1a6; white-space: pre; overflow-x: auto; }
+        .code-line { display: block; padding: 2px 10px; border-left: 3px solid transparent; transition: 0.2s; }
+        .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
+        .indent { display: inline-block; width: 20px; }
+        .kw { color: #cc99cd; } .cm { color: #777; } .fn { color: #e67e22; }
     </style>
 </head>
 <body>
@@ -100,25 +64,17 @@
             <button onclick="rebuild()">Apply</button>
         </div>
 
-        <div class="legend">
-            <div class="leg"><div class="ldot" style="border:2.5px solid var(--accent)"></div>current</div>
-            <div class="leg"><div class="ldot" style="background:#085041"></div>char match</div>
-            <div class="leg"><div class="ldot" style="background:#3c3489"></div>src (max)</div>
-            <div class="leg"><div class="ldot" style="background:#1d9e75"></div>lcs path</div>
-        </div>
-
         <div class="info-box" id="info">Ready.</div>
-        
         <div class="tbl-wrap" id="tbl"></div>
 
-        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+        <div class="inputs" style="margin-top: 20px;">
             <button class="secondary" onclick="go(-1)">< Back</button>
             <button onclick="go(1)">Next Step ></button>
             <button id="auto-btn" class="secondary" onclick="toggleAuto()">Auto Play</button>
             <button class="secondary" onclick="resetAll()">Reset</button>
             <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
         </div>
-        <div class="res" style="margin-top: 20px;">LCS Length: <span class="res-val" id="resv" style="font-size: 24px; font-weight: bold; color: var(--accent-secondary); margin-left: 10px;">0</span></div>
+        <div class="res" style="margin-top: 20px;">LCS Length: <span id="resv" style="font-size: 24px; font-weight: bold; color: var(--accent-secondary);">0</span></div>
     </div>
 
     <div class="lab-info">
@@ -129,32 +85,34 @@
             <div class="context-controls" id="context-panel"></div>
         </div>
         <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
-        <div id="python" class="tab-content"><pre><code class="language-python" id="python-display"></code></pre></div>
-        <div id="cpp" class="tab-content"><pre><code class="language-cpp" id="cpp-display"></code></pre></div>
+        
+        <div id="python" class="tab-content">
+            <div class="code-view" id="python-display"></div>
+        </div>
+        
+        <div id="cpp" class="tab-content">
+            <div class="code-view" id="cpp-display"></div>
+        </div>
     </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
     const db = {
         theory: {
-            EN: "<h3>Longest Common Subsequence</h3><p>Finds the longest subsequence present in all given sequences. Subsequences are not required to occupy consecutive positions.</p>",
-            RU: "<h3>Наибольшая общая подпоследовательность</h3><p>Задача поиска подпоследовательности максимальной длины, которая является общей для обеих строк.</p>"
+            EN: "<h3>Longest Common Subsequence</h3><p>Finds the longest subsequence present in both strings.</p>",
+            RU: "<h3>Наибольшая общая подпоследовательность</h3><p>Алгоритм динамического программирования для поиска общей части двух строк.</p>"
         },
         python: {
-            v1: "def lcs(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if s1[i-1] == s2[j-1]:\n                dp[i][j] = dp[i-1][j-1] + 1\n            else:\n                dp[i][j] = max(dp[i-1][j], dp[i][j-1])\n    return dp[m][n]",
-            v2: "def lcs_opt(s1, s2):\n    # Space optimized O(min(N,M))\n    if len(s1) < len(s2): s1, s2 = s2, s1\n    dp = [0] * (len(s2) + 1)\n    for char1 in s1:\n        prev = 0\n        for j, char2 in enumerate(s2):\n            temp = dp[j+1]\n            dp[j+1] = prev + 1 if char1 == char2 else max(dp[j+1], dp[j])\n            prev = temp\n    return dp[-1]"
+            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">lcs</span>(s1, s2):</span><span class="code-line" data-l="2"><span class="indent"></span>m, n = <span class="fn">len</span>(s1), <span class="fn">len</span>(s2)</span><span class="code-line" data-l="3"><span class="indent"></span>dp = [[<span style="color:#f8c555">0</span>] * (n + <span style="color:#f8c555">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m + <span style="color:#f8c555">1</span>)]</span><span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span style="color:#f8c555">1</span>, m + <span style="color:#f8c555">1</span>):</span><span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span style="color:#f8c555">1</span>, n + <span style="color:#f8c555">1</span>):</span><span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> s1[i-<span style="color:#f8c555">1</span>] == s2[j-<span style="color:#f8c555">1</span>]:</span><span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = dp[i-<span style="color:#f8c555">1</span>][j-<span style="color:#f8c555">1</span>] + <span style="color:#f8c555">1</span></span><span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">else</span>:</span><span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = <span class="fn">max</span>(dp[i-<span style="color:#f8c555">1</span>][j], dp[i][j-<span style="color:#f8c555">1</span>])</span><span class="code-line" data-l="10"><span class="indent"></span><span class="kw">return</span> dp[m][n]</span>`,
+            v2: `<span class="cm"># Space optimized version</span>`
         },
         cpp: {
-            v1: "int lcs(string s1, string s2) {\n    int m = s1.size(), n = s2.size();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));\n    for (int i = 1; i <= m; i++) {\n        for (int j = 1; j <= n; j++) {\n            if (s1[i-1] == s2[j-1]) dp[i][j] = dp[i-1][j-1] + 1;\n            else dp[i][j] = max(dp[i-1][j], dp[i][j-1]);\n        }\n    }\n    return dp[m][n];\n}",
-            v2: "int lcs_fast(string s1, string s2) {\n    int n = s1.size(), m = s2.size();\n    vector<int> dp(m + 1, 0);\n    for (int i = 1; i <= n; i++) {\n        int prev = 0;\n        for (int j = 1; j <= m; j++) {\n            int temp = dp[j];\n            if (s1[i-1] == s2[j-1]) dp[j] = prev + 1;\n            else dp[j] = max(dp[j], dp[j-1]);\n            prev = temp;\n        }\n    }\n    return dp[m];\n}"
+            v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">lcs</span>(string s1, string s2) {</span><span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> m = s1.size(), n = s2.size();</span><span class="code-line" data-l="3"><span class="indent"></span>vector&lt;vector&lt;<span class="kw">int</span>&gt;&gt; dp(m+<span style="color:#f8c555">1</span>, vector&lt;<span class="kw">int</span>&gt;(n+<span style="color:#f8c555">1</span>, <span style="color:#f8c555">0</span>));</span><span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span style="color:#f8c555">1</span>; i &lt;= m; i++) {</span><span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = <span style="color:#f8c555">1</span>; j &lt;= n; j++) {</span><span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (s1[i-<span style="color:#f8c555">1</span>] == s2[j-<span style="color:#f8c555">1</span>])</span><span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = dp[i-<span style="color:#f8c555">1</span>][j-<span style="color:#f8c555">1</span>] + <span style="color:#f8c555">1</span>;</span><span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">else</span></span><span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = max(dp[i-<span style="color:#f8c555">1</span>][j], dp[i][j-<span style="color:#f8c555">1</span>]);</span><span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span>}</span><span class="code-line" data-l="11"><span class="indent"></span>}</span><span class="code-line" data-l="12"><span class="indent"></span><span class="kw">return</span> dp[m][n];</span><span class="code-line" data-l="13">}</span>`,
+            v2: `<span class="cm">// Fast version</span>`
         }
     };
 
-    let t1 = '', t2 = '', steps = [], cur = 0, timer = null, currentMainTab = 'theory';
+    let t1 = '', t2 = '', steps = [], cur = 0, timer = null, currentMainTab = 'theory', activeVer = 'v1';
 
     function switchMainTab(btn, tabId) {
         currentMainTab = tabId;
@@ -169,24 +127,34 @@
         const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
         list.forEach((item, idx) => {
             const b = document.createElement('button');
-            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.className = 'sub-btn' + (item === activeVer || (currentMainTab==='theory' && idx===0) ? ' active' : '');
             b.textContent = item;
             b.onclick = () => {
                 document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-                b.classList.add('active'); updateContent(item);
+                b.classList.add('active'); 
+                if(currentMainTab !== 'theory') activeVer = item;
+                updateContent(item);
             };
             panel.appendChild(b);
         });
-        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
+        updateContent(currentMainTab === 'theory' ? 'EN' : activeVer);
     }
 
     function updateContent(key) {
         const display = document.getElementById(currentMainTab + '-display');
         if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
         else {
-            display.textContent = db[currentMainTab][key];
-            Prism.highlightElement(display);
+            display.innerHTML = db[currentMainTab][key];
+            syncCode();
         }
+    }
+
+    function syncCode() {
+        if (currentMainTab === 'theory') return;
+        document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+        const line = steps[cur] ? steps[cur].line : 1;
+        const activeLine = document.querySelector(`#${currentMainTab}-display [data-l="${line}"]`);
+        if (activeLine) activeLine.classList.add('active');
     }
 
     function rebuild() {
@@ -200,38 +168,24 @@
         const _steps = [];
         const dp = Array.from({length: n+1}, () => Array(m+1).fill(0));
 
-        _steps.push({ i:0, j:0, dp: dp.map(r=>[...r]), action: 'init', msg: 'Initialize DP table with zeros.' });
+        _steps.push({ i:0, j:0, dp: dp.map(r=>[...r]), action: 'init', line: 3, msg: 'Initialize DP table.' });
 
         for (let i = 1; i <= n; i++) {
             for (let j = 1; j <= m; j++) {
-                let src = [], action = '';
+                let src = [], action = '', line = 0;
                 if (t1[i-1] === t2[j-1]) {
                     dp[i][j] = dp[i-1][j-1] + 1;
-                    src = [{r: i-1, c: j-1}];
-                    action = 'match';
+                    src = [{r: i-1, c: j-1}]; action = 'match'; line = 7;
                 } else {
                     dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
                     if (dp[i-1][j] >= dp[i][j-1]) src.push({r: i-1, c: j});
                     if (dp[i][j-1] >= dp[i-1][j]) src.push({r: i, c: j-1});
-                    action = 'move';
+                    action = 'move'; line = 9;
                 }
-                _steps.push({ 
-                    i, j, dp: dp.map(r=>[...r]), src, action,
-                    msg: action === 'match' 
-                        ? `Match found: <b>'${t1[i-1]}'</b>. Length = dp[i-1][j-1] + 1 = <b>${dp[i][j]}</b>`
-                        : `No match. Taking max of neighbors: <b>${dp[i][j]}</b>`
-                });
+                _steps.push({ i, j, dp: dp.map(r=>[...r]), src, action, line, msg: `Step: Char match check...` });
             }
         }
-
-        let path = [];
-        let r = n, c = m;
-        while (r > 0 && c > 0) {
-            if (t1[r-1] === t2[c-1]) { path.push({r, c}); r--; c--; }
-            else if (dp[r-1][c] >= dp[r][c-1]) r--;
-            else c--;
-        }
-        _steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), path, action:'done', msg: '<b>LCS found!</b> Final path highlighted in green.' });
+        _steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), action:'done', line: 12, msg: '<b>LCS found!</b>' });
         return _steps;
     }
 
@@ -248,28 +202,20 @@
         for (let i=0; i<=n; i++) {
             html += `<tr><td class="rlbl">${i===0 ? '""' : t1[i-1]}</td>`;
             for (let j=0; j<=m; j++) {
-                // Логика заполнения из оригинала
                 const isFilled = (i===0 || j===0 || (cur > 0 && (i < s.i || (i === s.i && j <= s.j))));
                 let cls = 'cell';
                 if (isFilled) cls += ' filled';
-                
-                // Оригинальные стили выделения
                 if (i === s.i && j === s.j && s.action !== 'done') cls += ' cur';
-                if (s.src && s.src.some(p => p.r === i && p.c === j)) {
-                    cls += (s.action === 'match' ? ' match' : ' source');
-                }
-                if (s.path && s.path.some(p => p.r === i && p.c === j)) {
-                    cls += ' path';
-                }
-                
+                if (s.src && s.src.some(p => p.r === i && p.c === j)) cls += (s.action === 'match' ? ' match' : ' source');
                 html += `<td class="${cls}">${isFilled ? s.dp[i][j] : ''}</td>`;
             }
             html += '</tr>';
         }
         document.getElementById('tbl').innerHTML = html + '</table>';
+        syncCode();
     }
 
-    function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } else if (timer) toggleAuto(); }
+    function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
     function toggleAuto() {
         const btn = document.getElementById('auto-btn');
         if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
