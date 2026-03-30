@@ -6,157 +6,87 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
-            --bg-main: #0f0f11; --bg-card: #18181b; --bg-input: #222226;
-            --text-main: #f4f4f5; --text-secondary: #a1a1aa;
-            --accent: #8b5cf6; --accent-glow: rgba(139, 92, 246, 0.4);
-            --border: #27272a;
-            --node-default: #3f3f46;
-            --node-active: #ffffff;
-            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
+            --text-main: #e1e1e3; --text-secondary: #9ba1a6;
+            --accent: #7f77dd; --border: #313136;
+            --node-active: #7f77dd; --node-swap: #1D9E75;
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
-        body { margin: 0; padding: 40px 20px; font-family: var(--font-sans); background: var(--bg-main); color: var(--text-main); line-height: 1.5; }
-        .container { max-width: 900px; margin: 0 auto; }
+        body { margin: 0; padding: 20px; font-family: var(--font-sans); background: var(--bg-main); color: var(--text-main); }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 35px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         
-        /* Card Styling */
-        .visualizer-card { 
-            background: var(--bg-card); 
-            border-radius: 24px; 
-            padding: 40px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            margin-bottom: 30px;
-        }
-        
-        /* Header Controls */
-        .header { display: flex; gap: 12px; margin-bottom: 30px; }
-        input { 
-            background: var(--bg-input); border: 1px solid var(--border); 
-            color: white; padding: 14px 20px; border-radius: 12px; 
-            flex-grow: 1; outline: none; font-family: var(--font-mono); 
-            font-size: 15px; transition: border-color 0.2s;
-        }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
-        
-        /* Info Box */
-        .info-box { 
-            background: rgba(139, 92, 246, 0.08); 
-            border-left: 4px solid var(--accent); 
-            padding: 20px; border-radius: 12px; 
-            min-height: 60px; margin-bottom: 30px; 
-            font-size: 15px; color: var(--text-main);
-            display: flex; align-items: center;
-        }
-
-        /* Canvas Area */
-        .canvas-viewport { 
-            width: 100%; overflow: hidden; background: #111113; 
-            border-radius: 20px; border: 1px solid var(--border); 
-            margin-bottom: 30px; position: relative;
-            background-image: radial-gradient(circle, #1d1d20 1px, transparent 1px);
-            background-size: 30px 30px;
-        }
-        canvas { display: block; cursor: grab; }
-        canvas:active { cursor: grabbing; }
-
-        /* Array View */
-        .data-row { margin-bottom: 30px; }
-        .row-label { 
-            font-size: 12px; font-weight: 700; color: var(--text-secondary); 
-            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; display: block;
-        }
-        #arrayRow { display: flex; flex-wrap: wrap; gap: 12px; }
-
-        .node-pill { 
-            padding: 10px 18px; border-radius: 12px; font-size: 14px; 
-            font-weight: 700; background: var(--bg-input); 
-            border: 1px solid var(--border); color: var(--text-main); 
-            min-width: 45px; text-align: center; position: relative; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        .node-pill.active { 
-            background: var(--node-active); color: #000; 
-            border-color: white; transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255,255,255,0.15);
-        }
-        .idx-tag { 
-            position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); 
-            font-size: 10px; color: #52525b; font-family: var(--font-mono); 
-        }
-
-        /* Controls */
-        .controls { 
-            display: flex; gap: 16px; margin-top: 20px; 
-            border-top: 1px solid var(--border); padding-top: 30px; 
-        }
-        button { 
-            padding: 14px 24px; border-radius: 12px; border: none; 
-            font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 14px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        button:disabled { opacity: 0.2; cursor: not-allowed; filter: grayscale(1); }
+        .header-controls { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 120px; outline: none; font-family: var(--font-mono); }
+        button { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px; }
         .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover:not(:disabled) { background: #9d71fd; transform: translateY(-2px); }
         .btn-secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        .btn-secondary:hover:not(:disabled) { background: #2d2d33; }
-        .step-counter { margin-left: auto; color: var(--text-secondary); font-size: 13px; font-family: var(--font-mono); letter-spacing: 1px; }
+        button:hover { transform: translateY(-1px); opacity: 0.9; }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* Tabs Implementation */
-        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; }
-        .tabs-nav { display: flex; background: #111113; padding: 10px; gap: 10px; }
-        .tab-btn { background: transparent; border: none; padding: 10px 20px; color: var(--text-secondary); font-size: 13px; border-radius: 10px; }
-        .tab-btn.active { color: white; background: var(--bg-input); }
-        .tab-content { display: none; padding: 40px; }
+        .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 60px; margin-bottom: 25px; font-size: 15px; line-height: 1.6; }
+        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 320px; margin-bottom: 25px; }
+
+        .array-container { margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 12px; }
+        .array-label { font-size: 11px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; letter-spacing: 1px; }
+        .array-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .array-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .idx { font-size: 10px; font-family: var(--font-mono); color: #555; }
+        .val { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: var(--bg-input); transition: 0.3s; }
+        .val.active { border-color: var(--node-active); background: rgba(127,119,221,0.3); }
+        .val.swap { border-color: var(--node-swap); background: rgba(29,158,117,0.3); }
+
+        .step-ctrls { display: flex; gap: 10px; margin-top: 30px; align-items: center; border-top: 1px solid var(--border); padding-top: 20px; }
+        .step-info { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
+
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-top: 24px; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 8px; }
+        .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 10px; text-transform: uppercase; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-input); }
+        .tab-content { display: none; padding: 35px; line-height: 1.7; }
         .tab-content.active { display: block; }
-        
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="visualizer-card">
-        <div class="header">
-            <input id="insVal" type="number" placeholder="Enter number...">
+        <div class="header-controls">
+            <input id="ins-val" type="number" placeholder="Value">
             <button class="btn-primary" onclick="doInsert()">Insert</button>
             <button class="btn-secondary" onclick="doExtract()">Extract Max</button>
-            <button class="btn-secondary" onclick="resetHeap()">Clear</button>
+            <button class="btn-secondary" onclick="resetHeap()">Reset</button>
         </div>
 
-        <div id="info" class="info-box">Heap visualization ready. Insert a value to begin.</div>
+        <div id="info" class="info-box">Heap is empty. Add a value to start.</div>
 
-        <div class="canvas-viewport" id="viewport">
-            <canvas id="heapCanvas"></canvas>
-        </div>
-        
-        <div class="data-row">
-            <span class="row-label">Memory Structure (Array View)</span>
-            <div id="arrayRow"></div>
+        <canvas id="heapCanvas"></canvas>
+
+        <div class="array-container">
+            <div class="array-label">Array View</div>
+            <div id="arrayRow" class="array-row"></div>
         </div>
 
-        <div class="controls">
-            <button id="prevBtn" class="btn-secondary" onclick="step(-1)">← Back</button>
-            <button id="nextBtn" class="btn-primary" onclick="step(1)">Next Step →</button>
-            <span class="step-counter" id="ctr"></span>
+        <div class="step-ctrls">
+            <button id="back-btn" class="btn-secondary" onclick="changeStep(-1)">← Back</button>
+            <button id="next-btn" class="btn-primary" onclick="changeStep(1)">Next Step →</button>
+            <span id="stepCounter" class="step-info"></span>
         </div>
     </div>
 
     <div class="lab-info">
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Implementation</button>
+            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Code</button>
         </div>
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0; font-weight: 800; color: var(--accent);">Max-Heap Logic</h3>
-            <p>A binary heap is a complete binary tree. The <b>Max-Heap</b> property ensures that every parent node is greater than its children.</p>
-            <p>This allows us to find the maximum element in $O(1)$ and perform insertions or deletions in $O(\log n)$.</p>
+            <h3 style="margin-top:0; color:var(--accent)">Binary Heap</h3>
+            <p>В <b>Max-Heap</b> значение каждого узла больше или равно значениям его потомков.</p>
         </div>
         <div id="cpp" class="tab-content">
-            <pre><code class="language-cpp">// Standard Max-Heap Bubble Up
-void siftUp(int i) {
+            <pre><code class="language-cpp">void siftUp(int i) {
     while (i > 0 && heap[(i-1)/2] < heap[i]) {
         swap(heap[i], heap[(i-1)/2]);
         i = (i-1)/2;
@@ -170,134 +100,148 @@ void siftUp(int i) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
-    let heap = [90, 75, 80, 40, 60, 50, 70];
+    let heap = []; // Начинаем с пустого массива
     let steps = [];
     let curStep = 0;
 
-    const canvas = document.getElementById('heapCanvas');
-    const ctx = canvas.getContext('2d');
-    const viewport = document.getElementById('viewport');
-
-    function saveStep(h, active, msg) {
-        steps.push({ h: [...h], active, msg });
+    function saveStep(h, active, swap, msg) {
+        steps.push({ h: [...h], active, swap, msg });
     }
 
     function doInsert() {
-        const val = parseInt(document.getElementById('insVal').value);
+        const input = document.getElementById('ins-val');
+        const val = parseInt(input.value);
         if (isNaN(val)) return;
-        steps = []; let h = [...heap]; h.push(val);
+        input.value = '';
+
+        steps = []; curStep = 0;
+        let h = [...heap];
+        h.push(val);
         let i = h.length - 1;
-        saveStep(h, i, `Inserted ${val} at index ${i}. Checking heap property...`);
+        
+        saveStep(h, i, -1, `Добавление <b>${val}</b> в конец массива.`);
+        
         while (i > 0) {
             let p = Math.floor((i-1)/2);
             if (h[p] < h[i]) {
-                saveStep(h, i, `Violation: <b>${h[i]} > ${h[p]}</b>. Swapping with parent.`);
-                [h[i], h[p]] = [h[p], h[i]]; i = p;
-                saveStep(h, i, `Moved up to index ${i}.`);
+                saveStep(h, i, p, `Нарушение: Потомок ${h[i]} > Родитель ${h[p]}. Меняем местами.`);
+                [h[i], h[p]] = [h[p], h[i]];
+                i = p;
+                saveStep(h, i, -1, `Элемент поднялся на индекс ${i}.`);
             } else {
-                saveStep(h, i, `Heap property satisfied.`); break;
+                saveStep(h, i, p, `Условие кучи выполнено: ${h[p]} ≥ ${h[i]}.`);
+                break;
             }
         }
-        heap = h; curStep = 0; render();
+        heap = h;
+        render();
     }
 
     function doExtract() {
         if (heap.length === 0) return;
-        steps = []; let h = [...heap]; const max = h[0];
-        saveStep(h, 0, `Extracting root max: <b>${max}</b>.`);
+        steps = []; curStep = 0;
+        let h = [...heap];
+        const max = h[0];
+        saveStep(h, 0, -1, `Извлечение максимума: <b>${max}</b>.`);
+        
         if (h.length > 1) {
             h[0] = h.pop();
-            saveStep(h, 0, `Last element moved to root. Sifting down...`);
+            saveStep(h, 0, -1, `Последний элемент (${h[0]}) перенесен в корень. Начинаем <b>Sift Down</b>.`);
+            
             let i = 0;
             while (true) {
                 let l = 2*i + 1, r = 2*i + 2, largest = i;
                 if (l < h.length && h[l] > h[largest]) largest = l;
                 if (r < h.length && h[r] > h[largest]) largest = r;
+                
                 if (largest !== i) {
-                    saveStep(h, i, `Swapping with larger child <b>${h[largest]}</b>.`);
-                    [h[i], h[largest]] = [h[largest], h[i]]; i = largest;
-                    saveStep(h, i, `Moved down to index ${i}.`);
+                    saveStep(h, i, largest, `Ребенок ${h[largest]} больше ${h[i]}. Меняем местами.`);
+                    [h[i], h[largest]] = [h[largest], h[i]];
+                    i = largest;
+                    saveStep(h, i, -1, `Элемент опустился на индекс ${i}.`);
                 } else {
-                    saveStep(h, i, `Heap property restored.`); break;
+                    saveStep(h, i, -1, `Свойства кучи восстановлены.`);
+                    break;
                 }
             }
-        } else { h.pop(); saveStep(h, -1, `Heap is now empty.`); }
-        heap = h; curStep = 0; render();
+        } else { h.pop(); saveStep(h, -1, -1, "Куча пуста."); }
+        heap = h;
+        render();
     }
 
+    const canvas = document.getElementById('heapCanvas');
+    const ctx = canvas.getContext('2d');
+
     function draw() {
-        const s = steps.length ? steps[curStep] : { h: heap, active: -1 };
-        const DPR = window.devicePixelRatio || 1;
-        const width = viewport.clientWidth;
-        const height = 340;
-        
-        canvas.width = width * DPR; canvas.height = height * DPR;
-        canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
-        ctx.scale(DPR, DPR);
-        ctx.clearRect(0,0,width,height);
+        const W = canvas.clientWidth, H = canvas.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = W * dpr; canvas.height = H * dpr;
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0,0,W,H);
 
+        const s = steps.length > 0 ? steps[curStep] : { h: heap, active: -1, swap: -1 };
         const h = s.h;
-        if (!h.length) return;
-
-        const levels = Math.floor(Math.log2(h.length)) + 1;
-        const pos = h.map((_, i) => {
-            const lvl = Math.floor(Math.log2(i+1));
-            const nodesInLvl = Math.pow(2, lvl);
-            const posInLvl = i - (nodesInLvl - 1);
-            return { x: width * (posInLvl + 0.5) / nodesInLvl, y: 60 + lvl * 70 };
-        });
-
-        // Draw Lines
-        ctx.strokeStyle = '#27272a'; ctx.lineWidth = 2;
-        for (let i = 0; i < h.length; i++) {
-            let l = 2*i+1, r = 2*i+2;
-            [l, r].forEach(child => {
-                if (child < h.length) {
-                    ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y);
-                    ctx.lineTo(pos[child].x, pos[child].y); ctx.stroke();
-                }
-            });
+        if (h.length === 0) {
+            ctx.fillStyle = '#555'; ctx.textAlign = 'center'; ctx.font = '14px Inter';
+            ctx.fillText("Heap is empty", W/2, H/2);
+            return;
         }
 
-        // Draw Nodes
+        const pos = h.map((_, i) => {
+            const lvl = Math.floor(Math.log2(i+1));
+            const posInLvl = i - (Math.pow(2, lvl) - 1);
+            const nodesInLvl = Math.pow(2, lvl);
+            return { x: W * (posInLvl + 0.5) / nodesInLvl, y: 50 + lvl * 60 };
+        });
+
+        // Edges
+        ctx.strokeStyle = '#313136'; ctx.lineWidth = 2;
+        for (let i = 0; i < h.length; i++) {
+            let l = 2*i+1, r = 2*i+2;
+            if (l < h.length) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[l].x, pos[l].y); ctx.stroke(); }
+            if (r < h.length) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[r].x, pos[r].y); ctx.stroke(); }
+        }
+
+        // Nodes
         pos.forEach((p, i) => {
             const isActive = i === s.active;
+            const isSwap = i === s.swap;
             
-            // Outer Glow for active
-            if(isActive) {
-                ctx.shadowBlur = 20; ctx.shadowColor = 'rgba(255,255,255,0.4)';
-            } else { ctx.shadowBlur = 0; }
-
-            ctx.beginPath(); ctx.arc(p.x, p.y, 22, 0, Math.PI*2);
-            ctx.fillStyle = isActive ? '#ffffff' : '#1e1e22';
+            ctx.beginPath(); ctx.arc(p.x, p.y, 18, 0, Math.PI*2);
+            ctx.fillStyle = isActive ? '#7f77dd' : (isSwap ? '#1D9E75' : '#26262a');
             ctx.fill();
-            ctx.strokeStyle = isActive ? '#ffffff' : '#3f3f46';
+            ctx.strokeStyle = (isActive || isSwap) ? '#fff' : '#313136';
             ctx.lineWidth = 2; ctx.stroke();
 
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = isActive ? '#000000' : '#ffffff';
-            ctx.font = 'bold 14px "JetBrains Mono"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 13px Inter';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(h[i], p.x, p.y);
         });
     }
 
     function render() {
         draw();
-        const s = steps.length ? steps[curStep] : { h: heap, active: -1, msg: "Heap ready." };
+        const s = steps.length > 0 ? steps[curStep] : { h: heap, active: -1, swap: -1, msg: "Куча готова." };
         document.getElementById('info').innerHTML = s.msg;
-        document.getElementById('ctr').textContent = steps.length ? `STEP ${curStep+1}/${steps.length}` : "";
-        document.getElementById('prevBtn').disabled = curStep === 0;
-        document.getElementById('nextBtn').disabled = !steps.length || curStep === steps.length-1;
+        document.getElementById('stepCounter').textContent = steps.length ? `Шаг ${curStep + 1} / ${steps.length}` : "";
+        
+        document.getElementById('back-btn').disabled = curStep === 0;
+        document.getElementById('next-btn').disabled = (steps.length === 0 || curStep === steps.length - 1);
 
         const row = document.getElementById('arrayRow');
         row.innerHTML = s.h.map((v, i) => `
-            <div class="node-pill ${i===s.active?'active':''}">
-                <span class="idx-tag">${i}</span>${v}
-            </div>
-        `).join('') || '<span style="color:#52525b">Empty</span>';
+            <div class="array-cell">
+                <div class="idx">${i}</div>
+                <div class="val ${i===s.active?'active':''} ${i===s.swap?'swap':''}">${v}</div>
+            </div>`).join('');
     }
 
-    function step(dir) { curStep += dir; render(); }
+    function changeStep(dir) {
+        if (curStep + dir >= 0 && curStep + dir < steps.length) {
+            curStep += dir; render();
+        }
+    }
+
     function resetHeap() { heap = []; steps = []; curStep = 0; render(); }
     function switchTab(btn, id) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
