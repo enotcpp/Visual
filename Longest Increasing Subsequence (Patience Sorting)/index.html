@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>AlgoView | Patience Sorting LIS Visualizer</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
             --bg-main: #1a1a1c; --bg-card: #242426; --bg-input: #2d2d30;
@@ -20,28 +19,26 @@
         input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; flex-grow: 1; outline: none; font-size: 16px; font-family: monospace; }
         
         .info-box { background: rgba(127,119,221,0.03); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px; min-height: 80px; margin-bottom: 40px; font-size: 16px; line-height: 1.6; }
-        .formula { color: var(--accent); font-family: monospace; font-weight: bold; }
-
+        
         .array-row { display: flex; gap: var(--gap); margin-bottom: 45px; justify-content: center; min-height: var(--cell-size); position: relative;}
-        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 12px; border: 1px solid var(--border); font-size: 18px; font-weight: 600; color: var(--text-secondary); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .label { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1.5px; display: block; text-align: center;}
-
+        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 12px; border: 1px solid var(--border); font-size: 18px; font-weight: 600; color: var(--text-secondary); transition: 0.3s; }
         .active-num { border: 3px solid #fff !important; color: #fff !important; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
-        .tails-update { background: var(--green) !important; border-color: #fff !important; color: white !important; box-shadow: 0 0 15px rgba(29, 158, 117, 0.4); }
-        .tails-push { background: var(--accent) !important; border-color: #fff !important; color: white !important; box-shadow: 0 0 15px rgba(127, 119, 221, 0.4); }
+        .tails-update { background: var(--green) !important; border-color: #fff !important; color: white !important; }
+        .tails-push { background: var(--accent) !important; border-color: #fff !important; color: white !important; }
 
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-top: 30px;}
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 6px; }
         .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; text-transform: uppercase; }
         .tab-btn.active { color: var(--accent); background: var(--bg-input); }
-        .tab-content { display: none; padding: 25px; line-height: 1.6;}
+        .tab-content { display: none; padding: 25px; }
         .tab-content.active { display: block; }
         
-        /* Code Sync Highlight */
-        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 14px; background: #0d0d0f; padding: 15px; border-radius: 8px; border: 1px solid var(--border); color: #9ba1a6; }
+        /* Код с правильными отступами */
+        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 14px; background: #0d0d0f; padding: 15px; border-radius: 8px; border: 1px solid var(--border); color: #9ba1a6; white-space: pre; overflow-x: auto; }
         .code-line { display: block; padding: 2px 10px; border-left: 3px solid transparent; transition: 0.2s; }
         .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
-        .kw { color: #cc99cd; } .cm { color: #777; }
+        .indent { display: inline-block; width: 24px; }
+        .kw { color: #cc99cd; } .cm { color: #777; } .fn { color: #e67e22; }
 
         .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 30px; }
         button.main-btn { padding: 12px 28px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
@@ -56,13 +53,8 @@
             <input id="numsInput" type="text" value="10, 22, 9, 33, 21, 50">
             <button class="main-btn" onclick="init()">Apply</button>
         </div>
-
-        <div id="info" class="info-box">Press "Next Step" to observe Binary Search in Patience Sorting.</div>
-
-        <span class="label">Input Array (nums)</span>
+        <div id="info" class="info-box">Press "Next Step" to start.</div>
         <div id="nums-row" class="array-row"></div>
-
-        <span class="label">LIS Tails Array (O(n log n) state)</span>
         <div id="tails-row" class="array-row"></div>
 
         <div class="controls">
@@ -79,92 +71,83 @@
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
             <button class="tab-btn" onclick="switchTab(this, 'py')">Python</button>
         </div>
+        
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0">Binary Search Approach (O(N log N))</h3>
-            <p>This algorithm maintains an array <b>tails</b>, where <code>tails[i]</code> stores the smallest tail of all increasing subsequences of length <code>i+1</code>.</p>
+            <h3>Patience Sorting LIS</h3>
+            <p>Используется бинарный поиск для поддержания массива минимальных хвостов.</p>
         </div>
         
         <div id="cpp" class="tab-content">
             <div class="code-view">
-                <span class="code-line" data-l="1"><span class="kw">int</span> lengthOfLIS(vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
-                <span class="code-line" data-l="2">    vector&lt;<span class="kw">int</span>&gt; tails;</span>
-                <span class="code-line" data-l="3">    <span class="kw">for</span> (<span class="kw">int</span> n : nums) {</span>
-                <span class="code-line" data-l="4">        <span class="kw">auto</span> it = lower_bound(tails.begin(), tails.end(), n);</span>
-                <span class="code-line" data-l="5">        <span class="kw">if</span> (it == tails.end()) {</span>
-                <span class="code-line" data-l="6">            tails.push_back(n); <span class="cm">// Extend LIS</span></span>
-                <span class="code-line" data-l="7">        } <span class="kw">else</span> {</span>
-                <span class="code-line" data-l="8">            *it = n; <span class="cm">// Improve existing tail</span></span>
-                <span class="code-line" data-l="9">        }</span>
-                <span class="code-line" data-l="10">    }</span>
-                <span class="code-line" data-l="11">    <span class="kw">return</span> tails.size();</span>
-                <span class="code-line" data-l="12">}</span>
-            </div>
+<span class="code-line" data-l="1"><span class="kw">int</span> lengthOfLIS(vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>
+<span class="code-line" data-l="2"><span class="indent"></span>vector&lt;<span class="kw">int</span>&gt; tails;</span>
+<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> n : nums) {</span>
+<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> it = lower_bound(tails.begin(), tails.end(), n);</span>
+<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (it == tails.end()) {</span>
+<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span>tails.push_back(n); <span class="cm">// Extend LIS</span></span>
+<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span>} <span class="kw">else</span> {</span>
+<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>*it = n; <span class="cm">// Improve existing tail</span></span>
+<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span>}</span>
+<span class="code-line" data-l="10"><span class="indent"></span>}</span>
+<span class="code-line" data-l="11"><span class="indent"></span><span class="kw">return</span> tails.size();</span>
+<span class="code-line" data-l="12">}</span></div>
         </div>
 
         <div id="py" class="tab-content">
             <div class="code-view">
-                <span class="code-line" data-l="1"><span class="kw">def</span> <span style="color:#e67e22">lengthOfLIS</span>(nums):</span>
-                <span class="code-line" data-l="2">    tails = []</span>
-                <span class="code-line" data-l="3">    <span class="kw">for</span> n <span class="kw">in</span> nums:</span>
-                <span class="code-line" data-l="4">        idx = bisect_left(tails, n)</span>
-                <span class="code-line" data-l="5">        <span class="kw">if</span> idx == <span style="color:#e67e22">len</span>(tails):</span>
-                <span class="code-line" data-l="6">            tails.append(n) <span class="cm"># New pile</span></span>
-                <span class="code-line" data-l="7">        <span class="kw">else</span>:</span>
-                <span class="code-line" data-l="8">            tails[idx] = n <span class="cm"># Replace tail</span></span>
-                <span class="code-line" data-l="9">    <span class="kw">return</span> <span style="color:#e67e22">len</span>(tails)</span>
-            </div>
+<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">lengthOfLIS</span>(nums):</span>
+<span class="code-line" data-l="2"><span class="indent"></span>tails = []</span>
+<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> n <span class="kw">in</span> nums:</span>
+<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>idx = bisect_left(tails, n)</span>
+<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> idx == <span class="fn">len</span>(tails):</span>
+<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span>tails.append(n)</span>
+<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">else</span>:</span>
+<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>tails[idx] = n</span>
+<span class="code-line" data-l="9"><span class="indent"></span><span class="kw">return</span> <span class="fn">len</span>(tails)</span></div>
         </div>
     </div>
 </div>
 
 <script>
-    let nums = [], steps = [], curStep = 0;
-    let activeTabId = 'theory';
+    let nums = [], steps = [], curStep = 0, activeTabId = 'theory';
 
     function switchTab(btn, id) {
         activeTabId = id;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active'); document.getElementById(id).classList.add('active');
-        syncCodeHighlight();
+        syncCode();
     }
 
     function init() {
         nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = [{ idx: -1, tails: [], action: 'init', line: 1, msg: "Initial state. We will build the <b>tails</b> array step-by-step." }];
+        steps = [{ idx: -1, tails: [], action: 'init', line: 1, msg: "Start BFS/LIS analysis." }];
         let currentTails = [];
-
         for (let i = 0; i < nums.length; i++) {
             let n = nums[i];
             let low = 0, high = currentTails.length;
             while (low < high) {
                 let mid = Math.floor((low + high) / 2);
-                if (currentTails[mid] < n) low = mid + 1;
-                else high = mid;
+                if (currentTails[mid] < n) low = mid + 1; else high = mid;
             }
-
-            let type = '', line = 0, msg = '';
             if (low === currentTails.length) {
                 currentTails.push(n);
-                type = 'push'; line = 6;
-                msg = `Number <b>${n}</b> is greater than all existing tails. We extend the LIS: <span class="formula">tails.push_back(${n})</span>.`;
+                steps.push({ idx: i, tails: [...currentTails], updateIdx: low, action: 'push', line: 6, msg: "Extended." });
             } else {
                 currentTails[low] = n;
-                type = 'update'; line = 8;
-                msg = `Binary search found <b>${n}</b> is smaller than <b>tails[${low}]</b>. We update it, improving potential.`;
+                steps.push({ idx: i, tails: [...currentTails], updateIdx: low, action: 'update', line: 8, msg: "Updated." });
             }
-            steps.push({ idx: i, tails: [...currentTails], updateIdx: low, action: type, msg: msg, line: line });
         }
-        steps.push({ idx: -1, tails: [...currentTails], action: 'init', line: activeTabId === 'cpp' ? 11 : 9, msg: "Algorithm finished. The size of <b>tails</b> is our LIS length." });
+        steps.push({ idx: -1, tails: [...currentTails], action: 'init', line: 11, msg: "Done." });
         curStep = 0; render();
     }
 
-    function syncCodeHighlight() {
+    function syncCode() {
         document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
-        if (activeTabId === 'cpp' || activeTabId === 'py') {
-            const lineNum = steps[curStep].line;
-            const activeLine = document.querySelector(`#${activeTabId} [data-l="${lineNum}"]`);
-            if (activeLine) activeLine.classList.add('active');
+        if (activeTabId !== 'theory') {
+            const line = steps[curStep].line;
+            const el = document.querySelector(`#${activeTabId} [data-l="${line}"]`);
+            if (el) el.classList.add('active');
         }
     }
 
@@ -172,26 +155,16 @@
         const s = steps[curStep];
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('stepCounter').textContent = `Step ${curStep} / ${steps.length - 1}`;
-
-        document.getElementById('nums-row').innerHTML = nums.map((n, i) => `
-            <div class="cell ${i === s.idx ? 'active-num' : ''}">${n}</div>
-        `).join('');
-
-        let tailsHtml = '';
-        const len = Math.max(s.tails.length, 1);
-        for (let i = 0; i < len; i++) {
-            let val = s.tails[i] !== undefined ? s.tails[i] : '';
+        document.getElementById('nums-row').innerHTML = nums.map((n, i) => `<div class="cell ${i === s.idx ? 'active-num' : ''}">${n}</div>`).join('');
+        document.getElementById('tails-row').innerHTML = s.tails.map((v, i) => {
             let cls = 'cell';
-            if (val !== '' && i === s.updateIdx && s.action !== 'init') {
-                cls += s.action === 'push' ? ' tails-push' : ' tails-update';
-            }
-            tailsHtml += `<div class="${cls}">${val}</div>`;
-        }
-        document.getElementById('tails-row').innerHTML = tailsHtml;
-        syncCodeHighlight();
+            if (i === s.updateIdx && s.action !== 'init') cls += s.action === 'push' ? ' tails-push' : ' tails-update';
+            return `<div class="${cls}">${v}</div>`;
+        }).join('');
+        syncCode();
     }
 
-    function step(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
+    function step(dir) { if (curStep+dir >= 0 && curStep+dir < steps.length) { curStep += dir; render(); } }
     init();
 </script>
 </body>
