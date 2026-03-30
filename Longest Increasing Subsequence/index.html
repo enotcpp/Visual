@@ -2,46 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LIS Matrix Visualizer | AlgoView Lab</title>
+    <title>LIS Matrix Lab | AlgoView</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
             --bg-main: #1a1a1c; --bg-card: #242426; --bg-input: #2d2d30;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
             --accent: #7f77dd; --accent-secondary: #1d9e75;
-            --border: #3e3e42; --code-bg: #0d0d0f;
+            --border: #3e3e42; --code-bg: #0d0d0f; --orange: #e67e22;
         }
-        body { margin: 0; padding: 2rem 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+        body { margin: 0; padding: 2rem 0; font-family: -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); }
+        .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
         
-        .visualizer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; }
-        .inputs { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; flex-grow: 1; font-family: monospace; }
+        .visualizer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 30px; }
+        .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 8px 12px; border-radius: 8px; flex-grow: 1; font-family: monospace; }
         
-        button { padding: 8px 15px; border-radius: 6px; border: none; background: var(--accent); color: white; cursor: pointer; font-weight: bold; }
+        button { padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
 
-        /* TABLE STYLES */
-        .tbl-wrap { overflow-x: auto; margin-bottom: 30px; border-radius: 12px; border: 1px solid var(--border); background: #111; padding: 10px; }
+        .info-box { background: var(--bg-main); border-left: 4px solid var(--accent); padding: 16px; min-height: 70px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
+        .info-box b { color: var(--accent); }
+
+        /* MATRIX & DP */
+        .tbl-wrap { overflow-x: auto; margin-bottom: 25px; background: #141416; padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
         table { border-collapse: separate; border-spacing: 4px; margin: 0 auto; }
-        th, td { width: 40px; height: 40px; text-align: center; border-radius: 4px; font-size: 13px; transition: 0.2s; }
+        th, td { width: 42px; height: 42px; text-align: center; border-radius: 6px; font-size: 14px; transition: all 0.2s; border: 1px solid transparent; }
         
-        .head-cell { color: var(--text-secondary); font-weight: bold; background: transparent; }
-        .cell { background: var(--bg-card); border: 1px solid var(--border); color: #555; }
-        
-        /* Состояния ячеек в матрице i/j */
-        .cell.active-row { background: rgba(127, 119, 221, 0.1); color: var(--text-secondary); }
-        .cell.current-check { border: 2px solid var(--accent); color: white; transform: scale(1.1); z-index: 10; }
-        .cell.match-true { background: #085041; color: white; border-color: var(--accent-secondary); }
-        .cell.match-false { background: #3d1c1c; color: #a69b9b; }
+        .head-cell { color: var(--text-secondary); font-weight: bold; }
+        .cell { background: var(--bg-card); border-color: var(--border); color: #444; }
+        .cell.active-i { background: rgba(127, 119, 221, 0.1); color: var(--text-main); }
+        .cell.current-check { border: 2px solid var(--orange) !important; color: white !important; transform: scale(1.1); z-index: 5; }
+        .cell.filled { color: var(--text-main); background: var(--bg-input); }
+        .cell.match { background: #085041; border-color: var(--accent-secondary); color: white; }
 
-        /* DP Row */
-        .dp-label { font-size: 12px; color: var(--accent); font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block;}
-        .dp-row { display: flex; gap: 4px; justify-content: center; padding-top: 10px; border-top: 1px dashed var(--border); }
-        .dp-cell { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--bg-input); border-radius: 4px; border: 1px solid var(--border); font-weight: bold; }
-        .dp-cell.highlight { border: 2px solid var(--accent-secondary); background: #1d9e7533; }
+        .dp-row { display: flex; gap: 4px; justify-content: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
+        .dp-cell { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: var(--bg-input); border-radius: 6px; border: 1px solid var(--border); font-weight: bold; color: var(--text-secondary); }
+        .dp-cell.active-i { border: 2px solid var(--accent); color: var(--accent); }
+        .dp-cell.active-j { border: 2px solid var(--orange); background: rgba(230, 126, 34, 0.2); color: var(--orange); }
 
-        .info-box { background: var(--bg-main); border-left: 4px solid var(--accent); padding: 15px; margin-bottom: 20px; min-height: 60px; font-size: 14px; }
+        /* LAB TABS */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 15px 20px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+        pre { margin: 0; border-radius: 10px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -49,41 +56,78 @@
 <div class="wrap">
     <div class="visualizer-card">
         <div class="inputs">
-            <input id="in1" type="text" value="10, 22, 9, 33, 21, 50, 41, 60">
+            <input id="in1" type="text" value="10, 22, 9, 33, 21, 50">
             <button onclick="rebuild()">Apply</button>
         </div>
 
-        <div class="info-box" id="info">Press Next to start</div>
+        <div class="info-box" id="info">Ready to visualize LIS $O(N^2)$.</div>
 
         <div class="tbl-wrap">
-            <div style="text-align: center; color: var(--text-secondary); font-size: 11px; margin-bottom: 10px;">MATRIX: Comparison Nums[i] > Nums[j]</div>
             <div id="matrix-box"></div>
-            
-            <div style="margin-top: 20px;">
-                <span class="dp-label">DP Array (Max Length ending at i)</span>
-                <div id="dp-box" class="dp-row"></div>
-            </div>
+            <div class="dp-row" id="dp-box"></div>
+            <div style="text-align: center; margin-top: 10px; font-size: 10px; color: var(--text-secondary); letter-spacing: 1px;">DP ARRAY (LENGHTS)</div>
         </div>
 
         <div class="inputs">
-            <button class="secondary" onclick="go(-1)">Back</button>
-            <button onclick="go(1)">Next Step</button>
+            <button class="secondary" onclick="go(-1)">< Back</button>
+            <button onclick="go(1)">Next Step ></button>
             <button class="secondary" onclick="resetAll()">Reset</button>
-            <span id="ctr" style="margin-left: auto; color: var(--text-secondary); font-size: 12px; align-self: center;"></span>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
         </div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
+        </div>
+        <div id="theory" class="tab-content active">
+            <h3>Longest Increasing Subsequence</h3>
+            <p>Для каждого элемента <b>i</b> мы опрашиваем всех его предшественников <b>j</b>. Если текущее число больше предыдущего, мы можем прибавить единицу к его результату.</p>
+            <p>Ключевая логика: <code>dp[i] = max(dp[i], dp[j] + 1)</code></p>
+        </div>
+        <div id="python" class="tab-content"><pre><code class="language-python">def lengthOfLIS(nums):
+    n = len(nums)
+    dp = [1] * n
+    for i in range(1, n):
+        for j in range(i):
+            if nums[i] > nums[j]:
+                dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)</code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp">int lengthOfLIS(vector<int>& nums) {
+    int n = nums.size();
+    vector<int> dp(n, 1);
+    for (int i = 1; i < n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (nums[i] > nums[j]) 
+                dp[i] = max(dp[i], dp[j] + 1);
+        }
+    }
+    return *max_element(dp.begin(), dp.end());
+}</code></pre></div>
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
 <script>
     let nums = [], steps = [], cur = 0;
+
+    function switchTab(btn, id) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+    }
 
     function rebuild() {
         nums = document.getElementById('in1').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
         steps = [];
         let dp = Array(nums.length).fill(1);
         
-        // Step 0: Init
-        steps.push({ i: 0, j: -1, dp: [...dp], msg: "Initialize: Every element starts with LIS length 1." });
+        steps.push({ i: 0, j: -1, dp: [...dp], msg: "Начинаем. Для i=0 длина всегда 1." });
 
         for (let i = 1; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
@@ -96,11 +140,10 @@
                 }
                 steps.push({
                     i, j, dp: [...dp],
-                    compare: nums[i] > nums[j],
-                    updated,
+                    isMatch: nums[i] > nums[j],
                     msg: nums[i] > nums[j] 
-                        ? `Nums[${i}](${nums[i]}) > Nums[${j}](${nums[j]}). DP[${i}] updated to ${dp[i]}.`
-                        : `Nums[${i}](${nums[i]}) <= Nums[${j}](${nums[j]}). No update.`
+                        ? `Число <b>${nums[i]} > ${nums[j]}</b>. Пробуем обновить DP[${i}] через DP[${j}]+1.`
+                        : `Число <b>${nums[i]} ≤ ${nums[j]}</b>. Пропускаем.`
                 });
             }
         }
@@ -108,12 +151,11 @@
     }
 
     function render() {
-        if (!steps.length) return;
         const s = steps[cur];
         document.getElementById('info').innerHTML = s.msg;
-        document.getElementById('ctr').textContent = `Step ${cur} / ${steps.length - 1}`;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
 
-        // Render Matrix
+        // Matrix
         let html = '<table><tr><th></th>';
         nums.forEach(n => html += `<th class="head-cell">${n}</th>`);
         html += '</tr>';
@@ -123,43 +165,36 @@
             for (let j = 0; j < nums.length; j++) {
                 let cls = 'cell';
                 let content = '';
-                
-                if (j < i) { // Мы смотрим только "прошлое"
-                    if (i === s.i) cls += ' active-row';
+                if (j < i) {
+                    if (i === s.i) cls += ' active-i';
                     if (i === s.i && j === s.j) cls += ' current-check';
                     
-                    // Показываем результат сравнения для уже пройденных шагов
-                    const stepAtIJ = steps.find(st => st.i === i && st.j === j);
-                    const stepIndex = steps.indexOf(stepAtIJ);
-                    
-                    if (stepIndex <= cur && stepIndex !== -1) {
-                        const isMatch = nums[i] > nums[j];
-                        cls += isMatch ? ' match-true' : ' match-false';
-                        content = isMatch ? '✓' : '×';
+                    const stepAtIdx = steps.findIndex(st => st.i === i && st.j === j);
+                    if (stepAtIdx !== -1 && stepAtIdx <= cur) {
+                        cls += ' filled';
+                        if (steps[stepAtIdx].isMatch) cls += ' match';
+                        content = steps[stepAtIdx].dp[i];
                     }
-                } else if (i === j) {
-                    content = '\\';
                 }
-                
                 html += `<td class="${cls}">${content}</td>`;
             }
             html += '</tr>';
         }
         document.getElementById('matrix-box').innerHTML = html + '</table>';
 
-        // Render DP Row
+        // DP Row
         let dpHtml = '';
-        s.dp.forEach((val, idx) => {
+        s.dp.forEach((v, idx) => {
             let cls = 'dp-cell';
-            if (idx === s.i) cls += ' highlight';
-            dpHtml += `<div class="${cls}">${val}</div>`;
+            if (idx === s.i) cls += ' active-i';
+            if (idx === s.j) cls += ' active-j';
+            dpHtml += `<div class="${cls}">${v}</div>`;
         });
         document.getElementById('dp-box').innerHTML = dpHtml;
     }
 
-    function go(dir) { if (cur + dir >= 0 && cur + dir < steps.length) { cur += dir; render(); } }
+    function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
     function resetAll() { cur = 0; render(); }
-
     rebuild();
 </script>
 </body>
