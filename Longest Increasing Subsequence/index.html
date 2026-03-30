@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LIS Lab | Step-by-Step Logic</title>
+    <title>LIS Lab | Step-by-Step Educational Tool</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
@@ -38,6 +38,14 @@
         .dp-target { border: 2px solid var(--accent) !important; color: var(--accent) !important; box-shadow: 0 0 15px rgba(127,119,221,0.3); }
         .dp-title { color: var(--accent); font-size: 11px; font-weight: 800; text-align: center; width: var(--cell-size); }
 
+        /* Tabs System */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 6px; }
+        .tab-btn { background: none; border: none; padding: 12px 20px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; text-transform: uppercase; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-input); }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+
         .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
         button.main-btn { padding: 12px 24px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; cursor: pointer;}
@@ -52,7 +60,7 @@
             <button class="main-btn" onclick="init()">Apply</button>
         </div>
 
-        <div id="info" class="info-box">Нажмите "Next Step", чтобы начать разбор алгоритма.</div>
+        <div id="info" class="info-box">Press "Next Step" to observe how the algorithm processes the array.</div>
 
         <div class="workspace">
             <div id="visual-area" class="main-grid"></div>
@@ -65,36 +73,74 @@
             <div id="stepCounter" style="margin-left: auto; color: var(--text-secondary); font-size: 12px; align-self: center;"></div>
         </div>
     </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
+        </div>
+        <div id="theory" class="tab-content active">
+            <h3 style="margin-top:0">Longest Increasing Subsequence (LIS)</h3>
+            <p>The goal is to find the length of the longest subsequence in a given array such that all elements of the subsequence are sorted in increasing order.</p>
+            <ul>
+                <li><b>DP[i]</b> stores the length of the LIS ending at index <b>i</b>.</li>
+                <li>For each element <b>i</b>, we look at all previous elements <b>j < i</b>.</li>
+                <li>If <code>nums[i] > nums[j]</code>, we update <code>DP[i] = max(DP[i], DP[j] + 1)</code>.</li>
+            </ul>
+        </div>
+        <div id="python" class="tab-content">
+            <pre><code class="language-python">for i in range(len(nums)):
+    for j in range(i):
+        if nums[i] > nums[j]:
+            dp[i] = max(dp[i], dp[j] + 1)</code></pre>
+        </div>
+        <div id="cpp" class="tab-content">
+            <pre><code class="language-cpp">for (int i = 1; i < n; i++) {
+    for (int j = 0; j < i; j++) {
+        if (nums[i] > nums[j]) {
+            dp[i] = max(dp[i], dp[j] + 1);
+        }
+    }
+}</code></pre>
+        </div>
+    </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 
 <script>
     let nums = [], steps = [], curStep = 0;
+
+    function switchTab(btn, id) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+    }
 
     function init() {
         nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
         let dp = Array(nums.length).fill(1);
         steps = [{ 
             i: 0, j: -1, dp: [...dp], 
-            msg: `<b>Базовый случай:</b> Первый элемент <b>${nums[0]}</b>. <br>Его собственная длина LIS всегда равна 1. Записываем <span class="formula">DP[0] = 1</span>.` 
+            msg: `<b>Base Case:</b> First element <b>${nums[0]}</b>. <br>The LIS length for a single element is always 1. Initializing <span class="formula">DP[0] = 1</span>.` 
         }];
 
         for (let i = 1; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
-                let oldVal = dp[i];
                 let isMatch = nums[i] > nums[j];
                 let msg = "";
 
                 if (isMatch) {
                     let candidate = dp[j] + 1;
                     dp[i] = Math.max(dp[i], candidate);
-                    msg = `Сравниваем <b>${nums[i]}</b> (i) и <b>${nums[j]}</b> (j). <br>` +
-                          `Так как <b>${nums[i]} > ${nums[j]}</b>, берем длину из <span class="formula">DP[j] (${dp[j]}) + 1</span>. <br>` +
-                          `Результат <span class="formula">${candidate}</span> записываем в <b>DP[${i}]</b>.`;
+                    msg = `Comparing <b>${nums[i]}</b> (i) and <b>${nums[j]}</b> (j). <br>` +
+                          `Since <b>${nums[i]} > ${nums[j]}</b>, we can extend the sequence from index j. <br>` +
+                          `Calculation: <span class="formula">DP[j] (${dp[j]}) + 1 = ${candidate}</span>. Updating <b>DP[${i}]</b>.`;
                 } else {
-                    msg = `Сравниваем <b>${nums[i]}</b> (i) и <b>${nums[j]}</b> (j). <br>` +
-                          `Число <b>${nums[i]}</b> не больше <b>${nums[j]}</b>. Пропускаем, <b>DP[${i}]</b> остается прежним.`;
+                    msg = `Comparing <b>${nums[i]}</b> (i) and <b>${nums[j]}</b> (j). <br>` +
+                          `<b>${nums[i]}</b> is not greater than <b>${nums[j]}</b>. No update for <b>DP[${i}]</b>.`;
                 }
-                
                 steps.push({ i, j, dp: [...dp], isMatch, msg });
             }
         }
@@ -108,17 +154,13 @@
         document.getElementById('stepCounter').textContent = `Step ${curStep} / ${steps.length - 1}`;
 
         let html = '';
-        
-        // Header
         html += `<div class="row-container"><div class="cell label">i \\ j</div>`;
         nums.forEach((n, idx) => html += `<div class="cell label ${idx === s.j ? 'active-white' : ''}">${n}</div>`);
         html += `<div style="width: 40px;"></div><div class="dp-title">DP</div></div>`;
 
-        // Rows
         for (let i = 0; i < nums.length; i++) {
             html += `<div class="row-container">`;
             html += `<div class="cell label ${i === s.i ? 'active-white' : ''}">${nums[i]}</div>`;
-            
             for (let j = 0; j < nums.length; j++) {
                 let cls = 'cell', content = '';
                 if (j < i) {
@@ -128,21 +170,17 @@
                         cls += steps[stIdx].isMatch ? ' match' : ' no-match';
                     } else content = '1';
                     if (i === s.i && j === s.j) cls += ' active-white';
-                } else {
-                    cls += ' empty';
-                }
+                } else cls += ' empty';
                 html += `<div class="${cls}">${content}</div>`;
             }
-
             html += `<div style="width: 40px;"></div>`;
-
             let dpCls = 'cell dp-cell';
-            if (i === s.i) dpCls += ' dp-target'; // Куда пишем
-            if (i === s.j && s.i !== 0) dpCls += ' active-white'; // Откуда берем (+1)
+            if (i === s.i) dpCls += ' dp-target';
+            if (i === s.j && s.i !== 0) dpCls += ' active-white';
             html += `<div class="${dpCls}">${s.dp[i]}</div></div>`;
         }
-        
         container.innerHTML = html;
+        Prism.highlightAll();
     }
 
     function step(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
