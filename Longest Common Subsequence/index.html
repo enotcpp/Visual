@@ -10,46 +10,47 @@
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
             --accent: #7f77dd; --accent-secondary: #1d9e75;
             --border: #3e3e42; --code-bg: #0d0d0f;
-            --line-hl: rgba(127, 119, 221, 0.2);
+            --line-hl: rgba(127, 119, 221, 0.3);
         }
 
         * { box-sizing: border-box; }
         body { margin: 0; padding: 2rem 0; font-family: sans-serif; background-color: var(--bg-main); color: var(--text-main); }
         .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
         
-        /* VISUALIZER */
         .visualizer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 30px; }
         .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
         .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; border-radius: 8px; width: 140px; font-family: monospace; }
+        
         button { padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        
         .info-box { background: var(--bg-main); border-left: 4px solid var(--accent-secondary); padding: 16px; min-height: 85px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
         .tbl-wrap { overflow-x: auto; margin-bottom: 25px; }
         table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
+        
         .cell { width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); text-align: center; font-size: 16px; transition: all .2s; color: var(--text-secondary); vertical-align: middle; }
         .cell.filled { background: var(--bg-input); color: var(--text-main); }
         .cell.cur { border: 2.5px solid var(--accent) !important; color: white !important; transform: scale(1.05); }
         .cell.match { background: #085041; border-color: var(--accent-secondary); color: white; }
         .cell.source { background: #3c3489; border-color: #7f77dd; color: white; }
-        .cell.path { background: #1d9e75; border-color: #fff; color: white; box-shadow: 0 0 10px var(--accent-secondary); }
 
-        /* LAB TABS */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        
         .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
         .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
         .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+        
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
-        /* CODE FORMATTING */
-        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 15px; border-radius: 10px; color: #9ba1a6; white-space: pre; overflow-x: auto; }
-        .code-line { display: block; padding: 2px 10px; border-left: 3px solid transparent; transition: 0.2s; }
+        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 15px; border-radius: 10px; color: #9ba1a6; white-space: pre; overflow-x: auto; line-height: 1.5; }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; }
         .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
-        .indent { display: inline-block; width: 20px; }
-        .kw { color: #cc99cd; } .cm { color: #777; } .fn { color: #e67e22; }
+        .indent { display: inline-block; width: 24px; }
+        .kw { color: #cc99cd; } .cm { color: #777; } .fn { color: #e67e22; } .num { color: #f8c555; }
     </style>
 </head>
 <body>
@@ -65,7 +66,7 @@
         </div>
 
         <div class="info-box" id="info">Ready.</div>
-        <div class="tbl-wrap" id="tbl"></div>
+        <div id="tbl" class="tbl-wrap"></div>
 
         <div class="inputs" style="margin-top: 20px;">
             <button class="secondary" onclick="go(-1)">< Back</button>
@@ -85,14 +86,8 @@
             <div class="context-controls" id="context-panel"></div>
         </div>
         <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
-        
-        <div id="python" class="tab-content">
-            <div class="code-view" id="python-display"></div>
-        </div>
-        
-        <div id="cpp" class="tab-content">
-            <div class="code-view" id="cpp-display"></div>
-        </div>
+        <div id="python" class="tab-content"><div class="code-view" id="python-display"></div></div>
+        <div id="cpp" class="tab-content"><div class="code-view" id="cpp-display"></div></div>
     </div>
 </div>
 
@@ -103,12 +98,31 @@
             RU: "<h3>Наибольшая общая подпоследовательность</h3><p>Алгоритм динамического программирования для поиска общей части двух строк.</p>"
         },
         python: {
-            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">lcs</span>(s1, s2):</span><span class="code-line" data-l="2"><span class="indent"></span>m, n = <span class="fn">len</span>(s1), <span class="fn">len</span>(s2)</span><span class="code-line" data-l="3"><span class="indent"></span>dp = [[<span style="color:#f8c555">0</span>] * (n + <span style="color:#f8c555">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m + <span style="color:#f8c555">1</span>)]</span><span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span style="color:#f8c555">1</span>, m + <span style="color:#f8c555">1</span>):</span><span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span style="color:#f8c555">1</span>, n + <span style="color:#f8c555">1</span>):</span><span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> s1[i-<span style="color:#f8c555">1</span>] == s2[j-<span style="color:#f8c555">1</span>]:</span><span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = dp[i-<span style="color:#f8c555">1</span>][j-<span style="color:#f8c555">1</span>] + <span style="color:#f8c555">1</span></span><span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">else</span>:</span><span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = <span class="fn">max</span>(dp[i-<span style="color:#f8c555">1</span>][j], dp[i][j-<span style="color:#f8c555">1</span>])</span><span class="code-line" data-l="10"><span class="indent"></span><span class="kw">return</span> dp[m][n]</span>`,
-            v2: `<span class="cm"># Space optimized version</span>`
+            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">lcs</span>(s1, s2):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span>m, n = <span class="fn">len</span>(s1), <span class="fn">len</span>(s2)</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span>dp = [[<span class="num">0</span>] * (n + <span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m + <span class="num">1</span>)]</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, m + <span class="num">1</span>):</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> s1[i-<span class="num">1</span>] == s2[j-<span class="num">1</span>]:</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = dp[i-<span class="num">1</span>][j-<span class="num">1</span>] + <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">else</span>:</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = <span class="fn">max</span>(dp[i-<span class="num">1</span>][j], dp[i][j-<span class="num">1</span>])</span>` +
+                `<span class="code-line" data-l="12"><span class="indent"></span><span class="kw">return</span> dp[m][n]</span>`,
+            v2: `<span class="cm"># Space optimized version coming soon...</span>`
         },
         cpp: {
-            v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">lcs</span>(string s1, string s2) {</span><span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> m = s1.size(), n = s2.size();</span><span class="code-line" data-l="3"><span class="indent"></span>vector&lt;vector&lt;<span class="kw">int</span>&gt;&gt; dp(m+<span style="color:#f8c555">1</span>, vector&lt;<span class="kw">int</span>&gt;(n+<span style="color:#f8c555">1</span>, <span style="color:#f8c555">0</span>));</span><span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span style="color:#f8c555">1</span>; i &lt;= m; i++) {</span><span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = <span style="color:#f8c555">1</span>; j &lt;= n; j++) {</span><span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (s1[i-<span style="color:#f8c555">1</span>] == s2[j-<span style="color:#f8c555">1</span>])</span><span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = dp[i-<span style="color:#f8c555">1</span>][j-<span style="color:#f8c555">1</span>] + <span style="color:#f8c555">1</span>;</span><span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">else</span></span><span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = max(dp[i-<span style="color:#f8c555">1</span>][j], dp[i][j-<span style="color:#f8c555">1</span>]);</span><span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span>}</span><span class="code-line" data-l="11"><span class="indent"></span>}</span><span class="code-line" data-l="12"><span class="indent"></span><span class="kw">return</span> dp[m][n];</span><span class="code-line" data-l="13">}</span>`,
-            v2: `<span class="cm">// Fast version</span>`
+            v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">lcs</span>(string s1, string s2) {</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> m = s1.size(), n = s2.size();</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span>vector&lt;vector&lt;<span class="kw">int</span>&gt;&gt; dp(m+<span class="num">1</span>, vector&lt;<span class="kw">int</span>&gt;(n+<span class="num">1</span>, <span class="num">0</span>));</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt;= m; i++) {</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">1</span>; j &lt;= n; j++) {</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (s1[i-<span class="num">1</span>] == s2[j-<span class="num">1</span>])</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = dp[i-<span class="num">1</span>][j-<span class="num">1</span>] + <span class="num">1</span>;</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">else</span></span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = max(dp[i-<span class="num">1</span>][j], dp[i][j-<span class="num">1</span>]);</span>` +
+                `<span class="code-line" data-l="12"><span class="indent"></span><span class="kw">return</span> dp[m][n];</span>` +
+                `<span class="code-line" data-l="13">}</span>`,
+            v2: `<span class="cm">// Fast version coming soon...</span>`
         }
     };
 
@@ -142,11 +156,8 @@
 
     function updateContent(key) {
         const display = document.getElementById(currentMainTab + '-display');
-        if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
-        else {
-            display.innerHTML = db[currentMainTab][key];
-            syncCode();
-        }
+        display.innerHTML = (currentMainTab === 'theory') ? db.theory[key] : db[currentMainTab][key];
+        syncCode();
     }
 
     function syncCode() {
@@ -167,12 +178,11 @@
         const n = t1.length, m = t2.length;
         const _steps = [];
         const dp = Array.from({length: n+1}, () => Array(m+1).fill(0));
-
         _steps.push({ i:0, j:0, dp: dp.map(r=>[...r]), action: 'init', line: 3, msg: 'Initialize DP table.' });
 
         for (let i = 1; i <= n; i++) {
             for (let j = 1; j <= m; j++) {
-                let src = [], action = '', line = 0;
+                let src = [], action = '', line = 6;
                 if (t1[i-1] === t2[j-1]) {
                     dp[i][j] = dp[i-1][j-1] + 1;
                     src = [{r: i-1, c: j-1}]; action = 'match'; line = 7;
@@ -182,7 +192,7 @@
                     if (dp[i][j-1] >= dp[i-1][j]) src.push({r: i, c: j-1});
                     action = 'move'; line = 9;
                 }
-                _steps.push({ i, j, dp: dp.map(r=>[...r]), src, action, line, msg: `Step: Char match check...` });
+                _steps.push({ i, j, dp: dp.map(r=>[...r]), src, action, line, msg: `Checking <b>${t1[i-1]}</b> vs <b>${t2[j-1]}</b>` });
             }
         }
         _steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), action:'done', line: 12, msg: '<b>LCS found!</b>' });
