@@ -10,47 +10,50 @@
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
             --accent: #7f77dd; --accent-secondary: #1d9e75;
             --border: #3e3e42; --code-bg: #0d0d0f;
-            --line-hl: rgba(127, 119, 221, 0.3);
+            --line-hl: rgba(127, 119, 221, 0.35);
         }
 
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 2rem 0; font-family: sans-serif; background-color: var(--bg-main); color: var(--text-main); }
+        body { margin: 0; padding: 2rem 0; font-family: -apple-system, sans-serif; background-color: var(--bg-main); color: var(--text-main); }
         .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
         
+        /* VISUALIZER */
         .visualizer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 30px; }
         .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
         .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 8px 12px; border-radius: 8px; width: 140px; font-family: monospace; }
-        
         button { padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        
         .info-box { background: var(--bg-main); border-left: 4px solid var(--accent-secondary); padding: 16px; min-height: 85px; margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
         .tbl-wrap { overflow-x: auto; margin-bottom: 25px; }
         table { border-collapse: separate; border-spacing: 6px; margin: 0 auto; }
-        
         .cell { width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); text-align: center; font-size: 16px; transition: all .2s; color: var(--text-secondary); vertical-align: middle; }
         .cell.filled { background: var(--bg-input); color: var(--text-main); }
         .cell.cur { border: 2.5px solid var(--accent) !important; color: white !important; transform: scale(1.05); }
         .cell.match { background: #085041; border-color: var(--accent-secondary); color: white; }
         .cell.source { background: #3c3489; border-color: #7f77dd; color: white; }
 
+        /* LAB TABS */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
-        
         .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
         .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
         .sub-btn.active { border-color: var(--accent); color: var(--accent); }
-        
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
-        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 15px; border-radius: 10px; color: #9ba1a6; white-space: pre; overflow-x: auto; line-height: 1.5; }
-        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; }
-        .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
+        /* CODE VIEW */
+        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 15px; border-radius: 10px; color: #9ba1a6; white-space: pre; overflow-x: auto; line-height: 1.6; }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.2s; }
+        .code-line.active { background: var(--line-hl); border-left: 3px solid var(--accent); color: #fff; }
         .indent { display: inline-block; width: 24px; }
-        .kw { color: #cc99cd; } .cm { color: #777; } .fn { color: #e67e22; } .num { color: #f8c555; }
+        
+        /* Syntax Colors */
+        .kw { color: #cc99cd; } /* keyword */
+        .fn { color: #e67e22; } /* function */
+        .num { color: #f8c555; } /* number */
+        .cm { color: #777; }    /* comment */
     </style>
 </head>
 <body>
@@ -94,8 +97,8 @@
 <script>
     const db = {
         theory: {
-            EN: "<h3>Longest Common Subsequence</h3><p>Finds the longest subsequence present in both strings.</p>",
-            RU: "<h3>Наибольшая общая подпоследовательность</h3><p>Алгоритм динамического программирования для поиска общей части двух строк.</p>"
+            EN: "<h3>Longest Common Subsequence</h3><p>Finds the longest subsequence shared by two strings.</p>",
+            RU: "<h3>Наибольшая общая подпоследовательность</h3><p>Классическая задача динамического программирования.</p>"
         },
         python: {
             v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">lcs</span>(s1, s2):</span>` +
@@ -108,11 +111,10 @@
                 `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">else</span>:</span>` +
                 `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = <span class="fn">max</span>(dp[i-<span class="num">1</span>][j], dp[i][j-<span class="num">1</span>])</span>` +
                 `<span class="code-line" data-l="12"><span class="indent"></span><span class="kw">return</span> dp[m][n]</span>`,
-            v2: `<span class="cm"># Space optimized version coming soon...</span>`
+            v2: `<span class="cm"># Space optimized O(N) version...</span>`
         },
         cpp: {
             v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">lcs</span>(string s1, string s2) {</span>` +
-                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> m = s1.size(), n = s2.size();</span>` +
                 `<span class="code-line" data-l="3"><span class="indent"></span>vector&lt;vector&lt;<span class="kw">int</span>&gt;&gt; dp(m+<span class="num">1</span>, vector&lt;<span class="kw">int</span>&gt;(n+<span class="num">1</span>, <span class="num">0</span>));</span>` +
                 `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt;= m; i++) {</span>` +
                 `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">1</span>; j &lt;= n; j++) {</span>` +
@@ -122,7 +124,7 @@
                 `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][j] = max(dp[i-<span class="num">1</span>][j], dp[i][j-<span class="num">1</span>]);</span>` +
                 `<span class="code-line" data-l="12"><span class="indent"></span><span class="kw">return</span> dp[m][n];</span>` +
                 `<span class="code-line" data-l="13">}</span>`,
-            v2: `<span class="cm">// Fast version coming soon...</span>`
+            v2: `<span class="cm">// Fast optimization...</span>`
         }
     };
 
@@ -132,7 +134,8 @@
         currentMainTab = tabId;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active'); document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active'); 
+        document.getElementById(tabId).classList.add('active');
         renderContextControls();
     }
 
@@ -162,23 +165,24 @@
 
     function syncCode() {
         if (currentMainTab === 'theory') return;
-        document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
-        const line = steps[cur] ? steps[cur].line : 1;
-        const activeLine = document.querySelector(`#${currentMainTab}-display [data-l="${line}"]`);
-        if (activeLine) activeLine.classList.add('active');
-    }
+        const container = document.getElementById(currentMainTab + '-display');
+        if (!container) return;
 
-    function rebuild() {
-        t1 = document.getElementById('in1').value.trim();
-        t2 = document.getElementById('in2').value.trim();
-        steps = buildSteps(); cur = 0; render();
+        // Удаляем активный класс со всех строк во всех вкладках
+        document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+        
+        const step = steps[cur];
+        if (step && step.line) {
+            const targetLine = container.querySelector(`[data-l="${step.line}"]`);
+            if (targetLine) targetLine.classList.add('active');
+        }
     }
 
     function buildSteps() {
         const n = t1.length, m = t2.length;
         const _steps = [];
         const dp = Array.from({length: n+1}, () => Array(m+1).fill(0));
-        _steps.push({ i:0, j:0, dp: dp.map(r=>[...r]), action: 'init', line: 3, msg: 'Initialize DP table.' });
+        _steps.push({ i:0, j:0, dp: dp.map(r=>[...r]), line: 3, msg: 'Initialize DP table with zeros.' });
 
         for (let i = 1; i <= n; i++) {
             for (let j = 1; j <= m; j++) {
@@ -192,10 +196,11 @@
                     if (dp[i][j-1] >= dp[i-1][j]) src.push({r: i, c: j-1});
                     action = 'move'; line = 9;
                 }
-                _steps.push({ i, j, dp: dp.map(r=>[...r]), src, action, line, msg: `Checking <b>${t1[i-1]}</b> vs <b>${t2[j-1]}</b>` });
+                _steps.push({ i, j, dp: dp.map(r=>[...r]), src, action, line, 
+                    msg: action === 'match' ? `Match found: <b>${t1[i-1]}</b>. dp[i][j] = dp[i-1][j-1]+1` : `Taking max from neighbors.` });
             }
         }
-        _steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), action:'done', line: 12, msg: '<b>LCS found!</b>' });
+        _steps.push({ i:n, j:m, dp: dp.map(r=>[...r]), line: 12, msg: '<b>Calculation finished!</b>' });
         return _steps;
     }
 
@@ -215,7 +220,7 @@
                 const isFilled = (i===0 || j===0 || (cur > 0 && (i < s.i || (i === s.i && j <= s.j))));
                 let cls = 'cell';
                 if (isFilled) cls += ' filled';
-                if (i === s.i && j === s.j && s.action !== 'done') cls += ' cur';
+                if (i === s.i && j === s.j && cur < steps.length-1) cls += ' cur';
                 if (s.src && s.src.some(p => p.r === i && p.c === j)) cls += (s.action === 'match' ? ' match' : ' source');
                 html += `<td class="${cls}">${isFilled ? s.dp[i][j] : ''}</td>`;
             }
@@ -225,6 +230,11 @@
         syncCode();
     }
 
+    function rebuild() {
+        t1 = document.getElementById('in1').value.trim();
+        t2 = document.getElementById('in2').value.trim();
+        steps = buildSteps(); cur = 0; render();
+    }
     function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
     function toggleAuto() {
         const btn = document.getElementById('auto-btn');
