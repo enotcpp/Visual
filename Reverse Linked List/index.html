@@ -28,7 +28,7 @@
 
         .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 50px; margin-bottom: 25px; font-size: 15px; line-height: 1.6; }
         
-        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 380px; margin-bottom: 25px; }
+        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 420px; margin-bottom: 25px; }
 
         .step-ctrls { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
 
@@ -51,7 +51,7 @@
             <button class="btn-secondary" onclick="resetToDefault()">Clear</button>
         </div>
 
-        <div id="info" class="info-box">Press Apply to build the list, then use Next Step to see the reversal.</div>
+        <div id="info" class="info-box">Press Apply to start visualization.</div>
         
         <canvas id="listCanvas"></canvas>
 
@@ -71,23 +71,22 @@
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Implementation</button>
         </div>
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0; color:var(--accent)">Reverse Linked List</h3>
-            <p>Алгоритм разворота списка перенаправляет указатель `next` каждого узла на предыдущий элемент.</p>
+            <h3 style="margin-top:0; color:var(--accent)">How Reversal Works</h3>
+            <p>Чтобы развернуть список, мы проходим по нему и для каждого узла меняем его поле <code>next</code> так, чтобы оно указывало на предыдущий узел.</p>
             <ul>
-                <li><b>prev:</b> Изначально `nullptr`, в конце станет новой головой.</li>
-                <li><b>curr:</b> Текущий узел, который мы обрабатываем.</li>
-                <li><b>next:</b> Временный указатель на "будущее", чтобы не потерять хвост списка при разрыве связи.</li>
+                <li><b>Save next:</b> Сначала сохраняем адрес следующего узла, иначе мы потеряем доступ к остальной части списка.</li>
+                <li><b>Link back:</b> Перенаправляем текущий узел на <code>prev</code>.</li>
+                <li><b>Shift:</b> Сдвигаем <code>prev</code> и <code>curr</code> на один шаг вперед.</li>
             </ul>
         </div>
         <div id="cpp" class="tab-content">
 <pre><code class="language-cpp">ListNode* reverseList(ListNode* head) {
-    ListNode* prev = nullptr;
-    ListNode* curr = head;
-    while (curr != nullptr) {
-        ListNode* next = curr->next; // Сохраняем ссылку на следующий
-        curr->next = prev;           // Разворачиваем текущий узел
-        prev = curr;                 // Двигаем prev вперед
-        curr = next;                 // Двигаем curr вперед
+    ListNode *prev = nullptr, *curr = head;
+    while (curr) {
+        ListNode* next = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next;
     }
     return prev;
 }</code></pre>
@@ -109,7 +108,6 @@
         const val = document.getElementById('list-vals').value;
         const arr = val.split(',').map(s => s.trim()).filter(s => s !== "");
         if (arr.length === 0) return;
-        
         steps = generateSteps(arr);
         curStep = 0;
         updateUI();
@@ -120,22 +118,22 @@
         let nodes = arr.map((v, i) => ({ val: v, nextId: i < arr.length - 1 ? i + 1 : -1 }));
         let prev = -1, curr = 0;
 
-        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next: -1, msg: "<b>Start:</b> `curr` is at Head, `prev` is NULL." });
+        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next: -1, msg: "<b>Initial state:</b> <code>prev</code> is NULL, <code>curr</code> points to Head." });
 
         while (curr !== -1) {
             let next = nodes[curr].nextId;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>1. Save:</b> Keep reference to next node <b>(${next !== -1 ? nodes[next].val : 'NULL'})</b>.` });
+            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>Save:</b> Keep <code>next</code> pointer to Node ${next !== -1 ? nodes[next].val : 'NULL'}.` });
             
             nodes[curr].nextId = prev;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>2. Reverse:</b> Node <b>${nodes[curr].val}</b> now points back to ${prev !== -1 ? nodes[prev].val : 'NULL'}.` });
+            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>Reverse:</b> Change Node ${nodes[curr].val} pointer to point back to <code>prev</code>.` });
 
             prev = curr;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>3. Advance:</b> Move <b>prev</b> forward to current node.` });
+            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>Move prev:</b> Advance <code>prev</code> pointer to the current node.` });
 
             curr = next;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>4. Advance:</b> Move <b>curr</b> forward to the saved next node.` });
+            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr, prev, next, msg: `<b>Move curr:</b> Advance <code>curr</code> pointer to the saved <code>next</code>.` });
         }
-        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr: -1, prev, next: -1, isDone: true, msg: "<b>Done!</b> Algorithm finished. <b>prev</b> points to the new head." });
+        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), curr: -1, prev, next: -1, isDone: true, msg: "<b>Done!</b> The <code>prev</code> pointer is now the new Head." });
         return s;
     }
 
@@ -148,13 +146,14 @@
 
         if (steps.length === 0) return;
 
-        const nodeW = 90, nodeH = 50, spacing = 70;
-        const startX = (W - (steps[0].nodes.length * (nodeW + spacing) - spacing)) / 2;
-        const startY = H/2 - 25;
+        const nodeW = 100, nodeH = 55, spacing = 80;
+        const totalW = steps[0].nodes.length * (nodeW + spacing) - spacing;
+        const startX = (W - totalW) / 2;
+        const startY = H/2 - 30;
 
         const state = steps[curStep];
 
-        // 1. Draw Links
+        // 1. Draw Connections
         state.nodes.forEach((node, i) => {
             const x1 = startX + i * (nodeW + spacing);
             const y1 = startY + nodeH/2;
@@ -162,20 +161,24 @@
             if (node.nextId !== -1) {
                 const x2 = startX + node.nextId * (nodeW + spacing);
                 const isBack = node.nextId < i;
-                const offset = isBack ? 20 : 0;
                 
-                ctx.strokeStyle = isBack ? varColor('--ptr-prev') : '#444';
-                ctx.lineWidth = 2;
-                
-                // ПРЯМЫЕ ЛИНИИ
-                const fromX = isBack ? x1 + 15 : x1 + nodeW - 15;
-                const toX = isBack ? x2 + nodeW - 5 : x2 + 5;
-                const lineY = y1 + offset;
-
-                drawArrow(fromX, lineY, toX, lineY, isBack ? varColor('--ptr-prev') : '#444');
+                // Центровка по секциям
+                // Если вперед: из центра правой секции в центр левой секции следующего
+                // Если назад: из центра правой секции вниз и в центр правой секции предыдущего
+                if (!isBack) {
+                    const fromX = x1 + nodeW * 0.8; 
+                    const toX = x2 + 5; 
+                    drawArrow(fromX, y1, toX, y1, '#444');
+                } else {
+                    const fromX = x1 + nodeW * 0.8;
+                    const toX = x2 + nodeW * 0.8;
+                    const backY = y1 + nodeH * 0.7; // Опускаем стрелку назад ниже центра
+                    drawBacklink(fromX, y1, toX, y1, varColor('--ptr-prev'));
+                }
             } else {
                 ctx.fillStyle = '#555';
-                ctx.font = '10px var(--font-mono)';
+                ctx.font = '11px var(--font-mono)';
+                ctx.textAlign = 'left';
                 const nullX = (i === 0 && curStep > 2) ? x1 - 45 : x1 + nodeW + 15;
                 ctx.fillText("NULL", nullX, y1 + 5);
             }
@@ -187,49 +190,73 @@
             const y = startY;
             const isC = state.curr === i, isP = state.prev === i, isN = state.next === i;
 
-            ctx.strokeStyle = isC ? varColor('--accent') : (isP ? varColor('--ptr-prev') : (isN ? varColor('--ptr-next') : '#313136'));
-            if (state.isDone && isP) ctx.strokeStyle = varColor('--accent'); // Финальная подсветка головы
-            
-            ctx.fillStyle = '#26262a';
             ctx.lineWidth = (isC || isP || isN) ? 3 : 2;
+            ctx.strokeStyle = isC ? varColor('--accent') : (isP ? varColor('--ptr-prev') : (isN ? varColor('--ptr-next') : '#313136'));
+            if (state.isDone && isP) ctx.strokeStyle = varColor('--accent');
 
-            // Box Data
-            ctx.strokeRect(x, y, nodeW * 0.6, nodeH);
+            // Data Box
+            ctx.fillStyle = '#26262a';
             ctx.fillRect(x, y, nodeW * 0.6, nodeH);
-            // Box Pointer
+            ctx.strokeRect(x, y, nodeW * 0.6, nodeH);
+
+            // Pointer Box
             ctx.strokeRect(x + nodeW * 0.6, y, nodeW * 0.4, nodeH);
 
+            // Value
             ctx.fillStyle = '#fff';
-            ctx.font = 'bold 16px "JetBrains Mono"';
+            ctx.font = 'bold 18px "JetBrains Mono"';
             ctx.textAlign = 'center';
-            ctx.fillText(node.val, x + nodeW * 0.3, y + nodeH/2 + 6);
+            ctx.fillText(node.val, x + nodeW * 0.3, y + nodeH/2 + 7);
 
-            // Pointer Dot
+            // Pointer Dot (Strictly Centered in right box)
             ctx.beginPath();
-            ctx.arc(x + nodeW * 0.8, y + nodeH/2, 4, 0, Math.PI*2);
+            ctx.arc(x + nodeW * 0.8, y + nodeH/2, 5, 0, Math.PI*2);
             ctx.fillStyle = isC ? varColor('--accent') : (isP ? varColor('--ptr-prev') : '#444');
             ctx.fill();
 
             // Labels
-            ctx.font = 'bold 10px var(--font-sans)';
-            if (isC) { ctx.fillStyle = varColor('--accent'); ctx.fillText("CURR", x + nodeW*0.3, y + nodeH + 20); }
+            ctx.font = 'bold 11px var(--font-sans)';
+            if (isC) { ctx.fillStyle = varColor('--accent'); ctx.fillText("CURR", x + nodeW*0.3, y + nodeH + 25); }
             if (isP) { 
                 ctx.fillStyle = varColor('--ptr-prev'); 
-                ctx.fillText(state.isDone ? "NEW HEAD" : "PREV", x + nodeW*0.3, y + nodeH + 35); 
+                const label = state.isDone ? "NEW HEAD" : "PREV";
+                ctx.fillText(label, x + nodeW*0.3, y + nodeH + 40); 
             }
-            if (isN) { ctx.fillStyle = varColor('--ptr-next'); ctx.fillText("NEXT", x + nodeW*0.3, y - 12); }
+            if (isN) { ctx.fillStyle = varColor('--ptr-next'); ctx.fillText("NEXT", x + nodeW*0.3, y - 15); }
         });
     }
 
     function drawArrow(x1, y1, x2, y2, color) {
         ctx.strokeStyle = ctx.fillStyle = color;
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-        const head = 8;
-        const angle = Math.atan2(y2-y1, x2-x1);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2 - 8, y2); // Не доходим до края, чтобы влез наконечник
+        ctx.stroke();
+
+        const head = 10;
         ctx.beginPath();
         ctx.moveTo(x2, y2);
-        ctx.lineTo(x2 - head * Math.cos(angle - Math.PI/6), y2 - head * Math.sin(angle - Math.PI/6));
-        ctx.lineTo(x2 - head * Math.cos(angle + Math.PI/6), y2 - head * Math.sin(angle + Math.PI/6));
+        ctx.lineTo(x2 - head, y2 - head/2);
+        ctx.lineTo(x2 - head, y2 + head/2);
+        ctx.fill();
+    }
+
+    function drawBacklink(x1, y1, x2, y2, color) {
+        ctx.strokeStyle = ctx.fillStyle = color;
+        const offset = 40;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1 + 5);
+        ctx.lineTo(x1, y1 + offset);
+        ctx.lineTo(x2, y1 + offset);
+        ctx.lineTo(x2, y1 + 10);
+        ctx.stroke();
+
+        // Стрелка вверх
+        const head = 10;
+        ctx.beginPath();
+        ctx.moveTo(x2, y1 + 10);
+        ctx.lineTo(x2 - head/2, y1 + 10 + head);
+        ctx.lineTo(x2 + head/2, y1 + 10 + head);
         ctx.fill();
     }
 
@@ -253,6 +280,7 @@
     }
 
     function changeStep(dir) { curStep += dir; updateUI(); }
+    
     function updateUI() {
         draw();
         document.getElementById('info').innerHTML = steps[curStep].msg;
