@@ -2,27 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LIS Lab | Step-by-Step Educational Tool</title>
+    <title>LIS Lab | AlgoView Tool</title>
     <style>
         :root {
             --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
             --accent: #7f77dd; --border: #313136; --green: #1d9e75;
             --cell-size: 50px; --gap: 12px;
-            --line-hl: rgba(127, 119, 221, 0.3);
+            --line-hl: rgba(127, 119, 221, 0.35);
         }
         body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .container { max-width: 950px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; }
         
         .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); margin-bottom: 24px; }
         .header { display: flex; gap: 10px; margin-bottom: 30px; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; flex-grow: 1; outline: none; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; flex-grow: 1; outline: none; font-family: monospace; }
         
         .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 18px; border-radius: 4px; min-height: 60px; margin-bottom: 40px; font-size: 15px; line-height: 1.5; }
-        .info-box b { color: #fff; }
-        .info-box .formula { color: var(--accent); font-family: monospace; font-weight: bold; }
+        .formula { color: var(--accent); font-family: monospace; font-weight: bold; }
 
-        .workspace { display: flex; justify-content: center; gap: 30px; }
+        .workspace { display: flex; justify-content: center; overflow-x: auto; padding-bottom: 10px; }
         .main-grid { display: flex; flex-direction: column; gap: var(--gap); }
         .row-container { display: flex; gap: var(--gap); align-items: center; }
         
@@ -43,15 +42,15 @@
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 6px; }
         .tab-btn { background: none; border: none; padding: 12px 20px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; text-transform: uppercase; }
         .tab-btn.active { color: var(--accent); background: var(--bg-input); }
-        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content { display: none; padding: 25px; }
         .tab-content.active { display: block; }
 
-        /* CODE FORMATTING */
-        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #0d0d0f; padding: 20px; border-radius: 10px; color: #9ba1a6; white-space: pre; overflow-x: auto; line-height: 1.5; }
+        /* CODE VIEW */
+        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: #0d0d0f; padding: 20px; border-radius: 10px; color: #9ba1a6; white-space: pre; overflow-x: auto; line-height: 1.5; }
         .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; }
-        .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
-        .indent { display: inline-block; width: 24px; }
-        .kw { color: #cc99cd; } .fn { color: #e67e22; } .cm { color: #777; }
+        .code-line.active { background: var(--line-hl); border-left: 3px solid var(--accent); color: #fff; }
+        .indent { display: inline-block; width: 20px; }
+        .kw { color: #cc99cd; } .fn { color: #e67e22; } .cm { color: #777; } .num { color: #f8c555; }
 
         .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
         button.main-btn { padding: 12px 24px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
@@ -67,7 +66,7 @@
             <button class="main-btn" onclick="init()">Apply</button>
         </div>
 
-        <div id="info" class="info-box">Ready. Press "Next Step".</div>
+        <div id="info" class="info-box">Press "Next Step" to start.</div>
 
         <div class="workspace">
             <div id="visual-area" class="main-grid"></div>
@@ -88,31 +87,37 @@
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
         </div>
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0">Longest Increasing Subsequence (LIS)</h3>
-            <p>Finds the length of the longest subsequence where elements are in increasing order.</p>
+            <h3 style="margin-top:0">Longest Increasing Subsequence</h3>
+            <p>Find the length of the longest subsequence in which all elements are sorted in increasing order.</p>
         </div>
-        <div id="python" class="tab-content">
-            <div class="code-view" id="python-code"></div>
-        </div>
-        <div id="cpp" class="tab-content">
-            <div class="code-view" id="cpp-code"></div>
-        </div>
+        <div id="python" class="tab-content"><div class="code-view" id="python-code"></div></div>
+        <div id="cpp" class="tab-content"><div class="code-view" id="cpp-code"></div></div>
     </div>
 </div>
 
 <script>
     const codeDb = {
-        python: `<span class="code-line" data-l="1"><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums)):</span>` +
-                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i):</span>` +
-                `<span class="code-line" data-l="3"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> nums[i] &gt; nums[j]:</span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = <span class="fn">max</span>(dp[i], dp[j] + 1)</span>`,
-        cpp:    `<span class="code-line" data-l="1"><span class="kw">for</span> (<span class="kw">int</span> i = 0; i &lt; n; i++) {</span>` +
-                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = 0; j &lt; i; j++) {</span>` +
-                `<span class="code-line" data-l="3"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (nums[i] &gt; nums[j]) {</span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = max(dp[i], dp[j] + 1);</span>` +
-                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="7">}</span>`
+        python: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">lengthOfLIS</span>(nums):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span>n = <span class="fn">len</span>(nums)</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span>dp = [<span class="num">1</span>] * n</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n):</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i):</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> nums[i] &gt; nums[j]:</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = <span class="fn">max</span>(dp[i], dp[j] + <span class="num">1</span>)</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="kw">return</span> <span class="fn">max</span>(dp)</span>`,
+        
+        cpp:    `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">lengthOfLIS</span>(vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> n = nums.size();</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; <span class="fn">dp</span>(n, <span class="num">1</span>);</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; n; i++) { <span class="cm">// Идем по массиву</span></span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = 0; j &lt; i; j++) { <span class="cm">// Проверяем предков</span></span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (nums[i] &gt; nums[j]) {</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = max(dp[i], dp[j] + <span class="num">1</span>);</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span><span class="kw">return</span> *max_element(dp.begin(), dp.end());</span>` +
+                `<span class="code-line" data-l="12">}</span>`
     };
 
     let nums = [], steps = [], curStep = 0, activeTab = 'theory';
@@ -121,32 +126,30 @@
         activeTab = id;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active'); 
-        document.getElementById(id).classList.add('active');
-        if (id !== 'theory') {
-            document.getElementById(id + '-code').innerHTML = codeDb[id];
-        }
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+        if (id !== 'theory') document.getElementById(id + '-code').innerHTML = codeDb[id];
         syncCode();
     }
 
     function init() {
         nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        if(nums.length === 0) return;
         let dp = Array(nums.length).fill(1);
-        steps = [{ i: 0, j: -1, dp: [...dp], line: 1, msg: "Initializing base case..." }];
+        steps = [{ i: 0, j: -1, dp: [...dp], line: 3, msg: "Base Case: dp[0] is 1." }];
 
-        for (let i = 0; i < nums.length; i++) {
+        for (let i = 1; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
                 let isMatch = nums[i] > nums[j];
                 if (isMatch) dp[i] = Math.max(dp[i], dp[j] + 1);
-                
                 steps.push({ 
                     i, j, dp: [...dp], isMatch, 
-                    line: isMatch ? 4 : 3,
-                    msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Updating DP[${i}]` : `<b>${nums[i]} ≤ ${nums[j]}</b>: No update.` 
+                    line: isMatch ? 7 : 6,
+                    msg: isMatch ? `<b>nums[i] > nums[j]</b> (${nums[i]} > ${nums[j]}). Update dp[${i}]!` : `<b>${nums[i]} ≤ ${nums[j]}</b>. No update.`
                 });
             }
         }
-        curStep = 0; 
+        steps.push({ i: nums.length-1, j: -1, dp: [...dp], line: 11, msg: "Done! Return max value from DP." });
+        curStep = 0;
         document.getElementById('python-code').innerHTML = codeDb.python;
         document.getElementById('cpp-code').innerHTML = codeDb.cpp;
         render();
@@ -156,7 +159,6 @@
         if (activeTab === 'theory') return;
         const container = document.getElementById(activeTab + '-code');
         if (!container) return;
-        
         container.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
         const s = steps[curStep];
         if (s) {
@@ -188,7 +190,7 @@
                     } else content = '1';
                     if (i === s.i && j === s.j) cls += ' active-white';
                 } else cls += ' empty';
-                html += `<div class="${cls}">${content}</div>`;
+                html += `<td class="${cls}">${content}</td>`.replace('td', 'div');
             }
             html += `<div style="width: 40px;"></div>`;
             let dpCls = 'cell dp-cell' + (i === s.i ? ' dp-target' : '') + (i === s.j ? ' active-white' : '');
