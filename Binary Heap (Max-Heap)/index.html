@@ -15,83 +15,103 @@
         }
 
         body { margin: 0; padding: 20px; font-family: var(--font-sans); background: var(--bg-main); color: var(--text-main); }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; }
         
-        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 35px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         
-        .header-controls { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 120px; outline: none; font-family: var(--font-mono); font-size: 14px; }
-        button { padding: 12px 24px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        .header { display: flex; gap: 12px; margin-bottom: 30px; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 14px; border-radius: 10px; flex-grow: 1; outline: none; font-family: var(--font-mono); font-size: 14px; }
+        
+        .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 60px; margin-bottom: 35px; font-size: 16px; line-height: 1.6; }
+
+        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 380px; margin-bottom: 30px; }
+
+        .status-rows { display: flex; flex-direction: column; gap: 20px; }
+        .data-row { display: flex; align-items: center; gap: 15px; min-height: 45px; }
+        .row-label { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; width: 140px; flex-shrink: 0; }
+        
+        /* Array Representation Styles */
+        .node-pill { padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); min-width: 40px; text-align: center; position: relative; }
+        .node-pill.visited { background: var(--node-visited); border-color: var(--accent); color: white; }
+        .node-pill.active { background: var(--node-active-bg); color: var(--node-active-text); border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .idx-tag { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--text-secondary); font-family: var(--font-mono); }
+
+        .controls { display: flex; gap: 12px; margin-top: 40px; border-top: 1px solid var(--border); padding-top: 30px; }
+        button { padding: 12px 28px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
         .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(127,119,221,0.4); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(127,119,221,0.4); }
         .btn-secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        .step-counter { margin-left: auto; color: var(--text-secondary); font-size: 13px; align-self: center; font-family: var(--font-mono); }
 
-        .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 18px; border-radius: 6px; min-height: 50px; margin-bottom: 25px; font-size: 15px; line-height: 1.6; }
-
-        canvas { display: block; background: #1a1a1c; border-radius: 12px; border: 1px solid var(--border); width: 100%; height: 260px; margin-bottom: 25px; }
-
-        .array-container { margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.01); border-radius: 10px; border: 1px solid var(--border); }
-        .array-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px; letter-spacing: 1px; }
-        .array-row { display: flex; gap: 6px; flex-wrap: wrap; min-height: 40px; }
-        .array-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .idx { font-size: 10px; font-family: var(--font-mono); color: #555; }
-        .val { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; background: var(--bg-input); transition: 0.3s; color: var(--text-secondary); }
-        .val.visited { background: var(--node-visited); border-color: var(--accent); color: white; }
-        .val.active { background: var(--node-active-bg); color: var(--node-active-text); border-color: white; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
-
-        .step-ctrls { display: flex; gap: 10px; margin-top: 30px; align-items: center; border-top: 1px solid var(--border); padding-top: 20px; }
-        .step-info { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
-
-        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-top: 24px; }
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 8px; }
         .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 10px; text-transform: uppercase; }
         .tab-btn.active { color: var(--accent); background: var(--bg-input); }
-        .tab-content { display: none; padding: 30px; }
+        .tab-content { display: none; padding: 35px; }
         .tab-content.active { display: block; }
-        pre { border-radius: 12px !important; margin: 0 !important; font-size: 13px !important; }
+        pre { border-radius: 12px !important; font-size: 14px !important; margin: 0 !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="visualizer-card">
-        <div class="header-controls">
-            <input id="ins-val" type="number" value="10" placeholder="Value">
+        <div class="header">
+            <input id="insVal" type="number" placeholder="Enter value (e.g. 42)">
             <button class="btn-primary" onclick="doInsert()">Insert</button>
             <button class="btn-secondary" onclick="doExtract()">Extract Max</button>
-            <button class="btn-secondary" onclick="clearHeap()">Clear</button>
+            <button class="btn-secondary" onclick="resetHeap()">Clear</button>
         </div>
 
-        <div id="info" class="info-box">Empty heap. Add a value to begin.</div>
+        <div id="info" class="info-box">Heap is empty. Start by inserting a value.</div>
 
         <canvas id="heapCanvas"></canvas>
-
-        <div class="array-container">
-            <div class="array-label">Memory Representation (Array)</div>
-            <div id="arrayRow" class="array-row"></div>
+        
+        <div class="status-rows">
+            <div class="data-row">
+                <span class="row-label">Array View:</span>
+                <div id="arrayRow" style="display: flex; gap: 8px; margin-top: 10px;"></div>
+            </div>
         </div>
 
-        <div class="step-ctrls">
-            <button class="btn-secondary" onclick="changeStep(-1)">← Back</button>
-            <button class="btn-primary" onclick="changeStep(1)">Next Step →</button>
-            <span id="stepCounter" class="step-info"></span>
+        <div class="controls">
+            <button class="btn-secondary" onclick="step(-1)">← Back</button>
+            <button class="btn-primary" onclick="step(1)">Next Step →</button>
+            <span class="step-counter" id="ctr"></span>
         </div>
     </div>
 
     <div class="lab-info">
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Code</button>
+            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Implementation</button>
         </div>
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0; color:var(--accent)">Binary Heap (Max-Heap)</h3>
-            <p>Бинарная куча — это дерево, которое всегда заполняется слева направо. В Max-Heap корень всегда является максимальным элементом.</p>
+            <h3 style="margin-top:0">Binary Heap (Max-Heap)</h3>
+            <p>Бинарная куча — это структура данных, представляющая собой полное бинарное дерево, где значение каждого родителя больше или равно значениям его детей.</p>
+            <ul>
+                <li><b>Sift Up:</b> Используется при вставке нового элемента в конец.</li>
+                <li><b>Sift Down:</b> Используется при удалении корня (максимума).</li>
+                <li><b>Array Storage:</b> Узел <code>i</code> имеет детей <code>2i+1</code> и <code>2i+2</code>.</li>
+            </ul>
         </div>
         <div id="cpp" class="tab-content">
-            <pre><code class="language-cpp">// Standard Max-Heap Insert
-void push(int val) {
-    heap.push_back(val);
-    siftUp(heap.size() - 1);
+            <pre><code class="language-cpp">void siftUp(int i) {
+    while (i > 0 && heap[(i-1)/2] < heap[i]) {
+        swap(heap[i], heap[(i-1)/2]);
+        i = (i-1)/2;
+    }
+}
+
+void siftDown(int i) {
+    int maxIdx = i;
+    int l = 2*i + 1, r = 2*i + 2;
+    if (l < heap.size() && heap[l] > heap[maxIdx]) maxIdx = l;
+    if (r < heap.size() && heap[r] > heap[maxIdx]) maxIdx = r;
+    if (i != maxIdx) {
+        swap(heap[i], heap[maxIdx]);
+        siftDown(maxIdx);
+    }
 }</code></pre>
         </div>
     </div>
@@ -105,46 +125,46 @@ void push(int val) {
     let steps = [];
     let curStep = 0;
 
+    const canvas = document.getElementById('heapCanvas');
+    const ctx = canvas.getContext('2d');
+    const DPR = window.devicePixelRatio || 1;
+
     function saveStep(h, active, msg) {
         steps.push({ h: [...h], active, msg });
     }
 
     function doInsert() {
-        const val = parseInt(document.getElementById('ins-val').value);
+        const val = parseInt(document.getElementById('insVal').value);
         if (isNaN(val)) return;
-        
-        steps = [];
+        steps = []; curStep = 0;
         let h = [...heap];
         h.push(val);
         let i = h.length - 1;
+        saveStep(h, i, `Added <b>${val}</b> to the end of the heap.`);
         
-        saveStep(h, i, `New element <b>${val}</b> added to index ${i}.`);
-
         while (i > 0) {
-            let p = Math.floor((i - 1) / 2);
+            let p = Math.floor((i-1)/2);
             if (h[p] < h[i]) {
-                saveStep(h, i, `Violation: Child ${h[i]} > Parent ${h[p]}. Swapping.`);
+                saveStep(h, i, `Violation: ${h[i]} > ${h[p]}. Swapping with parent.`);
                 [h[i], h[p]] = [h[p], h[i]];
                 i = p;
-                saveStep(h, i, `Moved up to index ${i}. Checking next parent.`);
+                saveStep(h, i, `Moved up to index ${i}.`);
             } else {
-                saveStep(h, i, `Property satisfied: ${h[p]} ≥ ${h[i]}.`);
+                saveStep(h, i, `Heap property satisfied: ${h[p]} ≥ ${h[i]}.`);
                 break;
             }
         }
-        
-        heap = h; // Фиксируем изменения
-        curStep = 0;
-        renderDOM();
+        heap = h;
+        render();
     }
 
     function doExtract() {
         if (heap.length === 0) return;
-        steps = [];
+        steps = []; curStep = 0;
         let h = [...heap];
         const max = h[0];
-        saveStep(h, 0, `Extracting root: <b>${max}</b>.`);
-
+        saveStep(h, 0, `Extracting Max: <b>${max}</b>.`);
+        
         if (h.length > 1) {
             h[0] = h.pop();
             saveStep(h, 0, `Last element moved to root. Starting Sift Down.`);
@@ -154,101 +174,93 @@ void push(int val) {
                 if (l < h.length && h[l] > h[largest]) largest = l;
                 if (r < h.length && h[r] > h[largest]) largest = r;
                 if (largest !== i) {
-                    saveStep(h, i, `Swapping with larger child ${h[largest]}.`);
+                    saveStep(h, i, `Child ${h[largest]} is larger than ${h[i]}. Swapping.`);
                     [h[i], h[largest]] = [h[largest], h[i]];
                     i = largest;
-                    saveStep(h, i, `Moved down.`);
+                    saveStep(h, i, `Moved down to index ${i}.`);
                 } else {
-                    saveStep(h, i, `Heap property restored.`);
+                    saveStep(h, i, `Property satisfied.`);
                     break;
                 }
             }
         } else { h.pop(); }
-        
         heap = h;
-        curStep = 0;
-        renderDOM();
+        render();
     }
-
-    const canvas = document.getElementById('heapCanvas');
-    const ctx = canvas.getContext('2d');
-    const DPR = window.devicePixelRatio || 1;
 
     function draw() {
         const W = canvas.offsetWidth, H = canvas.offsetHeight;
         canvas.width = W * DPR; canvas.height = H * DPR;
         ctx.scale(DPR, DPR);
-        ctx.clearRect(0,0,W,H);
+        ctx.clearRect(0, 0, W, H);
 
-        const s = (steps.length > 0) ? steps[curStep] : { h: heap, active: -1 };
+        const s = steps[curStep] || { h: heap, active: -1 };
         const h = s.h;
-        
+        const R = 28; // Same as BFS
+
         if (h.length === 0) {
-            ctx.fillStyle = '#555'; ctx.font = '14px Inter'; ctx.textAlign = 'center';
-            ctx.fillText('Heap is empty. Add elements to start.', W/2, H/2);
+            ctx.fillStyle = '#555'; ctx.font = '16px Inter'; ctx.textAlign = 'center';
+            ctx.fillText('Heap is empty.', W/2, H/2);
             return;
         }
 
-        const R = 22;
         const pos = h.map((_, i) => {
             const lvl = Math.floor(Math.log2(i+1));
             const nodesInLvl = Math.pow(2, lvl);
             const posInLvl = i - (nodesInLvl - 1);
-            return { x: W * (posInLvl + 0.5) / nodesInLvl, y: 40 + lvl * 50 };
+            return { x: W * (posInLvl + 0.5) / nodesInLvl, y: 60 + lvl * 75 };
         });
 
-        ctx.strokeStyle = '#313136'; ctx.lineWidth = 1.5;
+        // Edges
+        ctx.strokeStyle = '#3e3e42'; ctx.lineWidth = 2;
         for (let i = 0; i < h.length; i++) {
             let l = 2*i+1, r = 2*i+2;
             if (l < h.length) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[l].x, pos[l].y); ctx.stroke(); }
             if (r < h.length) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[r].x, pos[r].y); ctx.stroke(); }
         }
 
+        // Nodes
         pos.forEach((p, i) => {
             const isActive = i === s.active;
             ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI*2);
             if (isActive) {
-                ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+                ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4;
             } else {
-                ctx.fillStyle = '#26262a'; ctx.strokeStyle = '#313136'; ctx.lineWidth = 1.5;
+                ctx.fillStyle = '#534ab7'; ctx.strokeStyle = '#7f77dd'; ctx.lineWidth = 2;
             }
             ctx.fill(); ctx.stroke();
-            ctx.fillStyle = isActive ? '#141416' : '#fff';
-            ctx.font = 'bold 13px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+            ctx.fillStyle = isActive ? '#141416' : '#ffffff';
+            ctx.font = 'bold 16px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(h[i], p.x, p.y);
         });
     }
 
     function renderDOM() {
-        draw();
-        const s = (steps.length > 0) ? steps[curStep] : { h: heap, active: -1 };
-        document.getElementById('info').innerHTML = s.msg || (heap.length ? "Ready." : "Empty heap.");
-        document.getElementById('stepCounter').textContent = steps.length ? `step ${curStep + 1} / ${steps.length}` : "";
+        const s = steps[curStep] || { h: heap, active: -1 };
+        document.getElementById('info').innerHTML = s.msg || (heap.length ? "Ready." : "Heap is empty.");
+        document.getElementById('ctr').textContent = steps.length ? `STEP ${curStep} / ${steps.length - 1}` : "";
         
         const row = document.getElementById('arrayRow');
         row.innerHTML = s.h.map((v, i) => `
-            <div class="array-cell">
-                <div class="idx">${i}</div>
-                <div class="val visited ${i===s.active?'active':''}">${v}</div>
+            <div class="node-pill visited ${i === s.active ? 'active' : ''}">
+                <span class="idx-tag">${i}</span>
+                ${v}
             </div>
-        `).join('') || '<div style="color:#555; font-size:12px;">No elements in array</div>';
+        `).join('') || '<span style="color:var(--text-secondary)">Empty</span>';
     }
 
-    function changeStep(dir) {
-        if (curStep + dir >= 0 && curStep + dir < steps.length) {
-            curStep += dir; renderDOM();
-        }
-    }
-
-    function clearHeap() { heap = []; steps = []; curStep = 0; renderDOM(); }
+    function render() { draw(); renderDOM(); Prism.highlightAll(); }
+    function step(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
+    function resetHeap() { heap = []; steps = []; curStep = 0; render(); }
     function switchTab(btn, id) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active'); document.getElementById(id).classList.add('active');
     }
 
-    window.onresize = draw;
-    renderDOM();
+    window.addEventListener('resize', draw);
+    render();
 </script>
 </body>
 </html>
