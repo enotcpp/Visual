@@ -2,68 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LIS | O(n log n) Patience Sorting Lab</title>
+    <title>AlgoView | Patience Sorting LIS Visualizer</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
-            --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
+            --bg-main: #1a1a1c; --bg-card: #242426; --bg-input: #2d2d30;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
-            --accent: #7f77dd; --border: #313136; --green: #1d9e75; --orange: #e67e22;
+            --accent: #7f77dd; --border: #3e3e42; --green: #1d9e75; --orange: #e67e22;
             --cell-size: 60px; --gap: 15px;
         }
-        body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .container { max-width: 950px; margin: 0 auto; }
+        body { margin: 0; padding: 2rem 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
         
-        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 35px; border: 1px solid var(--border); margin-bottom: 24px; }
-        .header { display: flex; gap: 10px; margin-bottom: 30px; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; flex-grow: 1; outline: none; font-size: 16px; font-family: monospace; }
+        .visualizer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 40px; }
+        .inputs { display: flex; gap: 10px; margin-bottom: 25px; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; flex-grow: 1; outline: none; font-size: 16px; font-family: monospace; }
         
-        .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px; min-height: 80px; margin-bottom: 40px; font-size: 16px; line-height: 1.6; }
+        .info-box { background: rgba(127,119,221,0.03); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px; min-height: 80px; margin-bottom: 40px; font-size: 16px; line-height: 1.6; }
         .formula { color: var(--accent); font-family: monospace; font-weight: bold; }
 
-        .array-label { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; display: block; }
-        .array-row { display: flex; gap: var(--gap); margin-bottom: 45px; min-height: var(--cell-size); }
-        
-        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 12px; border: 1px solid var(--border); font-size: 18px; font-weight: 600; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--text-secondary); }
-        
-        /* Animation States */
+        /* Array Styles */
+        .array-row { display: flex; gap: var(--gap); margin-bottom: 45px; justify-content: center; min-height: var(--cell-size); position: relative;}
+        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 12px; border: 1px solid var(--border); font-size: 18px; font-weight: 600; color: var(--text-secondary); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .label { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1.5px; display: block; text-align: center;}
+
+        /* Animation & Focus States */
         .active-num { border: 3px solid #fff !important; color: #fff !important; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
         .tails-update { background: var(--green) !important; border-color: #fff !important; color: white !important; box-shadow: 0 0 15px rgba(29, 158, 117, 0.4); }
         .tails-push { background: var(--accent) !important; border-color: #fff !important; color: white !important; box-shadow: 0 0 15px rgba(127, 119, 221, 0.4); }
+        .lower-bound-check { border: 2px solid var(--orange) !important; color: var(--orange); }
 
-        /* Tabs */
-        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        /* Lab Tabs */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-top: 30px;}
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 6px; }
-        .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; text-transform: uppercase; transition: 0.2s; }
+        .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; text-transform: uppercase; }
         .tab-btn.active { color: var(--accent); background: var(--bg-input); }
-        .tab-content { display: none; padding: 25px; }
+        .tab-content { display: none; padding: 25px; line-height: 1.6;}
         .tab-content.active { display: block; }
-
-        .controls { display: flex; gap: 12px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 25px; }
+        
+        .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 30px; }
         button.main-btn { padding: 12px 28px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 12px 24px; border-radius: 8px; cursor: pointer;}
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="wrap">
     <div class="visualizer-card">
-        <div class="header">
+        <div class="inputs">
             <input id="numsInput" type="text" value="10, 22, 9, 33, 21, 50">
             <button class="main-btn" onclick="init()">Apply</button>
         </div>
 
-        <div id="info" class="info-box">Press "Next Step" to start binary search insertion.</div>
+        <div id="info" class="info-box">Press "Next Step" to observe Binary Search in Patience Sorting.</div>
 
-        <span class="array-label">Current Element (nums[i])</span>
+        <span class="label">Input Array (nums)</span>
         <div id="nums-row" class="array-row"></div>
 
-        <span class="array-label">Tails Array (O(n log n) state)</span>
+        <span class="label">LIS Tails Array (O(n log n) state)</span>
         <div id="tails-row" class="array-row"></div>
 
         <div class="controls">
             <button class="secondary" onclick="step(-1)">← Back</button>
-            <button class="main-btn" id="nextBtn" onclick="step(1)">Next Step →</button>
+            <button class="main-btn" onclick="step(1)">Next Step →</button>
             <button class="secondary" onclick="init()">Reset</button>
             <div id="stepCounter" style="margin-left: auto; color: var(--text-secondary); font-size: 12px; align-self: center;"></div>
         </div>
@@ -72,24 +73,24 @@
     <div class="lab-info">
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ (O(n log n))</button>
+            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Code</button>
         </div>
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0">Binary Search Approach</h3>
-            <p>Instead of comparing everything, we keep track of the <b>best possible</b> increasing subsequences of each length.</p>
+            <h3 style="margin-top:0">Binary Search Approach (O(N log N))</h3>
+            <p>This algorithm maintains an array <b>tails</b>, where <code>tails[i]</code> stores the smallest tail of all increasing subsequences of length <code>i+1</code>.</p>
+            <p>For each element <b>n</b> in <b>nums</b>, we use Binary Search (`lower_bound`) to find the first element in <b>tails</b> that is <b>≥ n</b>.</p>
             <ul>
-                <li><code>tails[i]</code> is the <b>smallest</b> possible end element of an increasing subsequence of length <code>i+1</code>.</li>
-                <li>When we see a new number <code>n</code>, we use <code>lower_bound</code> to find the first tail ≥ <code>n</code>.</li>
-                <li>We replace it to keep the tail as small as possible (making it easier to attach future numbers).</li>
+                <li><b>tails.push_back(n):</b> If <b>n</b> is larger than all existing tails, the LIS length increases.</li>
+                <li><b>*it = n:</b> If we find a tail ≥ <b>n</b>, we replace it. This doesn't change LIS length, but makes the "foundation" smaller for future numbers.</li>
             </ul>
         </div>
         <div id="cpp" class="tab-content">
 <pre><code class="language-cpp">int lengthOfLIS(vector&lt;int&gt;&amp; nums) {
+    if (nums.empty()) return 0;
     vector&lt;int&gt; tails;
     for (int n : nums) {
         // Binary search for the first element >= n
         auto it = lower_bound(tails.begin(), tails.end(), n);
-        
         if (it == tails.end()) {
             tails.push_back(n); // Extend LIS
         } else {
@@ -103,6 +104,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
     let nums = [], steps = [], curStep = 0;
@@ -114,13 +116,13 @@
     }
 
     function init() {
-        const raw = document.getElementById('numsInput').value;
-        nums = raw.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = [{ tails: [], idx: -1, action: 'init', msg: "Initial state. The <b>tails</b> array is empty." }];
-        
+        nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        steps = [{ idx: -1, tails: [], action: 'init', msg: "Initial state. We will build the <b>tails</b> array step-by-step." }];
         let currentTails = [];
+
         for (let i = 0; i < nums.length; i++) {
             let n = nums[i];
+            // binary search (simulating lower_bound)
             let low = 0, high = currentTails.length;
             while (low < high) {
                 let mid = Math.floor((low + high) / 2);
@@ -132,13 +134,13 @@
             if (low === currentTails.length) {
                 currentTails.push(n);
                 type = 'push';
-                msg = `<b>${n}</b> is greater than all tails. Appending to end: <span class="formula">tails.push_back(${n})</span>.`;
+                msg = `Number <b>${n}</b> is greater than all existing tails. We extend the LIS length: <span class="formula">tails.push_back(${n})</span>.`;
             } else {
                 currentTails[low] = n;
                 type = 'update';
-                msg = `Binary search found <b>${n}</b> can replace <b>tails[${low}]</b>. <br>This makes the tail for length ${low+1} smaller.`;
+                msg = `Binary search found <b>${n}</b> is smaller than <b>tails[${low}]</b>. We update it, improving potential.`;
             }
-            steps.push({ tails: [...currentTails], idx: i, updateIdx: low, action: type, msg: msg });
+            steps.push({ idx: i, tails: [...currentTails], updateIdx: low, action: type, msg: msg });
         }
         curStep = 0; render();
     }
@@ -148,18 +150,18 @@
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('stepCounter').textContent = `Step ${curStep} / ${steps.length - 1}`;
 
-        // Nums Row
-        document.getElementById('nums-row').innerHTML = nums.map((n, i) => 
-            `<div class="cell ${i === s.idx ? 'active-num' : ''}">${n}</div>`
-        ).join('');
+        // Render Nums Row
+        document.getElementById('nums-row').innerHTML = nums.map((n, i) => `
+            <div class="cell ${i === s.idx ? 'active-num' : ''}">${n}</div>
+        `).join('');
 
-        // Tails Row
+        // Render Tails Row
         let tailsHtml = '';
-        const displayLen = Math.max(s.tails.length, 1);
-        for (let i = 0; i < displayLen; i++) {
+        const len = Math.max(s.tails.length, 1);
+        for (let i = 0; i < len; i++) {
             let val = s.tails[i] !== undefined ? s.tails[i] : '';
             let cls = 'cell';
-            if (i === s.updateIdx && s.action !== 'init') {
+            if (val !== '' && i === s.updateIdx && s.action !== 'init') {
                 cls += s.action === 'push' ? ' tails-push' : ' tails-update';
             }
             tailsHtml += `<div class="${cls}">${val}</div>`;
