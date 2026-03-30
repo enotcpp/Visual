@@ -2,148 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AlgoView Lab | Reverse Linked List</title>
+    <title>AlgoView Lab | Code-Sync Reverse</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
             --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
             --accent: #7f77dd; --border: #313136; 
-            --node-visited: #534ab7; --node-active-bg: #ffffff; --node-active-text: #141416;
-            --node-next-edge: #e5484d;
             --font-sans: 'Inter', system-ui, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
+            --code-highlight: rgba(127, 119, 221, 0.3);
         }
         body { margin: 0; padding: 20px; font-family: var(--font-sans); background: var(--bg-main); color: var(--text-main); }
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 35px; border: 1px solid var(--border); margin-bottom: 24px; }
         
-        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 35px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        .header { display: flex; gap: 12px; margin-bottom: 30px; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 14px; border-radius: 10px; flex-grow: 1; outline: none; font-family: var(--font-mono); font-size: 14px; }
-        
-        .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 60px; margin-bottom: 35px; font-size: 16px; line-height: 1.6; }
+        canvas { display: block; background: #111113; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 400px; margin-bottom: 30px; }
 
-        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 380px; margin-bottom: 30px; }
+        .code-section { position: relative; background: #0d0d0f; border-radius: 12px; padding: 20px; border: 1px solid var(--border); font-family: var(--font-mono); }
+        .line { padding: 2px 10px; border-radius: 4px; transition: 0.2s; white-space: pre; font-size: 15px; color: #9ba1a6; }
+        .line.active { background: var(--code-highlight); color: #ffffff; box-shadow: inset 4px 0 0 var(--accent); }
 
-        .controls { display: flex; gap: 12px; margin-top: 40px; border-top: 1px solid var(--border); padding-top: 30px; }
-        button { padding: 12px 28px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        .controls { display: flex; gap: 12px; margin-top: 30px; align-items: center; }
+        button { padding: 12px 28px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(127,119,221,0.4); }
-        .btn-secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        .step-counter { margin-left: auto; color: var(--text-secondary); font-size: 13px; align-self: center; font-family: var(--font-mono); }
-
-        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
-        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 8px; }
-        .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 10px; text-transform: uppercase; }
-        .tab-btn.active { color: var(--accent); background: var(--bg-input); }
-        .tab-content { display: none; padding: 35px; }
-        .tab-content.active { display: block; }
-        pre { border-radius: 12px !important; font-size: 14px !important; margin: 0 !important; }
+        .btn-secondary { background: var(--bg-input); color: white; border: 1px solid var(--border); }
+        .step-counter { margin-left: auto; color: var(--text-secondary); font-family: var(--font-mono); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="visualizer-card">
-        <div class="header">
-            <input id="listInput" type="text" value="10, 20, 30, 40, 50">
-            <button class="btn-primary" onclick="initReversal()">Apply & Reset</button>
+        <canvas id="mainCanvas"></canvas>
+
+        <div class="code-section" id="codeBlock">
+            <div class="line" data-line="1">ListNode* reverseList(ListNode* head) {</div>
+            <div class="line" data-line="2">    ListNode *prev = nullptr, *curr = head;</div>
+            <div class="line" data-line="3">    while (curr) {</div>
+            <div class="line" data-line="4">        ListNode* next = curr->next; // SAVE</div>
+            <div class="line" data-line="5">        curr->next = prev;           // REVERSE</div>
+            <div class="line" data-line="6">        prev = curr;                 // SHIFT PREV</div>
+            <div class="line" data-line="7">        curr = next;                 // SHIFT CURR</div>
+            <div class="line" data-line="8">    }</div>
+            <div class="line" data-line="9">    return prev;</div>
+            <div class="line" data-line="10">}</div>
         </div>
-
-        <div id="info" class="info-box">Ready to reverse. Click "Next Step".</div>
-
-        <canvas id="listCanvas"></canvas>
 
         <div class="controls">
-            <button class="btn-secondary" onclick="moveStep(-1)">← Back</button>
-            <button class="btn-primary" onclick="moveStep(1)">Next Step →</button>
-            <button class="btn-secondary" onclick="initReversal()">Reset</button>
-            <span class="step-counter" id="ctr">STEP 0 / 0</span>
-        </div>
-    </div>
-
-    <div class="lab-info">
-        <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Code</button>
-        </div>
-        <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0; color:var(--accent)">Reverse Linked List</h3>
-            <p>Алгоритм разворота списка работает путем перенаправления указателя <code>next</code> каждого узла на предыдущий элемент.</p>
-            <ul>
-                <li><b>Save:</b> Временно сохраняем <code>curr->next</code>.</li>
-                <li><b>Link:</b> Разворачиваем стрелку: <code>curr->next = prev</code>.</li>
-                <li><b>Shift:</b> Сдвигаем <code>prev</code> и <code>curr</code> вперед.</li>
-            </ul>
-        </div>
-        <div id="cpp" class="tab-content">
-            <pre><code class="language-cpp">ListNode* reverseList(ListNode* head) {
-    ListNode *prev = nullptr, *curr = head;
-    while (curr) {
-        ListNode* nextTemp = curr->next;
-        curr->next = prev; // Разворот
-        prev = curr;
-        curr = nextTemp;
-    }
-    return prev;
-}</code></pre>
+            <button class="btn-secondary" onclick="move(-1)">← Back</button>
+            <button class="btn-primary" onclick="move(1)">Next Step →</button>
+            <button class="btn-secondary" onclick="reset()">Reset</button>
+            <span class="step-counter" id="stepIdx">STEP: 0 / 0</span>
         </div>
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-
 <script>
-    let steps = [];
-    let curStep = 0;
-    const canvas = document.getElementById('listCanvas');
+    const canvas = document.getElementById('mainCanvas');
     const ctx = canvas.getContext('2d');
-    const DPR = window.devicePixelRatio || 1;
+    let steps = [];
+    let curIdx = 0;
+    const R = 42; // Еще крупнее
 
-    function initReversal() {
-        const valStr = document.getElementById('listInput').value;
-        const vals = valStr.split(',').map(v => v.trim()).filter(v => v !== "");
-        steps = generateSteps(vals);
-        curStep = 0;
-        draw();
-        updateUI();
-    }
-
-    function generateSteps(vals) {
-        let s = [];
+    function reset() {
+        const vals = [10, 20, 30, 40, 50];
+        steps = [];
         let nodes = vals.map((v, i) => ({ val: v, next: i < vals.length - 1 ? i + 1 : -1 }));
         let p = -1, c = 0;
 
-        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), c, p, n: -1, msg: '<b>Initial:</b> Pointers initialized.' });
+        // Step 0: Init
+        steps.push({ nodes: clone(nodes), c, p, n: -1, line: 2 });
 
         while (c !== -1) {
+            steps.push({ nodes: clone(nodes), c, p, n: -1, line: 3 }); // Check while
+            
             let n = nodes[c].next;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), c, p, n, msg: `<b>Save:</b> Temporary stored next node: ${n !== -1 ? vals[n] : 'NULL'}.` });
+            steps.push({ nodes: clone(nodes), c, p, n, line: 4 }); // Save next
             
             nodes[c].next = p;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), c, p, n, msg: `<b>Link:</b> Node ${vals[c]} now points backward to ${p !== -1 ? vals[p] : 'NULL'}.` });
-
+            steps.push({ nodes: clone(nodes), c, p, n, line: 5 }); // Reverse link
+            
             p = c;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), c, p, n, msg: `<b>Shift:</b> Move <code>prev</code> to current node.` });
-
+            steps.push({ nodes: clone(nodes), c, p, n, line: 6 }); // Shift prev
+            
             c = n;
-            s.push({ nodes: JSON.parse(JSON.stringify(nodes)), c, p, n, msg: `<b>Shift:</b> Move <code>curr</code> forward.` });
+            steps.push({ nodes: clone(nodes), c, p, n, line: 7 }); // Shift curr
         }
-        s.push({ nodes: JSON.parse(JSON.stringify(nodes)), c: -1, p, n: -1, done: true, msg: '<b>Complete:</b> List is reversed.' });
-        return s;
+        steps.push({ nodes: clone(nodes), c: -1, p, n: -1, line: 9 }); // Return
+        curIdx = 0;
+        draw();
     }
 
     function draw() {
         const W = canvas.offsetWidth, H = canvas.offsetHeight;
-        canvas.width = W * DPR; canvas.height = H * DPR;
-        ctx.scale(DPR, DPR);
+        canvas.width = W * 2; canvas.height = H * 2;
+        ctx.scale(2, 2);
         ctx.clearRect(0, 0, W, H);
 
-        if (!steps.length) return;
-        const s = steps[curStep];
-        const R = 38;
-        const spacing = 150;
+        const s = steps[curIdx];
+        const spacing = 160;
         const startX = (W - (s.nodes.length - 1) * spacing) / 2;
         const centerY = H / 2;
 
@@ -152,85 +110,65 @@
             if (node.next !== -1) {
                 const x1 = startX + i * spacing;
                 const x2 = startX + node.next * spacing;
-                const isForward = node.next > i;
-                
-                drawArrow(
-                    isForward ? x1 + R : x1 - R, 
-                    centerY, 
-                    isForward ? x2 - R : x2 + R, 
-                    centerY, 
-                    "#ffffff"
-                );
+                const isBack = node.next < i;
+                drawArrow(isBack ? x1 - R : x1 + R, centerY, isBack ? x2 + R : x2 - R, centerY);
             }
         });
 
-        // 2. УЗЛЫ (В ТВОЕМ СТИЛЕ)
+        // 2. УЗЛЫ
         s.nodes.forEach((node, i) => {
-            const px = startX + i * spacing;
-            const py = centerY;
+            const x = startX + i * spacing;
             const isC = s.c === i, isP = s.p === i, isN = s.n === i;
 
-            ctx.beginPath(); ctx.arc(px, py, R, 0, Math.PI*2);
-            
-            if (isC) {
-                ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4;
-            } else if (isP) {
-                ctx.fillStyle = '#534ab7'; ctx.strokeStyle = '#7f77dd'; ctx.lineWidth = 2;
-            } else {
-                ctx.fillStyle = '#2d2d30'; ctx.strokeStyle = '#3e3e42'; ctx.lineWidth = 2;
-            }
-            
+            // Тело
+            ctx.beginPath();
+            ctx.arc(x, centerY, R, 0, Math.PI * 2);
+            ctx.fillStyle = '#2d2d30';
+            ctx.strokeStyle = (isC || isP) ? '#ffffff' : '#444';
+            ctx.lineWidth = (isC || isP) ? 3 : 2;
             ctx.fill(); ctx.stroke();
 
-            // Красная обводка для NEXT (временного)
-            if (isN) {
-                ctx.beginPath(); ctx.arc(px, py, R + 6, 0, Math.PI*2);
-                ctx.strokeStyle = '#e5484d'; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
-            }
+            // Крупный текст
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 24px var(--font-mono)';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(node.val, x, centerY);
 
-            // Текст
-            ctx.fillStyle = isC ? '#141416' : '#ffffff';
-            ctx.font = 'bold 18px var(--font-mono)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(node.val, px, py);
-
-            // Метки
-            ctx.font = 'bold 11px var(--font-sans)'; ctx.fillStyle = '#9ba1a6';
-            if (isC) { ctx.fillStyle = '#ffffff'; ctx.fillText('CURR', px, py - R - 15); }
-            if (isP) { ctx.fillStyle = '#7f77dd'; ctx.fillText('PREV', px, py + R + 25); }
+            // Указатели сверху (next выше всех)
+            ctx.font = 'bold 13px var(--font-sans)';
+            if (isP) { ctx.fillStyle = '#7f77dd'; ctx.fillText('PREV', x, centerY - R - 15); }
+            if (isC) { ctx.fillStyle = '#ffffff'; ctx.fillText('CURR', x, centerY - R - (isP ? 35 : 15)); }
+            if (isN) { ctx.fillStyle = '#e5484d'; ctx.fillText('NEXT', x, centerY - R - (isC && isP ? 55 : isC || isP ? 35 : 15)); }
         });
+
+        updateCodeUI(s.line);
     }
 
-    function drawArrow(x1, y1, x2, y2, color) {
-        ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = 2.5;
+    function drawArrow(x1, y1, x2, y2) {
+        ctx.strokeStyle = ctx.fillStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-        const angle = Math.atan2(y2 - y1, x2 - x1);
-        ctx.beginPath();
-        ctx.moveTo(x2, y2);
-        ctx.lineTo(x2 - 12 * Math.cos(angle - Math.PI/6), y2 - 12 * Math.sin(angle - Math.PI/6));
-        ctx.lineTo(x2 - 12 * Math.cos(angle + Math.PI/6), y2 - 12 * Math.sin(angle + Math.PI/6));
+        const ang = Math.atan2(y2 - y1, x2 - x1);
+        ctx.beginPath(); ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - 12 * Math.cos(ang - 0.5), y2 - 12 * Math.sin(ang - 0.5));
+        ctx.lineTo(x2 - 12 * Math.cos(ang + 0.5), y2 - 12 * Math.sin(ang + 0.5));
         ctx.fill();
     }
 
-    function moveStep(dir) {
-        if (curStep + dir >= 0 && curStep + dir < steps.length) {
-            curStep += dir; draw(); updateUI();
-            Prism.highlightAll();
-        }
+    function updateCodeUI(lineNum) {
+        document.querySelectorAll('.line').forEach(l => l.classList.remove('active'));
+        const activeLine = document.querySelector(`.line[data-line="${lineNum}"]`);
+        if (activeLine) activeLine.classList.add('active');
+        document.getElementById('stepIdx').textContent = `STEP: ${curIdx} / ${steps.length - 1}`;
     }
 
-    function updateUI() {
-        document.getElementById('info').innerHTML = steps[curStep].msg;
-        document.getElementById('ctr').textContent = `STEP ${curStep} / ${steps.length - 1}`;
+    function move(d) {
+        if (curIdx + d >= 0 && curIdx + d < steps.length) { curIdx += d; draw(); }
     }
 
-    function switchTab(btn, id) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active'); document.getElementById(id).classList.add('active');
-    }
-
-    window.addEventListener('resize', draw);
-    initReversal();
+    function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+    window.onresize = draw;
+    reset();
 </script>
 </body>
 </html>
