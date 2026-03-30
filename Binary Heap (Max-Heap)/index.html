@@ -24,21 +24,33 @@
         
         .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 60px; margin-bottom: 35px; font-size: 16px; line-height: 1.6; }
 
-        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 380px; margin-bottom: 30px; }
+        /* Контейнер для скролла дерева */
+        .canvas-viewport { 
+            width: 100%; 
+            overflow: auto; 
+            background: #1a1a1c; 
+            border-radius: 16px; 
+            border: 1px solid var(--border);
+            margin-bottom: 30px;
+            cursor: grab;
+        }
+        .canvas-viewport:active { cursor: grabbing; }
+        
+        canvas { display: block; }
 
         .status-rows { display: flex; flex-direction: column; gap: 20px; width: 100%; }
         .data-row { display: flex; align-items: flex-start; gap: 15px; min-height: 45px; width: 100%; }
-        .row-label { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; width: 140px; flex-shrink: 0; margin-top: 15px; }
+        .row-label { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; width: 120px; flex-shrink: 0; margin-top: 15px; }
         
         #arrayRow { 
             display: flex; 
-            flex-wrap: wrap; /* Разрешаем перенос элементов */
-            gap: 25px 8px; /* Увеличиваем вертикальный зазор для меток индексов */
+            flex-wrap: wrap; 
+            gap: 25px 8px; 
             margin-top: 10px; 
-            max-width: calc(100% - 155px); /* Ограничиваем ширину, чтобы не выходить за край */
+            flex-grow: 1;
         }
 
-        .node-pill { padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); min-width: 40px; text-align: center; position: relative; }
+        .node-pill { padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); min-width: 40px; text-align: center; position: relative; transition: 0.3s; }
         .node-pill.visited { background: var(--node-visited); border-color: var(--accent); color: white; }
         .node-pill.active { background: var(--node-active-bg); color: var(--node-active-text); border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
         .idx-tag { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--text-secondary); font-family: var(--font-mono); }
@@ -64,15 +76,17 @@
 <div class="container">
     <div class="visualizer-card">
         <div class="header">
-            <input id="insVal" type="number" placeholder="Enter value (e.g. 42)">
+            <input id="insVal" type="number" placeholder="Value (e.g. 50)">
             <button class="btn-primary" onclick="doInsert()">Insert</button>
             <button class="btn-secondary" onclick="doExtract()">Extract Max</button>
             <button class="btn-secondary" onclick="resetHeap()">Clear</button>
         </div>
 
-        <div id="info" class="info-box">Heap is empty. Start by inserting a value.</div>
+        <div id="info" class="info-box">Heap is empty. Insert a value to start.</div>
 
-        <canvas id="heapCanvas"></canvas>
+        <div class="canvas-viewport" id="viewport">
+            <canvas id="heapCanvas"></canvas>
+        </div>
         
         <div class="status-rows">
             <div class="data-row">
@@ -87,45 +101,7 @@
             <span class="step-counter" id="ctr"></span>
         </div>
     </div>
-
-    <div class="lab-info">
-        <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Implementation</button>
-        </div>
-        <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0">Binary Heap (Max-Heap)</h3>
-            <p>Бинарная куча — это структура данных, представляющая собой полное бинарное дерево, где значение каждого родителя больше или равно значениям его детей.</p>
-            <ul>
-                <li><b>Sift Up:</b> Используется при вставке нового элемента в конец.</li>
-                <li><b>Sift Down:</b> Используется при удалении корня (максимума).</li>
-                <li><b>Array Storage:</b> Узел <code>i</code> имеет детей <code>2i+1</code> и <code>2i+2</code>.</li>
-            </ul>
-        </div>
-        <div id="cpp" class="tab-content">
-            <pre><code class="language-cpp">void siftUp(int i) {
-    while (i > 0 && heap[(i-1)/2] < heap[i]) {
-        swap(heap[i], heap[(i-1)/2]);
-        i = (i-1)/2;
-    }
-}
-
-void siftDown(int i) {
-    int maxIdx = i;
-    int l = 2*i + 1, r = 2*i + 2;
-    if (l < heap.size() && heap[l] > heap[maxIdx]) maxIdx = l;
-    if (r < heap.size() && heap[r] > heap[maxIdx]) maxIdx = r;
-    if (i != maxIdx) {
-        swap(heap[i], heap[maxIdx]);
-        siftDown(maxIdx);
-    }
-}</code></pre>
-        </div>
-    </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
     let heap = [];
@@ -134,7 +110,7 @@ void siftDown(int i) {
 
     const canvas = document.getElementById('heapCanvas');
     const ctx = canvas.getContext('2d');
-    const DPR = window.devicePixelRatio || 1;
+    const viewport = document.getElementById('viewport');
 
     function saveStep(h, active, msg) {
         steps.push({ h: [...h], active, msg });
@@ -147,17 +123,17 @@ void siftDown(int i) {
         let h = [...heap];
         h.push(val);
         let i = h.length - 1;
-        saveStep(h, i, `Added <b>${val}</b> to the end of the heap.`);
+        saveStep(h, i, `New element <b>${val}</b> added at the end (index ${i}).`);
         
         while (i > 0) {
             let p = Math.floor((i-1)/2);
             if (h[p] < h[i]) {
-                saveStep(h, i, `Violation: ${h[i]} > ${h[p]}. Swapping with parent.`);
+                saveStep(h, i, `Sift Up: ${h[i]} > ${h[p]}. Swapping.`);
                 [h[i], h[p]] = [h[p], h[i]];
                 i = p;
-                saveStep(h, i, `Moved up to index ${i}.`);
+                saveStep(h, i, `Moved up. Checking property again.`);
             } else {
-                saveStep(h, i, `Heap property satisfied: ${h[p]} ≥ ${h[i]}.`);
+                saveStep(h, i, `Property satisfied: Parent ${h[p]} >= ${h[i]}.`);
                 break;
             }
         }
@@ -170,7 +146,7 @@ void siftDown(int i) {
         steps = []; curStep = 0;
         let h = [...heap];
         const max = h[0];
-        saveStep(h, 0, `Extracting Max: <b>${max}</b>.`);
+        saveStep(h, 0, `Extracting root: <b>${max}</b>.`);
         
         if (h.length > 1) {
             h[0] = h.pop();
@@ -181,12 +157,12 @@ void siftDown(int i) {
                 if (l < h.length && h[l] > h[largest]) largest = l;
                 if (r < h.length && h[r] > h[largest]) largest = r;
                 if (largest !== i) {
-                    saveStep(h, i, `Child ${h[largest]} is larger than ${h[i]}. Swapping.`);
+                    saveStep(h, i, `Sift Down: Swapping with larger child ${h[largest]}.`);
                     [h[i], h[largest]] = [h[largest], h[i]];
                     i = largest;
-                    saveStep(h, i, `Moved down to index ${i}.`);
+                    saveStep(h, i, `Moved down.`);
                 } else {
-                    saveStep(h, i, `Property satisfied.`);
+                    saveStep(h, i, `Property restored.`);
                     break;
                 }
             }
@@ -196,18 +172,30 @@ void siftDown(int i) {
     }
 
     function draw() {
-        const W = canvas.offsetWidth, H = canvas.offsetHeight;
-        canvas.width = W * DPR; canvas.height = H * DPR;
-        ctx.scale(DPR, DPR);
-        ctx.clearRect(0, 0, W, H);
-
         const s = steps[curStep] || { h: heap, active: -1 };
         const h = s.h;
-        const R = 28;
+        
+        const nodeRadius = 28;
+        const levelHeight = 80;
+        const levels = h.length > 0 ? Math.floor(Math.log2(h.length)) + 1 : 1;
+        
+        // Динамически считаем ширину канваса на основе количества листьев
+        const minWidth = viewport.clientWidth;
+        const contentWidth = Math.max(minWidth, Math.pow(2, levels - 1) * 80);
+        const contentHeight = Math.max(380, levels * levelHeight + 60);
+
+        const DPR = window.devicePixelRatio || 1;
+        canvas.width = contentWidth * DPR;
+        canvas.height = contentHeight * DPR;
+        canvas.style.width = contentWidth + 'px';
+        canvas.style.height = contentHeight + 'px';
+        ctx.scale(DPR, DPR);
+
+        ctx.clearRect(0, 0, contentWidth, contentHeight);
 
         if (h.length === 0) {
             ctx.fillStyle = '#555'; ctx.font = '16px Inter'; ctx.textAlign = 'center';
-            ctx.fillText('Heap is empty.', W/2, H/2);
+            ctx.fillText('Heap is empty.', contentWidth/2, contentHeight/2);
             return;
         }
 
@@ -215,26 +203,36 @@ void siftDown(int i) {
             const lvl = Math.floor(Math.log2(i+1));
             const nodesInLvl = Math.pow(2, lvl);
             const posInLvl = i - (nodesInLvl - 1);
-            return { x: W * (posInLvl + 0.5) / nodesInLvl, y: 60 + lvl * 75 };
+            return { 
+                x: contentWidth * (posInLvl + 0.5) / nodesInLvl, 
+                y: 50 + lvl * levelHeight 
+            };
         });
 
+        // Линии
         ctx.strokeStyle = '#3e3e42'; ctx.lineWidth = 2;
         for (let i = 0; i < h.length; i++) {
             let l = 2*i+1, r = 2*i+2;
-            if (l < h.length) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[l].x, pos[l].y); ctx.stroke(); }
-            if (r < h.length) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[r].x, pos[r].y); ctx.stroke(); }
+            if (l < h.length) { 
+                ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); 
+                ctx.lineTo(pos[l].x, pos[l].y); ctx.stroke(); 
+            }
+            if (r < h.length) { 
+                ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); 
+                ctx.lineTo(pos[r].x, pos[r].y); ctx.stroke(); 
+            }
         }
 
+        // Узлы
         pos.forEach((p, i) => {
             const isActive = i === s.active;
-            ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI*2);
+            ctx.beginPath(); ctx.arc(p.x, p.y, nodeRadius, 0, Math.PI*2);
             if (isActive) {
                 ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4;
             } else {
                 ctx.fillStyle = '#534ab7'; ctx.strokeStyle = '#7f77dd'; ctx.lineWidth = 2;
             }
             ctx.fill(); ctx.stroke();
-
             ctx.fillStyle = isActive ? '#141416' : '#ffffff';
             ctx.font = 'bold 16px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(h[i], p.x, p.y);
@@ -244,7 +242,7 @@ void siftDown(int i) {
     function renderDOM() {
         const s = steps[curStep] || { h: heap, active: -1 };
         document.getElementById('info').innerHTML = s.msg || (heap.length ? "Ready." : "Heap is empty.");
-        document.getElementById('ctr').textContent = steps.length ? `STEP ${curStep} / ${steps.length - 1}` : "";
+        document.getElementById('ctr').textContent = steps.length ? `STEP ${curStep + 1} / ${steps.length}` : "";
         
         const row = document.getElementById('arrayRow');
         row.innerHTML = s.h.map((v, i) => `
@@ -255,17 +253,19 @@ void siftDown(int i) {
         `).join('') || '<span style="color:var(--text-secondary)">Empty</span>';
     }
 
-    function render() { draw(); renderDOM(); Prism.highlightAll(); }
+    function render() { draw(); renderDOM(); }
     function step(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
     function resetHeap() { heap = []; steps = []; curStep = 0; render(); }
-    function switchTab(btn, id) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active'); document.getElementById(id).classList.add('active');
-    }
 
     window.addEventListener('resize', draw);
     render();
+
+    // Скролл мышкой (drag to scroll)
+    let isDown = false, startX, scrollLeft;
+    viewport.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX - viewport.offsetLeft; scrollLeft = viewport.scrollLeft; });
+    viewport.addEventListener('mouseleave', () => isDown = false);
+    viewport.addEventListener('mouseup', () => isDown = false);
+    viewport.addEventListener('mousemove', (e) => { if(!isDown) return; e.preventDefault(); const x = e.pageX - viewport.offsetLeft; const walk = (x - startX) * 2; viewport.scrollLeft = scrollLeft - walk; });
 </script>
 </body>
 </html>
