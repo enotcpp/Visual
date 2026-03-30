@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>LIS Lab | Step-by-Step Educational Tool</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
             --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
             --accent: #7f77dd; --border: #313136; --green: #1d9e75;
             --cell-size: 50px; --gap: 12px;
+            --line-hl: rgba(127, 119, 221, 0.3);
         }
         body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); }
         .container { max-width: 950px; margin: 0 auto; }
@@ -46,6 +46,13 @@
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
+        /* CODE FORMATTING */
+        .code-view { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #0d0d0f; padding: 20px; border-radius: 10px; color: #9ba1a6; white-space: pre; overflow-x: auto; line-height: 1.5; }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; }
+        .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
+        .indent { display: inline-block; width: 24px; }
+        .kw { color: #cc99cd; } .fn { color: #e67e22; } .cm { color: #777; }
+
         .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
         button.main-btn { padding: 12px 24px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; cursor: pointer;}
@@ -60,7 +67,7 @@
             <button class="main-btn" onclick="init()">Apply</button>
         </div>
 
-        <div id="info" class="info-box">Press "Next Step" to observe how the algorithm processes the array.</div>
+        <div id="info" class="info-box">Ready. Press "Next Step".</div>
 
         <div class="workspace">
             <div id="visual-area" class="main-grid"></div>
@@ -82,69 +89,80 @@
         </div>
         <div id="theory" class="tab-content active">
             <h3 style="margin-top:0">Longest Increasing Subsequence (LIS)</h3>
-            <p>The goal is to find the length of the longest subsequence in a given array such that all elements of the subsequence are sorted in increasing order.</p>
-            <ul>
-                <li><b>DP[i]</b> stores the length of the LIS ending at index <b>i</b>.</li>
-                <li>For each element <b>i</b>, we look at all previous elements <b>j < i</b>.</li>
-                <li>If <code>nums[i] > nums[j]</code>, we update <code>DP[i] = max(DP[i], DP[j] + 1)</code>.</li>
-            </ul>
+            <p>Finds the length of the longest subsequence where elements are in increasing order.</p>
         </div>
         <div id="python" class="tab-content">
-            <pre><code class="language-python">for i in range(len(nums)):
-    for j in range(i):
-        if nums[i] > nums[j]:
-            dp[i] = max(dp[i], dp[j] + 1)</code></pre>
+            <div class="code-view" id="python-code"></div>
         </div>
         <div id="cpp" class="tab-content">
-            <pre><code class="language-cpp">for (int i = 1; i < n; i++) {
-    for (int j = 0; j < i; j++) {
-        if (nums[i] > nums[j]) {
-            dp[i] = max(dp[i], dp[j] + 1);
-        }
-    }
-}</code></pre>
+            <div class="code-view" id="cpp-code"></div>
         </div>
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-
 <script>
-    let nums = [], steps = [], curStep = 0;
+    const codeDb = {
+        python: `<span class="code-line" data-l="1"><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums)):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i):</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> nums[i] &gt; nums[j]:</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = <span class="fn">max</span>(dp[i], dp[j] + 1)</span>`,
+        cpp:    `<span class="code-line" data-l="1"><span class="kw">for</span> (<span class="kw">int</span> i = 0; i &lt; n; i++) {</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = 0; j &lt; i; j++) {</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (nums[i] &gt; nums[j]) {</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = max(dp[i], dp[j] + 1);</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="7">}</span>`
+    };
+
+    let nums = [], steps = [], curStep = 0, activeTab = 'theory';
 
     function switchTab(btn, id) {
+        activeTab = id;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+        btn.classList.add('active'); 
+        document.getElementById(id).classList.add('active');
+        if (id !== 'theory') {
+            document.getElementById(id + '-code').innerHTML = codeDb[id];
+        }
+        syncCode();
     }
 
     function init() {
         nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
         let dp = Array(nums.length).fill(1);
-        steps = [{ 
-            i: 0, j: -1, dp: [...dp], 
-            msg: `<b>Base Case:</b> First element <b>${nums[0]}</b>. <br>The LIS length for a single element is always 1. Initializing <span class="formula">DP[0] = 1</span>.` 
-        }];
+        steps = [{ i: 0, j: -1, dp: [...dp], line: 1, msg: "Initializing base case..." }];
 
-        for (let i = 1; i < nums.length; i++) {
+        for (let i = 0; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
                 let isMatch = nums[i] > nums[j];
-                let msg = "";
-
-                if (isMatch) {
-                    let candidate = dp[j] + 1;
-                    dp[i] = Math.max(dp[i], candidate);
-                    msg = `Comparing <b>${nums[i]}</b> (i) and <b>${nums[j]}</b> (j). <br>` +
-                          `Since <b>${nums[i]} > ${nums[j]}</b>, we can extend the sequence from index j. <br>` +
-                          `Calculation: <span class="formula">DP[j] (${dp[j]}) + 1 = ${candidate}</span>. Updating <b>DP[${i}]</b>.`;
-                } else {
-                    msg = `Comparing <b>${nums[i]}</b> (i) and <b>${nums[j]}</b> (j). <br>` +
-                          `<b>${nums[i]}</b> is not greater than <b>${nums[j]}</b>. No update for <b>DP[${i}]</b>.`;
-                }
-                steps.push({ i, j, dp: [...dp], isMatch, msg });
+                if (isMatch) dp[i] = Math.max(dp[i], dp[j] + 1);
+                
+                steps.push({ 
+                    i, j, dp: [...dp], isMatch, 
+                    line: isMatch ? 4 : 3,
+                    msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Updating DP[${i}]` : `<b>${nums[i]} ≤ ${nums[j]}</b>: No update.` 
+                });
             }
         }
-        curStep = 0; render();
+        curStep = 0; 
+        document.getElementById('python-code').innerHTML = codeDb.python;
+        document.getElementById('cpp-code').innerHTML = codeDb.cpp;
+        render();
+    }
+
+    function syncCode() {
+        if (activeTab === 'theory') return;
+        const container = document.getElementById(activeTab + '-code');
+        if (!container) return;
+        
+        container.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+        const s = steps[curStep];
+        if (s) {
+            const line = container.querySelector(`[data-l="${s.line}"]`);
+            if (line) line.classList.add('active');
+        }
     }
 
     function render() {
@@ -153,10 +171,9 @@
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('stepCounter').textContent = `Step ${curStep} / ${steps.length - 1}`;
 
-        let html = '';
-        html += `<div class="row-container"><div class="cell label">i \\ j</div>`;
+        let html = '<div class="row-container"><div class="cell label">i \\ j</div>';
         nums.forEach((n, idx) => html += `<div class="cell label ${idx === s.j ? 'active-white' : ''}">${n}</div>`);
-        html += `<div style="width: 40px;"></div><div class="dp-title">DP</div></div>`;
+        html += '<div style="width: 40px;"></div><div class="dp-title">DP</div></div>';
 
         for (let i = 0; i < nums.length; i++) {
             html += `<div class="row-container">`;
@@ -174,13 +191,11 @@
                 html += `<div class="${cls}">${content}</div>`;
             }
             html += `<div style="width: 40px;"></div>`;
-            let dpCls = 'cell dp-cell';
-            if (i === s.i) dpCls += ' dp-target';
-            if (i === s.j && s.i !== 0) dpCls += ' active-white';
+            let dpCls = 'cell dp-cell' + (i === s.i ? ' dp-target' : '') + (i === s.j ? ' active-white' : '');
             html += `<div class="${dpCls}">${s.dp[i]}</div></div>`;
         }
         container.innerHTML = html;
-        Prism.highlightAll();
+        syncCode();
     }
 
     function step(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
