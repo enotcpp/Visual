@@ -8,9 +8,8 @@
         :root {
             --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
-            --accent: #4ecdc4; /* Новый цвет для Min-Heap */
-            --border: #313136;
-            --node-active: #4ecdc4; --node-swap: #ff6b6b;
+            --accent: #7f77dd; --border: #313136;
+            --node-active: #7f77dd; --node-swap: #1D9E75;
             --font-sans: 'Inter', system-ui, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
         }
@@ -22,11 +21,11 @@
         .header-controls { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
         input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 100px; outline: none; font-family: var(--font-mono); font-size: 16px; }
         button { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px; }
-        .btn-primary { background: var(--accent); color: #141416; }
+        .btn-primary { background: var(--accent); color: white; }
         .btn-secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
         button:hover { transform: translateY(-1px); opacity: 0.9; }
 
-        .info-box { background: rgba(78, 205, 196, 0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 60px; margin-bottom: 25px; font-size: 15px; line-height: 1.6; }
+        .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 60px; margin-bottom: 25px; font-size: 15px; line-height: 1.6; }
         
         canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 400px; margin-bottom: 25px; }
 
@@ -36,8 +35,8 @@
         .array-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .idx { font-size: 10px; font-family: var(--font-mono); color: #555; }
         .val { width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: var(--bg-input); transition: 0.3s; font-size: 15px; }
-        .val.active { border-color: var(--accent); background: rgba(78, 205, 196, 0.2); transform: scale(1.05); }
-        .val.swap { border-color: #ff6b6b; background: rgba(255, 107, 107, 0.2); }
+        .val.active { border-color: var(--accent); background: rgba(127,119,221,0.2); transform: scale(1.05); }
+        .val.swap { border-color: #1D9E75; background: rgba(29,158,117,0.2); }
 
         .step-ctrls { display: flex; gap: 10px; margin-top: 30px; align-items: center; border-top: 1px solid var(--border); padding-top: 20px; }
         .step-info { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
@@ -62,11 +61,11 @@
             <button class="btn-secondary" onclick="resetHeap()">Clear Heap</button>
         </div>
 
-        <div id="info" class="info-box">Min-Heap is empty. Smallest values will stay at the top.</div>
+        <div id="info" class="info-box">Min-Heap is empty. Smallest element stays at the root.</div>
         <canvas id="heapCanvas"></canvas>
 
         <div class="array-container">
-            <div class="array-label">Memory View (Min-Heap Array)</div>
+            <div class="array-label">Array Representation (Memory View)</div>
             <div id="arrayRow" class="array-row"></div>
         </div>
 
@@ -80,29 +79,59 @@
     <div class="lab-info">
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Min-Heap</button>
+            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Implementation</button>
         </div>
         <div id="theory" class="tab-content active">
             <h3 style="margin-top:0; color:var(--accent)">Binary Min-Heap</h3>
-            <p><b>Min-Heap</b> — это структура, где значение в каждом узле меньше или равно значениям его потомков. Корень всегда содержит <b>минимальный</b> элемент.</p>
+            <p>Бинарная Min-куча — это дерево, в котором значение родителя всегда <b>меньше или равно</b> значениям его детей.</p>
             <ul>
-                <li><b>Sift Up:</b> Используется при вставке. Если новый узел меньше родителя — меняем их местами.</li>
-                <li><b>Sift Down:</b> Используется при удалении корня. Заменяем корень последним элементом и «спускаем» его, выбирая меньшего из двух детей.</li>
+                <li><b>Insert:</b> Новый элемент добавляется в конец, затем «всплывает» вверх, пока родитель больше него.</li>
+                <li><b>Extract Min:</b> Корень (минимум) удаляется, на его место ставится последний элемент, который затем «тонет» вниз, выбирая путь к меньшему из детей.</li>
             </ul>
         </div>
         <div id="cpp" class="tab-content">
-<pre><code class="language-cpp">void siftDown(int i) {
-    int minIdx = i;
-    int l = 2 * i + 1;
-    int r = 2 * i + 2;
-    // Ищем МЕНЬШЕГО ребенка
-    if (l < heap.size() && heap[l] < heap[minIdx]) minIdx = l;
-    if (r < heap.size() && heap[r] < heap[minIdx]) minIdx = r;
-    if (i != minIdx) {
-        std::swap(heap[i], heap[minIdx]);
-        siftDown(minIdx);
+<pre><code class="language-cpp">#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+
+class MinHeap {
+    std::vector&lt;int&gt; heap;
+
+    void siftUp(int i) {
+        // Условие Min-Heap: родитель должен быть МЕНЬШЕ ребенка
+        while (i > 0 && heap[(i - 1) / 2] > heap[i]) {
+            std::swap(heap[i], heap[(i - 1) / 2]);
+            i = (i - 1) / 2;
+        }
     }
-}</code></pre>
+
+    void siftDown(int i) {
+        int minIdx = i;
+        int l = 2 * i + 1;
+        int r = 2 * i + 2;
+        // Ищем МИНИМАЛЬНОЕ значение среди родителя и детей
+        if (l < heap.size() && heap[l] < heap[minIdx]) minIdx = l;
+        if (r < heap.size() && heap[r] < heap[minIdx]) minIdx = r;
+        if (i != minIdx) {
+            std::swap(heap[i], heap[minIdx]);
+            siftDown(minIdx);
+        }
+    }
+
+public:
+    void insert(int val) {
+        heap.push_back(val);
+        siftUp(heap.size() - 1);
+    }
+
+    int extractMin() {
+        if (heap.empty()) return -1;
+        int res = heap[0];
+        heap[0] = heap.back();
+        heap.pop_back();
+        if (!heap.empty()) siftDown(0);
+        return res;
+    }
+};</code></pre>
         </div>
     </div>
 </div>
@@ -127,18 +156,18 @@
         let h = [...heap];
         h.push(val);
         let i = h.length - 1;
-        saveStep(h, i, -1, `Inserted <b>${val}</b>. Checking parent for Min-Heap property.`);
+        saveStep(h, i, -1, `Inserted <b>${val}</b>. Checking if it's smaller than parent.`);
         
         while (i > 0) {
             let p = Math.floor((i-1)/2);
-            // В Min-Heap: если ребенок МЕНЬШЕ родителя — это нарушение
+            // Min-Heap: Ребенок должен быть БОЛЬШЕ родителя. Если меньше — swap.
             if (h[p] > h[i]) {
-                saveStep(h, i, p, `Violation: ${h[i]} < ${h[p]}. Sifting up...`);
+                saveStep(h, i, p, `Violation: ${h[i]} < ${h[p]}. Swapping...`);
                 [h[i], h[p]] = [h[p], h[i]];
                 i = p;
-                saveStep(h, i, -1, `Moved up to index ${i}.`);
+                saveStep(h, i, -1, `Sifted up to index ${i}.`);
             } else {
-                saveStep(h, i, p, `Property satisfied: ${h[i]} >= ${h[p]}.`);
+                saveStep(h, i, p, `Min-Heap property satisfied.`);
                 break;
             }
         }
@@ -152,28 +181,26 @@
         let h = [...heap];
         const min = h[0];
         
-        saveStep(h, 0, -1, `Extracting minimum: <b>${min}</b>.`);
+        saveStep(h, 0, -1, `Extracting root min: <b>${min}</b>.`);
         
         if (h.length > 1) {
             const last = h.pop();
             h[0] = last;
-            saveStep(h, 0, -1, `Replaced root with <b>${last}</b>. Starting Sift Down.`);
+            saveStep(h, 0, -1, `Replaced root with <b>${last}</b>. Sifting down...`);
             
             let i = 0;
             while (true) {
                 let l = 2*i + 1, r = 2*i + 2, smallest = i;
-                // Сравниваем с левым
                 if (l < h.length && h[l] < h[smallest]) smallest = l;
-                // Сравниваем с правым
                 if (r < h.length && h[r] < h[smallest]) smallest = r;
                 
                 if (smallest !== i) {
-                    saveStep(h, i, smallest, `Swap with smaller child ${h[smallest]}.`);
+                    saveStep(h, i, smallest, `Child ${h[smallest]} is smaller. Swapping...`);
                     [h[i], h[smallest]] = [h[smallest], h[i]];
                     i = smallest;
                     saveStep(h, i, -1, `Moved down to index ${i}.`);
                 } else {
-                    saveStep(h, i, -1, `Min-Heap property restored.`);
+                    saveStep(h, i, -1, `Min-Heap restored.`);
                     break;
                 }
             }
@@ -221,22 +248,19 @@
             const isActive = i === s.active;
             const isSwap = i === s.swap;
             ctx.beginPath(); ctx.arc(p.x, p.y, 22, 0, Math.PI*2);
-            ctx.fillStyle = isActive ? varColor('--accent') : (isSwap ? '#ff6b6b' : '#26262a');
+            ctx.fillStyle = isActive ? '#7f77dd' : (isSwap ? '#1D9E75' : '#26262a');
             ctx.fill();
             ctx.strokeStyle = (isActive || isSwap) ? '#fff' : '#313136';
             ctx.lineWidth = isActive ? 3 : 2; ctx.stroke();
-            ctx.fillStyle = (isActive) ? '#141416' : '#fff'; 
-            ctx.font = 'bold 14px "JetBrains Mono"';
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 14px "JetBrains Mono"';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(h[i], p.x, p.y);
         });
     }
 
-    function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
-
     function render() {
         draw();
-        const s = steps[curStep] || { h: heap, active: -1, swap: -1, msg: heap.length ? "Min-Heap ready." : "Min-Heap is empty." };
+        const s = steps[curStep] || { h: heap, active: -1, swap: -1, msg: heap.length ? "Min-Heap ready." : "Heap is empty." };
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('stepCounter').textContent = steps.length ? `Step ${curStep + 1} / ${steps.length}` : "";
         document.getElementById('backBtn').disabled = curStep === 0;
@@ -249,17 +273,13 @@
             </div>`).join('');
     }
 
-    function changeStep(dir) {
-        if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); }
-    }
-
+    function changeStep(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
     function resetHeap() { heap = []; steps = []; curStep = 0; render(); }
     function switchTab(btn, id) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active'); document.getElementById(id).classList.add('active');
     }
-
     window.onresize = draw;
     render();
 </script>
