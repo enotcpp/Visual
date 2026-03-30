@@ -101,27 +101,38 @@
 </div>
 
 <script>
+
     const codeDb = {
         python: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">lengthOfLIS</span>(nums):</span>` +
-                `<span class="code-line" data-l="3"><span class="indent"></span>dp = [<span class="num">1</span>] * <span class="fn">len</span>(nums)</span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="fn">len</span>(nums)):</span>` +
-                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i):</span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> nums[i] &gt; nums[j]:</span>` +
-                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = <span class="fn">max</span>(dp[i], dp[j] + <span class="num">1</span>)</span>` +
-                `<span class="code-line" data-l="8"><span class="indent"></span><span class="kw">return</span> <span class="fn">max</span>(dp)</span>`,
+                `<span class="code-line" data-l="2"><span class="indent"></span>n = <span class="fn">len</span>(nums)</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">if</span> n == <span class="num">0</span>: <span class="kw">return</span> <span class="num">0</span></span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span>dp = [<span class="num">1</span>] * n</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span>overall_max = <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n):</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i):</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> nums[i] &gt; nums[j]:</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = <span class="fn">max</span>(dp[i], dp[j] + <span class="num">1</span>)</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span>overall_max = <span class="fn">max</span>(overall_max, dp[i])</span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span><span class="kw">return</span> overall_max</span>`,
         
         cpp:    `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">lengthOfLIS</span>(vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>` +
                 `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> n = nums.size();</span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; <span class="fn">dp</span>(n, <span class="num">1</span>);</span>` +
-                `<span class="code-line" data-l="8"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; n; i++) { <span class="cm">// Идем по массиву</span></span>` +
-                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = 0; j &lt; i; j++) { <span class="cm">// Проверяем предков</span></span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">if</span> (n == <span class="num">0</span>) <span class="kw">return</span> <span class="num">0</span>;</span>` +
+                `<span class="code-line" data-l="4"></span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="kw">vector</span>&lt;<span class="kw">int</span>&gt; <span class="fn">dp</span>(n, <span class="num">1</span>);</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">int</span> overall_max = <span class="num">1</span>;</span>` +
+                `<span class="code-line" data-l="7"></span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">1</span>; i &lt; n; i++) {</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = 0; j &lt; i; j++) {</span>` +
                 `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (nums[i] &gt; nums[j]) {</span>` +
-                `<span class="code-line" data-l="13"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = max(dp[i], dp[j] + <span class="num">1</span>);</span>` +
-                `<span class="code-line" data-l="14"><span class="indent"></span><span class="indent"></span><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="15"><span class="indent"></span><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="18"><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="19"><span class="indent"></span><span class="kw">return</span> overall_max;</span>` +
-                `<span class="code-line" data-l="20">}</span>`
+                `<span class="code-line" data-l="11"></span>` +
+                `<span class="code-line" data-l="12"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i] = max(dp[i], dp[j] + <span class="num">1</span>);</span>` +
+                `<span class="code-line" data-l="13"><span class="indent"></span><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="14"><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="15"><span class="indent"></span><span class="indent"></span>overall_max = max(overall_max, dp[i]);</span>` +
+                `<span class="code-line" data-l="16"><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="17"><span class="indent"></span><span class="kw">return</span> overall_max;</span>` +
+                `<span class="code-line" data-l="18">}</span>`
     };
 
     let nums = [], steps = [], curStep = 0, activeTab = 'theory';
