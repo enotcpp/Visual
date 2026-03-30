@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LIS Visualizer | AlgoView Lab</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --bg-main: #1a1a1c;
+            --bg-card: #242426;
+            --bg-input: #2d2d30;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-secondary: #1d9e75;
+            --border: #3e3e42;
+            --code-bg: #0d0d0f;
+            --orange: #e67e22;
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
+        
+        .visualizer-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 30px;
+        }
+
+        .inputs { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-main); padding: 8px 12px; border-radius: 8px; width: 300px; 
+            font-family: monospace;
+        }
+        
+        button {
+            padding: 10px 18px; border-radius: 8px; border: none;
+            background: var(--accent); color: white; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s; font-size: 14px;
+        }
+        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button:hover { opacity: 0.9; }
+
+        .info-box {
+            background: var(--bg-main); border-left: 4px solid var(--accent);
+            padding: 16px; min-height: 85px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;
+        }
+        .info-box b { color: var(--accent); }
+
+        .legend { display: flex; gap: 15px; flex-wrap: wrap; font-size: 11px; color: var(--text-secondary); margin-bottom: 20px; }
+        .leg { display: flex; align-items: center; gap: 6px; }
+        .ldot { width: 14px; height: 14px; border-radius: 4px; }
+
+        /* GRID LOGIC */
+        .grid-container { margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px; }
+        .grid-row { display: flex; align-items: center; gap: 8px; }
+        .row-label { width: 80px; font-size: 12px; color: var(--text-secondary); font-weight: bold; text-transform: uppercase; }
+
+        .cell {
+            width: 48px; height: 48px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-card); text-align: center; font-size: 16px; transition: all .2s;
+            color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+            font-family: monospace; font-weight: bold;
+        }
+        .cell.filled { background: var(--bg-input); color: var(--text-main); }
+        .cell.cur-i { border: 2.5px solid var(--accent) !important; color: white !important; transform: scale(1.05); z-index: 2; }
+        .cell.check-j { border: 2.5px solid var(--orange) !important; color: var(--orange) !important; }
+        .cell.valid-prev { background: rgba(29, 158, 117, 0.2); border-color: var(--accent-secondary); color: var(--accent-secondary); }
+        .cell.best-source { background: var(--accent-secondary); color: white; border-color: white; }
+
+        /* LAB TABS */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
+        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="visualizer-card">
+        <div class="inputs">
+            <label>Nums</label>
+            <input id="in1" type="text" value="10, 9, 2, 5, 3, 7, 101, 18">
+            <button onclick="rebuild()">Apply</button>
+        </div>
+
+        <div class="legend">
+            <div class="leg"><div class="ldot" style="border:2.5px solid var(--accent)"></div>target (i)</div>
+            <div class="leg"><div class="ldot" style="border:2.5px solid var(--orange)"></div>checking (j)</div>
+            <div class="leg"><div class="ldot" style="background:rgba(29, 158, 117, 0.2); border: 1px solid var(--accent-secondary)"></div>nums[i] > nums[j]</div>
+            <div class="leg"><div class="ldot" style="background:var(--accent-secondary)"></div>best ancestor</div>
+        </div>
+
+        <div class="info-box" id="info">Ready.</div>
+        
+        <div class="grid-container" id="grid-box">
+            </div>
+
+        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+            <button class="secondary" onclick="go(-1)">< Back</button>
+            <button onclick="go(1)">Next Step ></button>
+            <button id="auto-btn" class="secondary" onclick="toggleAuto()">Auto Play</button>
+            <button class="secondary" onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
+        <div class="res" style="margin-top: 20px;">Max LIS Length: <span class="res-val" id="resv" style="font-size: 24px; font-weight: bold; color: var(--accent-secondary); margin-left: 10px;">1</span></div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
+        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code class="language-python" id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp" id="cpp-display"></code></pre></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
+<script>
+    const db = {
+        theory: {
+            EN: "<h3>Longest Increasing Subsequence (DP)</h3><p>For each element <b>i</b>, we look back at all elements <b>j < i</b>. If <code>nums[i] > nums[j]</code>, we can extend the LIS ending at <b>j</b>. <code>dp[i] = max(dp[i], dp[j] + 1)</code>.</p>",
+            RU: "<h3>Наибольшая возрастающая подпоследовательность</h3><p>Для каждого элемента <b>i</b> мы проверяем всех его предшественников <b>j < i</b>. Если число <b>i</b> больше числа <b>j</b>, мы можем «продлить» цепочку, заканчивающуюся на <b>j</b>. Формула: <code>dp[i] = max(dp[i], dp[j] + 1)</code>.</p>"
+        },
+        python: {
+            v1: "def lengthOfLIS(nums):\n    if not nums: return 0\n    dp = [1] * len(nums)\n    for i in range(1, len(nums)):\n        for j in range(i):\n            if nums[i] > nums[j]:\n                dp[i] = max(dp[i], dp[j] + 1)\n    return max(dp)"
+        },
+        cpp: {
+            v1: "int lengthOfLIS(vector<int>& nums) {\n    int n = nums.size();\n    if (n == 0) return 0;\n    vector<int> dp(n, 1);\n    for (int i = 1; i < n; i++) {\n        for (int j = 0; j < i; j++) {\n            if (nums[i] > nums[j])\n                dp[i] = max(dp[i], dp[j] + 1);\n        }\n    }\n    return *max_element(dp.begin(), dp.end());\n}"
+        }
+    };
+
+    let nums = [], steps = [], cur = 0, timer = null, currentMainTab = 'theory';
+
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(tabId).classList.add('active');
+        renderContextControls();
+    }
+
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active'); updateContent(item);
+            };
+            panel.appendChild(b);
+        });
+        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
+    }
+
+    function updateContent(key) {
+        const display = document.getElementById(currentMainTab + '-display');
+        if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
+        else {
+            display.textContent = db[currentMainTab][key];
+            Prism.highlightElement(display);
+        }
+    }
+
+    function rebuild() {
+        nums = document.getElementById('in1').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        steps = buildSteps(); cur = 0; render();
+    }
+
+    function buildSteps() {
+        const n = nums.length;
+        const _steps = [];
+        const dp = Array(n).fill(1);
+        let overallMax = 1;
+
+        _steps.push({ i: 0, j: -1, dp: [...dp], msg: 'Initialize DP array with 1s.', action: 'init' });
+
+        for (let i = 1; i < n; i++) {
+            for (let j = 0; j < i; j++) {
+                let msg = '';
+                let bestJ = -1;
+                let canExtend = nums[i] > nums[j];
+                
+                if (canExtend) {
+                    if (dp[j] + 1 > dp[i]) {
+                        dp[i] = dp[j] + 1;
+                        msg = `<b>${nums[i]} > ${nums[j]}</b>. Found better path: dp[j]+1 = <b>${dp[i]}</b>`;
+                        bestJ = j;
+                    } else {
+                        msg = `<b>${nums[i]} > ${nums[j]}</b>, but current dp[i] (${dp[i]}) is already better than dp[j]+1.`;
+                    }
+                } else {
+                    msg = `<b>${nums[i]} ≤ ${nums[j]}</b>. Cannot extend this subsequence.`;
+                }
+
+                _steps.push({ 
+                    i, j, dp: [...dp], 
+                    canExtend, bestJ, 
+                    msg: `Checking i=${i}, j=${j}: ${msg}` 
+                });
+            }
+            overallMax = Math.max(overallMax, dp[i]);
+        }
+        _steps.push({ i: n-1, j: n-1, dp: [...dp], msg: `Finished! Max LIS length is <b>${overallMax}</b>.`, action: 'done' });
+        return _steps;
+    }
+
+    function render() {
+        if (!steps.length) return;
+        const s = steps[cur];
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        document.getElementById('resv').textContent = Math.max(...s.dp);
+
+        const grid = document.getElementById('grid-box');
+        grid.innerHTML = '';
+
+        // Labels
+        const rows = ['Nums', 'DP'];
+        rows.forEach(label => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'grid-row';
+            rowDiv.innerHTML = `<div class="row-label">${label}</div>`;
+            
+            nums.forEach((val, idx) => {
+                const isDP = label === 'DP';
+                let cls = 'cell';
+                
+                // i highlighting
+                if (idx === s.i) cls += ' cur-i';
+                // j highlighting
+                if (idx === s.j && s.action !== 'done') cls += ' check-j';
+                
+                // Logic highlighting
+                if (idx === s.j && s.canExtend) cls += ' valid-prev';
+                if (idx === s.bestJ) cls += ' best-source';
+                
+                // Filling logic
+                if (idx <= s.i) cls += ' filled';
+                
+                const displayVal = isDP ? s.dp[idx] : nums[idx];
+                rowDiv.innerHTML += `<div class="${cls}">${displayVal}</div>`;
+            });
+            grid.appendChild(rowDiv);
+        });
+    }
+
+    function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } else if (timer) toggleAuto(); }
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 500); }
+    }
+    function resetAll() { cur = 0; render(); if(timer) toggleAuto(); }
+
+    renderContextControls(); rebuild();
+</script>
+</body>
+</html>
