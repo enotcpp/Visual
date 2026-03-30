@@ -19,7 +19,6 @@
         
         .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         
-        /* Controls */
         .header-controls { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
         input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 120px; outline: none; font-family: var(--font-mono); font-size: 14px; }
         button { padding: 12px 24px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
@@ -31,10 +30,9 @@
 
         canvas { display: block; background: #1a1a1c; border-radius: 12px; border: 1px solid var(--border); width: 100%; height: 260px; margin-bottom: 25px; }
 
-        /* Array Visualization */
         .array-container { margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.01); border-radius: 10px; border: 1px solid var(--border); }
         .array-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 10px; letter-spacing: 1px; }
-        .array-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .array-row { display: flex; gap: 6px; flex-wrap: wrap; min-height: 40px; }
         .array-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .idx { font-size: 10px; font-family: var(--font-mono); color: #555; }
         .val { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; background: var(--bg-input); transition: 0.3s; color: var(--text-secondary); }
@@ -44,12 +42,11 @@
         .step-ctrls { display: flex; gap: 10px; margin-top: 30px; align-items: center; border-top: 1px solid var(--border); padding-top: 20px; }
         .step-info { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
 
-        /* Tabs */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-top: 24px; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 8px; }
         .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 10px; text-transform: uppercase; }
         .tab-btn.active { color: var(--accent); background: var(--bg-input); }
-        .tab-content { display: none; padding: 30px; line-height: 1.7; }
+        .tab-content { display: none; padding: 30px; }
         .tab-content.active { display: block; }
         pre { border-radius: 12px !important; margin: 0 !important; font-size: 13px !important; }
     </style>
@@ -59,7 +56,7 @@
 <div class="container">
     <div class="visualizer-card">
         <div class="header-controls">
-            <input id="ins-val" type="number" value="42" placeholder="Value">
+            <input id="ins-val" type="number" value="10" placeholder="Value">
             <button class="btn-primary" onclick="doInsert()">Insert</button>
             <button class="btn-secondary" onclick="doExtract()">Extract Max</button>
             <button class="btn-secondary" onclick="clearHeap()">Clear</button>
@@ -88,34 +85,13 @@
         </div>
         <div id="theory" class="tab-content active">
             <h3 style="margin-top:0; color:var(--accent)">Binary Heap (Max-Heap)</h3>
-            <p>A Binary Heap is a complete binary tree that maintains the heap property. In a Max-Heap, every parent node is greater than or equal to its children.</p>
-            <ul>
-                <li><b>Insert:</b> O(log N). Add to the end, then move up (sift up) to restore order.</li>
-                <li><b>Extract Max:</b> O(log N). Replace root with the last element, remove the last, then move down (sift down) to restore order.</li>
-                <li><b>Storage:</b> O(N). Efficiently stored in an array: children of node <code>i</code> are at <code>2i+1</code> and <code>2i+2</code>.</li>
-            </ul>
+            <p>Бинарная куча — это дерево, которое всегда заполняется слева направо. В Max-Heap корень всегда является максимальным элементом.</p>
         </div>
         <div id="cpp" class="tab-content">
-            <pre><code class="language-cpp">#include &lt;vector&gt;
-#include &lt;algorithm&gt;
-
-void siftUp(std::vector&lt;int&gt;&amp; heap, int i) {
-    while (i > 0 && heap[(i - 1) / 2] < heap[i]) {
-        std::swap(heap[i], heap[(i - 1) / 2]);
-        i = (i - 1) / 2;
-    }
-}
-
-void siftDown(std::vector&lt;int&gt;&amp; heap, int i) {
-    int maxIdx = i;
-    int l = 2 * i + 1;
-    int r = 2 * i + 2;
-    if (l < heap.size() && heap[l] > heap[maxIdx]) maxIdx = l;
-    if (r < heap.size() && heap[r] > heap[maxIdx]) maxIdx = r;
-    if (i != maxIdx) {
-        std::swap(heap[i], heap[maxIdx]);
-        siftDown(heap, maxIdx);
-    }
+            <pre><code class="language-cpp">// Standard Max-Heap Insert
+void push(int val) {
+    heap.push_back(val);
+    siftUp(heap.size() - 1);
 }</code></pre>
         </div>
     </div>
@@ -136,57 +112,62 @@ void siftDown(std::vector&lt;int&gt;&amp; heap, int i) {
     function doInsert() {
         const val = parseInt(document.getElementById('ins-val').value);
         if (isNaN(val)) return;
-        steps = []; curStep = 0;
+        
+        steps = [];
         let h = [...heap];
         h.push(val);
         let i = h.length - 1;
-        saveStep(h, i, `Pushing <b>${val}</b> to the end of the heap.`);
         
+        saveStep(h, i, `New element <b>${val}</b> added to index ${i}.`);
+
         while (i > 0) {
-            let p = Math.floor((i-1)/2);
+            let p = Math.floor((i - 1) / 2);
             if (h[p] < h[i]) {
-                saveStep(h, i, `child ${h[i]} > parent ${h[p]}, swapping...`);
+                saveStep(h, i, `Violation: Child ${h[i]} > Parent ${h[p]}. Swapping.`);
                 [h[i], h[p]] = [h[p], h[i]];
                 i = p;
-                saveStep(h, i, `restored locally, moving up to index ${i}.`);
+                saveStep(h, i, `Moved up to index ${i}. Checking next parent.`);
             } else {
-                saveStep(h, i, `order satisfied: ${h[p]} ≥ ${h[i]}.`);
+                saveStep(h, i, `Property satisfied: ${h[p]} ≥ ${h[i]}.`);
                 break;
             }
         }
-        if (steps.length > 0 && steps[steps.length-1].h.length === h.length) heap = h; // update master heap
-        render();
+        
+        heap = h; // Фиксируем изменения
+        curStep = 0;
+        renderDOM();
     }
 
     function doExtract() {
         if (heap.length === 0) return;
-        steps = []; curStep = 0;
+        steps = [];
         let h = [...heap];
         const max = h[0];
-        saveStep(h, 0, `Extracting maximum: <b>${max}</b>.`);
-        
+        saveStep(h, 0, `Extracting root: <b>${max}</b>.`);
+
         if (h.length > 1) {
             h[0] = h.pop();
-            saveStep(h, 0, `Replaced root with the last element (${h[0]}), starting sift down.`);
-            
+            saveStep(h, 0, `Last element moved to root. Starting Sift Down.`);
             let i = 0;
             while (true) {
                 let l = 2*i + 1, r = 2*i + 2, largest = i;
                 if (l < h.length && h[l] > h[largest]) largest = l;
                 if (r < h.length && h[r] > h[largest]) largest = r;
-                
                 if (largest !== i) {
-                    saveStep(h, i, `child ${h[largest]} is larger, swapping...`);
+                    saveStep(h, i, `Swapping with larger child ${h[largest]}.`);
                     [h[i], h[largest]] = [h[largest], h[i]];
                     i = largest;
+                    saveStep(h, i, `Moved down.`);
                 } else {
                     saveStep(h, i, `Heap property restored.`);
                     break;
                 }
             }
         } else { h.pop(); }
+        
         heap = h;
-        render();
+        curStep = 0;
+        renderDOM();
     }
 
     const canvas = document.getElementById('heapCanvas');
@@ -199,27 +180,23 @@ void siftDown(std::vector&lt;int&gt;&amp; heap, int i) {
         ctx.scale(DPR, DPR);
         ctx.clearRect(0,0,W,H);
 
-        const s = steps[curStep] || { h: heap, active: -1 };
+        const s = (steps.length > 0) ? steps[curStep] : { h: heap, active: -1 };
         const h = s.h;
+        
         if (h.length === 0) {
-             ctx.fillStyle = '#555'; ctx.font = '14px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-             ctx.fillText('Heap is empty.', W/2, H/2);
-             return;
+            ctx.fillStyle = '#555'; ctx.font = '14px Inter'; ctx.textAlign = 'center';
+            ctx.fillText('Heap is empty. Add elements to start.', W/2, H/2);
+            return;
         }
 
-        const R = 24; // Compact size, DFS style
-
+        const R = 22;
         const pos = h.map((_, i) => {
             const lvl = Math.floor(Math.log2(i+1));
-            const posInLvl = i - (Math.pow(2, lvl) - 1);
             const nodesInLvl = Math.pow(2, lvl);
-            return {
-                x: W * (posInLvl + 0.5) / nodesInLvl,
-                y: 40 + lvl * 50 // Compact vertical spacing
-            };
+            const posInLvl = i - (nodesInLvl - 1);
+            return { x: W * (posInLvl + 0.5) / nodesInLvl, y: 40 + lvl * 50 };
         });
 
-        // Edges
         ctx.strokeStyle = '#313136'; ctx.lineWidth = 1.5;
         for (let i = 0; i < h.length; i++) {
             let l = 2*i+1, r = 2*i+2;
@@ -227,28 +204,25 @@ void siftDown(std::vector&lt;int&gt;&amp; heap, int i) {
             if (r < h.length) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[r].x, pos[r].y); ctx.stroke(); }
         }
 
-        // Nodes (DFS Style)
         pos.forEach((p, i) => {
             const isActive = i === s.active;
-            
             ctx.beginPath(); ctx.arc(p.x, p.y, R, 0, Math.PI*2);
             if (isActive) {
-                ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; // Active DFS style
+                ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
             } else {
-                ctx.fillStyle = '#26262a'; ctx.strokeStyle = '#313136'; ctx.lineWidth = 1.5; // default node
+                ctx.fillStyle = '#26262a'; ctx.strokeStyle = '#313136'; ctx.lineWidth = 1.5;
             }
             ctx.fill(); ctx.stroke();
-
             ctx.fillStyle = isActive ? '#141416' : '#fff';
-            ctx.font = 'bold 14px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.font = 'bold 13px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(h[i], p.x, p.y);
         });
     }
 
     function renderDOM() {
         draw();
-        const s = steps[curStep] || { h: heap, active: -1 };
-        document.getElementById('info').innerHTML = s.msg || (heap.length ? "Master heap ready." : "Empty heap.");
+        const s = (steps.length > 0) ? steps[curStep] : { h: heap, active: -1 };
+        document.getElementById('info').innerHTML = s.msg || (heap.length ? "Ready." : "Empty heap.");
         document.getElementById('stepCounter').textContent = steps.length ? `step ${curStep + 1} / ${steps.length}` : "";
         
         const row = document.getElementById('arrayRow');
@@ -257,11 +231,13 @@ void siftDown(std::vector&lt;int&gt;&amp; heap, int i) {
                 <div class="idx">${i}</div>
                 <div class="val visited ${i===s.active?'active':''}">${v}</div>
             </div>
-        `).join('') || '<div style="color:#555;font-size:12px;width:100%;text-align:center;">heap is empty</div>';
+        `).join('') || '<div style="color:#555; font-size:12px;">No elements in array</div>';
     }
 
     function changeStep(dir) {
-        if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; renderDOM(); Prism.highlightAll(); }
+        if (curStep + dir >= 0 && curStep + dir < steps.length) {
+            curStep += dir; renderDOM();
+        }
     }
 
     function clearHeap() { heap = []; steps = []; curStep = 0; renderDOM(); }
