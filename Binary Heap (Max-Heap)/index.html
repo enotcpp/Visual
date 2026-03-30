@@ -19,24 +19,25 @@
         .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 35px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         
         .header-controls { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 120px; outline: none; font-family: var(--font-mono); }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; width: 100px; outline: none; font-family: var(--font-mono); font-size: 16px; }
         button { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
         button:hover { transform: translateY(-1px); opacity: 0.9; }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 60px; margin-bottom: 25px; font-size: 15px; line-height: 1.6; }
-        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 320px; margin-bottom: 25px; }
+        
+        /* Увеличенная высота Canvas */
+        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 400px; margin-bottom: 25px; }
 
         .array-container { margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 12px; }
         .array-label { font-size: 11px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; letter-spacing: 1px; }
-        .array-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .array-row { display: flex; gap: 6px; flex-wrap: wrap; }
         .array-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .idx { font-size: 10px; font-family: var(--font-mono); color: #555; }
-        .val { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: var(--bg-input); transition: 0.3s; }
-        .val.active { border-color: var(--node-active); background: rgba(127,119,221,0.3); }
-        .val.swap { border-color: var(--node-swap); background: rgba(29,158,117,0.3); }
+        .val { width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: var(--bg-input); transition: 0.3s; font-size: 15px; }
+        .val.active { border-color: var(--accent); background: rgba(127,119,221,0.2); transform: scale(1.05); }
+        .val.swap { border-color: #1D9E75; background: rgba(29,158,117,0.2); }
 
         .step-ctrls { display: flex; gap: 10px; margin-top: 30px; align-items: center; border-top: 1px solid var(--border); padding-top: 20px; }
         .step-info { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
@@ -47,6 +48,7 @@
         .tab-btn.active { color: var(--accent); background: var(--bg-input); }
         .tab-content { display: none; padding: 35px; line-height: 1.7; }
         .tab-content.active { display: block; }
+        pre { border-radius: 12px !important; margin: 0 !important; font-size: 13px !important; }
     </style>
 </head>
 <body>
@@ -54,24 +56,23 @@
 <div class="container">
     <div class="visualizer-card">
         <div class="header-controls">
-            <input id="ins-val" type="number" placeholder="Value">
+            <input id="ins-val" type="number" value="45">
             <button class="btn-primary" onclick="doInsert()">Insert</button>
             <button class="btn-secondary" onclick="doExtract()">Extract Max</button>
-            <button class="btn-secondary" onclick="resetHeap()">Reset</button>
+            <button class="btn-secondary" onclick="resetHeap()">Clear Heap</button>
         </div>
 
-        <div id="info" class="info-box">Heap is empty. Add a value to start.</div>
-
+        <div id="info" class="info-box">Heap is empty. Insert a value to start.</div>
         <canvas id="heapCanvas"></canvas>
 
         <div class="array-container">
-            <div class="array-label">Array View</div>
+            <div class="array-label">Array Representation (Memory View)</div>
             <div id="arrayRow" class="array-row"></div>
         </div>
 
         <div class="step-ctrls">
-            <button id="back-btn" class="btn-secondary" onclick="changeStep(-1)">← Back</button>
-            <button id="next-btn" class="btn-primary" onclick="changeStep(1)">Next Step →</button>
+            <button class="btn-secondary" onclick="changeStep(-1)">← Back</button>
+            <button class="btn-primary" onclick="changeStep(1)">Next Step →</button>
             <span id="stepCounter" class="step-info"></span>
         </div>
     </div>
@@ -82,8 +83,13 @@
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Code</button>
         </div>
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0; color:var(--accent)">Binary Heap</h3>
-            <p>В <b>Max-Heap</b> значение каждого узла больше или равно значениям его потомков.</p>
+            <h3 style="margin-top:0; color:var(--accent)">Binary Heap Visualization</h3>
+            <p>This lab demonstrates how a <b>Max-Heap</b> works. Elements are stored in a linear array but represented as a complete binary tree.</p>
+            <ul>
+                <li><b>Root:</b> The maximum element (at index 0).</li>
+                <li><b>Parent:</b> Located at <code>(i-1)/2</code>.</li>
+                <li><b>Children:</b> Located at <code>2i+1</code> and <code>2i+2</code>.</li>
+            </ul>
         </div>
         <div id="cpp" class="tab-content">
             <pre><code class="language-cpp">void siftUp(int i) {
@@ -100,7 +106,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
-    let heap = []; // Начинаем с пустого массива
+    // НАЧАЛЬНОЕ СОСТОЯНИЕ: ПУСТО
+    let heap = [];
     let steps = [];
     let curStep = 0;
 
@@ -112,24 +119,24 @@
         const input = document.getElementById('ins-val');
         const val = parseInt(input.value);
         if (isNaN(val)) return;
-        input.value = '';
-
+        
+        // В отличие от прошлой версии, мы НЕ очищаем input.value, чтобы можно было жать Insert повторно.
+        
         steps = []; curStep = 0;
         let h = [...heap];
         h.push(val);
         let i = h.length - 1;
-        
-        saveStep(h, i, -1, `Добавление <b>${val}</b> в конец массива.`);
+        saveStep(h, i, -1, `Inserted <b>${val}</b> at the end of the array.`);
         
         while (i > 0) {
             let p = Math.floor((i-1)/2);
             if (h[p] < h[i]) {
-                saveStep(h, i, p, `Нарушение: Потомок ${h[i]} > Родитель ${h[p]}. Меняем местами.`);
+                saveStep(h, i, p, `Violation: ${h[i]} > parent ${h[p]}. Swapping...`);
                 [h[i], h[p]] = [h[p], h[i]];
                 i = p;
-                saveStep(h, i, -1, `Элемент поднялся на индекс ${i}.`);
+                saveStep(h, i, -1, `Sifted up to index ${i}.`);
             } else {
-                saveStep(h, i, p, `Условие кучи выполнено: ${h[p]} ≥ ${h[i]}.`);
+                saveStep(h, i, p, `Heap property satisfied (parent ${h[p]} >= ${h[i]}).`);
                 break;
             }
         }
@@ -142,29 +149,26 @@
         steps = []; curStep = 0;
         let h = [...heap];
         const max = h[0];
-        saveStep(h, 0, -1, `Извлечение максимума: <b>${max}</b>.`);
-        
+        saveStep(h, 0, -1, `Extracting maximum value: <b>${max}</b>.`);
         if (h.length > 1) {
             h[0] = h.pop();
-            saveStep(h, 0, -1, `Последний элемент (${h[0]}) перенесен в корень. Начинаем <b>Sift Down</b>.`);
-            
+            saveStep(h, 0, -1, `Moved last element ${h[0]} to root. Starting Sift Down.`);
             let i = 0;
             while (true) {
                 let l = 2*i + 1, r = 2*i + 2, largest = i;
                 if (l < h.length && h[l] > h[largest]) largest = l;
                 if (r < h.length && h[r] > h[largest]) largest = r;
-                
                 if (largest !== i) {
-                    saveStep(h, i, largest, `Ребенок ${h[largest]} больше ${h[i]}. Меняем местами.`);
+                    saveStep(h, i, largest, `Child ${h[largest]} is larger than ${h[i]}. Swapping...`);
                     [h[i], h[largest]] = [h[largest], h[i]];
                     i = largest;
-                    saveStep(h, i, -1, `Элемент опустился на индекс ${i}.`);
+                    saveStep(h, i, -1, `Moved down to index ${i}.`);
                 } else {
-                    saveStep(h, i, -1, `Свойства кучи восстановлены.`);
+                    saveStep(h, i, -1, `Heap property restored.`);
                     break;
                 }
             }
-        } else { h.pop(); saveStep(h, -1, -1, "Куча пуста."); }
+        } else { h.pop(); saveStep(h, -1, -1, "Heap is now empty."); }
         heap = h;
         render();
     }
@@ -179,41 +183,45 @@
         ctx.scale(dpr, dpr);
         ctx.clearRect(0,0,W,H);
 
-        const s = steps.length > 0 ? steps[curStep] : { h: heap, active: -1, swap: -1 };
+        const s = steps[curStep] || { h: heap, active: -1, swap: -1 };
         const h = s.h;
         if (h.length === 0) {
-            ctx.fillStyle = '#555'; ctx.textAlign = 'center'; ctx.font = '14px Inter';
-            ctx.fillText("Heap is empty", W/2, H/2);
+            ctx.fillStyle = '#555'; ctx.textAlign = 'center'; ctx.font = '16px Inter';
+            ctx.fillText("Heap is empty. Add elements to visualize tree.", W/2, H/2);
             return;
         }
 
+        // РАСЧЕТ КООРДИНАТ (Увеличенные отступы)
         const pos = h.map((_, i) => {
             const lvl = Math.floor(Math.log2(i+1));
             const posInLvl = i - (Math.pow(2, lvl) - 1);
             const nodesInLvl = Math.pow(2, lvl);
-            return { x: W * (posInLvl + 0.5) / nodesInLvl, y: 50 + lvl * 60 };
+            // x центрируется относительно ширины, y увеличил шаг до 80
+            return { x: W * (posInLvl + 0.5) / nodesInLvl, y: 60 + lvl * 80 };
         });
 
-        // Edges
-        ctx.strokeStyle = '#313136'; ctx.lineWidth = 2;
+        // Edges (Линии)
+        ctx.strokeStyle = '#313136'; ctx.lineWidth = 2.5;
         for (let i = 0; i < h.length; i++) {
             let l = 2*i+1, r = 2*i+2;
             if (l < h.length) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[l].x, pos[l].y); ctx.stroke(); }
             if (r < h.length) { ctx.beginPath(); ctx.moveTo(pos[i].x, pos[i].y); ctx.lineTo(pos[r].x, pos[r].y); ctx.stroke(); }
         }
 
-        // Nodes
+        // Nodes (Узлы - УВЕЛИЧЕННЫЕ)
         pos.forEach((p, i) => {
             const isActive = i === s.active;
             const isSwap = i === s.swap;
             
-            ctx.beginPath(); ctx.arc(p.x, p.y, 18, 0, Math.PI*2);
+            ctx.beginPath(); ctx.arc(p.x, p.y, 22, 0, Math.PI*2); // Радиус 22 вместо 18
             ctx.fillStyle = isActive ? '#7f77dd' : (isSwap ? '#1D9E75' : '#26262a');
             ctx.fill();
+            
             ctx.strokeStyle = (isActive || isSwap) ? '#fff' : '#313136';
-            ctx.lineWidth = 2; ctx.stroke();
+            ctx.lineWidth = isActive ? 3 : 2; ctx.stroke();
 
-            ctx.fillStyle = '#fff'; ctx.font = 'bold 13px Inter';
+            ctx.fillStyle = '#fff'; 
+            ctx.font = 'bold 14px "JetBrains Mono"'; // Крупнее шрифт
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(h[i], p.x, p.y);
         });
@@ -221,13 +229,10 @@
 
     function render() {
         draw();
-        const s = steps.length > 0 ? steps[curStep] : { h: heap, active: -1, swap: -1, msg: "Куча готова." };
+        const s = steps[curStep] || { h: heap, active: -1, swap: -1, msg: heap.length ? "Heap ready." : "Heap is empty." };
         document.getElementById('info').innerHTML = s.msg;
-        document.getElementById('stepCounter').textContent = steps.length ? `Шаг ${curStep + 1} / ${steps.length}` : "";
+        document.getElementById('stepCounter').textContent = steps.length ? `Step ${curStep + 1} / ${steps.length}` : "";
         
-        document.getElementById('back-btn').disabled = curStep === 0;
-        document.getElementById('next-btn').disabled = (steps.length === 0 || curStep === steps.length - 1);
-
         const row = document.getElementById('arrayRow');
         row.innerHTML = s.h.map((v, i) => `
             <div class="array-cell">
@@ -237,12 +242,16 @@
     }
 
     function changeStep(dir) {
-        if (curStep + dir >= 0 && curStep + dir < steps.length) {
-            curStep += dir; render();
-        }
+        if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); }
     }
 
-    function resetHeap() { heap = []; steps = []; curStep = 0; render(); }
+    function resetHeap() { 
+        heap = []; // Полная очистка
+        steps = []; 
+        curStep = 0; 
+        render(); 
+    }
+
     function switchTab(btn, id) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
