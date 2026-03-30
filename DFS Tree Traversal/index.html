@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AlgoView Lab | DFS Tree Traversal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
+            --text-main: #e1e1e3; --text-secondary: #9ba1a6;
+            --accent: #7f77dd; --border: #313136; 
+            --node-visited: #534ab7; --node-active-bg: #ffffff; --node-active-text: #141416;
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+        body { margin: 0; padding: 20px; font-family: var(--font-sans); background: var(--bg-main); color: var(--text-main); }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 35px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        .header { display: flex; gap: 12px; margin-bottom: 30px; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 14px; border-radius: 10px; flex-grow: 1; outline: none; font-family: var(--font-mono); font-size: 14px; }
+        
+        .info-box { background: rgba(127,119,221,0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 6px; min-height: 60px; margin-bottom: 35px; font-size: 16px; line-height: 1.6; }
+
+        canvas { display: block; background: #1a1a1c; border-radius: 16px; border: 1px solid var(--border); width: 100%; height: 380px; margin-bottom: 30px; }
+
+        .status-rows { display: flex; flex-direction: column; gap: 20px; }
+        .data-row { display: flex; align-items: center; gap: 15px; min-height: 45px; }
+        .row-label { font-size: 11px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; width: 140px; flex-shrink: 0; }
+        
+        .node-pill { padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); }
+        .node-pill.visited { background: var(--node-visited); border-color: var(--accent); color: white; }
+        .node-pill.active { background: var(--node-active-bg); color: var(--node-active-text); border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+
+        .controls { display: flex; gap: 12px; margin-top: 40px; border-top: 1px solid var(--border); padding-top: 30px; }
+        button { padding: 12px 28px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(127,119,221,0.4); }
+        .btn-secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        .step-counter { margin-left: auto; color: var(--text-secondary); font-size: 13px; align-self: center; font-family: var(--font-mono); }
+
+        /* Lab Tabs */
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 8px; }
+        .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 12px; font-weight: 800; cursor: pointer; border-radius: 10px; text-transform: uppercase; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-input); }
+        .tab-content { display: none; padding: 35px; }
+        .tab-content.active { display: block; }
+        pre { border-radius: 12px !important; font-size: 14px !important; margin: 0 !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="visualizer-card">
+        <div class="header">
+            <input id="edgeInput" type="text" value="Tree: [0,1], [0,2], [1,3], [1,4], [2,5], [2,6]">
+            <button class="btn-primary" onclick="resetAll()">Apply & Reset</button>
+        </div>
+
+        <div id="info" class="info-box">Ready to start. Click "Next Step".</div>
+
+        <canvas id="treeCanvas"></canvas>
+        
+        <div class="status-rows">
+            <div class="data-row">
+                <span class="row-label">Stack (LIFO):</span>
+                <div id="stackRow" style="display: flex; gap: 8px;"></div>
+            </div>
+            <div class="data-row">
+                <span class="row-label">Visit Order:</span>
+                <div id="orderRow" style="display: flex; gap: 8px;"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-secondary" onclick="step(-1)">← Back</button>
+            <button class="btn-primary" onclick="step(1)">Next Step →</button>
+            <button class="btn-secondary" onclick="resetAll()">Reset</button>
+            <span class="step-counter" id="ctr"></span>
+        </div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++ Implementations</button>
+        </div>
+        <div id="theory" class="tab-content active">
+            <h3 style="margin-top:0">Depth-First Search (DFS)</h3>
+            <p>DFS is an algorithm for traversing or searching tree or graph data structures. The algorithm starts at the root node and explores as far as possible along each branch before backtracking.</p>
+            <p>Key Characteristics:</p>
+            <ul>
+                <li>Uses a <b>Stack</b> (either explicitly or via the call stack in recursion).</li>
+                <li>Time Complexity: $O(V + E)$ where $V$ is vertices and $E$ is edges.</li>
+                <li>Space Complexity: $O(h)$ where $h$ is the maximum height of the tree.</li>
+            </ul>
+        </div>
+        <div id="cpp" class="tab-content">
+            <h4 style="color:var(--accent)">1. Iterative Approach (Using std::stack)</h4>
+            <pre><code class="language-cpp">// Recommended for very deep trees to avoid stack overflow
+void dfsIterative(Node* root) {
+    if (!root) return;
+    std::stack&lt;Node*&gt; s;
+    s.push(root);
+
+    while (!s.empty()) {
+        Node* curr = s.top();
+        s.pop();
+
+        std::cout << curr->val << " ";
+
+        // Push right first so left is processed first (LIFO)
+        if (curr->right) s.push(curr->right);
+        if (curr->left) s.push(curr->left);
+    }
+}</code></pre>
+            <h4 style="color:var(--accent); margin-top:25px">2. Recursive Approach</h4>
+            <pre><code class="language-cpp">// The most common and concise way
+void dfsRecursive(Node* node) {
+    if (!node) return;
+
+    std::cout << node->val << " "; // Pre-order visit
+    
+    dfsRecursive(node->left);
+    dfsRecursive(node->right);
+}</code></pre>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
+<script>
+    const TREE = {
+        nodes: [
+            { id:0, val:'1', x:0.5,  y:0.15 },
+            { id:1, val:'2', x:0.25, y:0.42 },
+            { id:2, val:'3', x:0.75, y:0.42 },
+            { id:3, val:'4', x:0.12, y:0.72 },
+            { id:4, val:'5', x:0.38, y:0.72 },
+            { id:5, val:'6', x:0.62, y:0.72 },
+            { id:6, val:'7', x:0.88, y:0.72 },
+        ],
+        edges: [[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]],
+        children: { 0:[1,2], 1:[3,4], 2:[5,6], 3:[], 4:[], 5:[], 6:[] }
+    };
+
+    function buildSteps() {
+        const steps = [];
+        const visited = new Set();
+        const stack = [0];
+        const order = [];
+
+        steps.push({ visited: new Set(), order: [], stack: [0], cur: -1, msg: '<b>Initial:</b> Root node (1) added to stack.' });
+
+        while (stack.length) {
+            const id = stack.pop();
+            visited.add(id);
+            order.push(id);
+            const ch = TREE.children[id];
+            
+            let msg = `Visited <b>node ${TREE.nodes[id].val}</b>.`;
+            if (ch.length) msg += ` Pushing children to stack: ${[...ch].reverse().map(c=>TREE.nodes[c].val).join(', ')}.`;
+            
+            steps.push({ visited: new Set(visited), order: [...order], stack: [...stack], cur: id, msg });
+
+            for (let i = ch.length - 1; i >= 0; i--) {
+                if (!visited.has(ch[i])) stack.push(ch[i]);
+            }
+        }
+        steps.push({ visited: new Set(visited), order: [...order], stack: [], cur: -1, msg: '<b>Traversal Complete.</b> All nodes visited.' });
+        return steps;
+    }
+
+    let dfSteps = buildSteps();
+    let curStep = 0;
+    const canvas = document.getElementById('treeCanvas');
+    const ctx = canvas.getContext('2d');
+    const DPR = window.devicePixelRatio || 1;
+
+    function draw() {
+        const W = canvas.offsetWidth, H = canvas.offsetHeight;
+        canvas.width = W * DPR; canvas.height = H * DPR;
+        ctx.scale(DPR, DPR);
+        ctx.clearRect(0, 0, W, H);
+
+        const s = dfSteps[curStep];
+        const R = 28; // Larger nodes
+
+        // Draw edges
+        ctx.strokeStyle = '#3e3e42'; ctx.lineWidth = 2;
+        TREE.edges.forEach(([a, b]) => {
+            ctx.beginPath();
+            ctx.moveTo(TREE.nodes[a].x * W, TREE.nodes[a].y * H);
+            ctx.lineTo(TREE.nodes[b].x * W, TREE.nodes[b].y * H);
+            ctx.stroke();
+        });
+
+        // Draw nodes
+        TREE.nodes.forEach(node => {
+            const px = node.x * W, py = node.y * H;
+            const isVisited = s.visited.has(node.id);
+            const isActive = s.cur === node.id;
+            const inStack = s.stack.includes(node.id);
+
+            // Node Circle
+            ctx.beginPath(); ctx.arc(px, py, R, 0, Math.PI*2);
+            if (isActive) {
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 4;
+            } else if (isVisited) {
+                ctx.fillStyle = '#534ab7';
+                ctx.strokeStyle = '#7f77dd';
+                ctx.lineWidth = 2;
+            } else {
+                ctx.fillStyle = '#2d2d30';
+                ctx.strokeStyle = '#3e3e42';
+                ctx.lineWidth = 2;
+            }
+            ctx.fill(); ctx.stroke();
+
+            // Stack Highlight
+            if (inStack && !isActive && !isVisited) {
+                ctx.beginPath(); ctx.arc(px, py, R + 6, 0, Math.PI*2);
+                ctx.strokeStyle = '#7f77dd'; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+            }
+
+            // Text
+            ctx.fillStyle = isActive ? '#141416' : '#ffffff';
+            ctx.font = 'bold 16px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(node.val, px, py);
+        });
+    }
+
+    function renderDOM() {
+        const s = dfSteps[curStep];
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `STEP ${curStep} / ${dfSteps.length - 1}`;
+        
+        const stackRow = document.getElementById('stackRow');
+        stackRow.innerHTML = s.stack.map((id, i) => 
+            `<div class="node-pill ${i === s.stack.length-1 ? 'active' : ''}">${TREE.nodes[id].val}</div>`
+        ).join('') || '<span style="color:var(--text-secondary)">Empty</span>';
+
+        const orderRow = document.getElementById('orderRow');
+        orderRow.innerHTML = s.order.map(id => `<div class="node-pill visited">${TREE.nodes[id].val}</div>`).join('');
+    }
+
+    function step(dir) {
+        if (curStep + dir >= 0 && curStep + dir < dfSteps.length) {
+            curStep += dir;
+            draw(); renderDOM();
+            Prism.highlightAll();
+        }
+    }
+
+    function resetAll() { curStep = 0; draw(); renderDOM(); }
+    function switchTab(btn, id) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+    }
+
+    window.addEventListener('resize', draw);
+    resetAll();
+</script>
+</body>
+</html>
