@@ -2,52 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LIS Lab | AlgoView</title>
+    <title>LIS Lab | Precise Alignment</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
             --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
             --accent: #7f77dd; --border: #313136; --orange: #e67e22; --green: #1d9e75;
+            --cell-size: 50px; --gap: 10px;
         }
         body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .container { max-width: 950px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; }
         
         .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); margin-bottom: 24px; }
-        .header { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; flex-grow: 1; outline: none; }
-        .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px; min-height: 50px; margin-bottom: 30px; font-size: 14px; }
-
-        /* Unified Layout Matrix + Vertical DP */
-        .workspace { display: flex; justify-content: center; gap: 20px; align-items: flex-start; }
-        .grid-matrix { display: block; }
-        .grid-row { display: grid; grid-template-columns: 50px repeat(auto-fill, 50px); gap: 10px; margin-bottom: 10px; }
+        .header { display: flex; gap: 10px; margin-bottom: 25px; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; flex-grow: 1; outline: none; font-family: monospace; }
         
-        .cell { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; transition: 0.2s; color: var(--text-secondary); }
+        .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 18px; border-radius: 4px; min-height: 40px; margin-bottom: 30px; font-size: 14px; color: var(--text-main); }
+
+        /* Perfect Alignment Workspace */
+        .workspace { display: flex; justify-content: center; gap: 40px; }
+        .grid-container { display: flex; flex-direction: column; gap: var(--gap); }
+        .grid-row { display: flex; gap: var(--gap); }
+        
+        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; transition: 0.2s; color: var(--text-secondary); box-sizing: border-box; }
         .cell.empty { background: transparent; border: none; }
-        .label { color: var(--text-secondary); font-weight: bold; background: transparent; border: none; }
+        .cell.label { color: var(--text-secondary); font-weight: bold; background: transparent; border: none; }
 
         /* Highlights */
-        .active-white { border: 2px solid #fff !important; color: #fff !important; z-index: 10; }
-        .match { background: #085041 !important; border-color: var(--green) !important; color: #fff; }
-        .no-match { background: #3d1c1c !important; opacity: 0.6; }
+        .active-white { border: 2px solid #fff !important; color: #fff !important; transform: scale(1.05); z-index: 5; }
+        .match { background: #085041 !important; border-color: var(--green) !important; color: #fff !important; }
+        .no-match { background: #3d1c1c !important; opacity: 0.5; }
         
-        /* Vertical DP column */
-        .dp-column { display: flex; flex-direction: column; gap: 10px; padding-top: 60px; } 
-        .dp-cell { background: var(--bg-input); font-weight: bold; color: var(--text-main); position: relative; }
-        .dp-active { border: 2px solid var(--accent) !important; box-shadow: 0 0 15px rgba(127, 119, 221, 0.3); color: var(--accent) !important; }
-        .dp-header { font-size: 10px; color: var(--accent); text-align: center; margin-bottom: 5px; font-weight: 800; }
+        /* Vertical DP */
+        .dp-column { display: flex; flex-direction: column; gap: var(--gap); }
+        .dp-spacer { height: calc(var(--cell-size) + var(--gap)); position: relative; } /* Space for header row */
+        .dp-cell { background: var(--bg-input); font-weight: bold; color: var(--text-main); }
+        .dp-writing { border: 2px solid var(--accent) !important; color: var(--accent) !important; box-shadow: 0 0 15px rgba(127,119,221,0.2); }
+        .dp-title { position: absolute; top: 0; width: 100%; text-align: center; font-size: 10px; color: var(--accent); font-weight: 800; letter-spacing: 1px; }
 
-        /* Tabs (Styles from your image_1e3659.png) */
+        /* Lab Tabs */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 5px; gap: 5px; align-items: center; }
-        .tab-btn { background: none; border: none; padding: 10px 20px; color: var(--text-secondary); font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; border-radius: 8px; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 5px; }
+        .tab-btn { background: none; border: none; padding: 12px 20px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; text-transform: uppercase; }
         .tab-btn.active { color: var(--accent); background: var(--bg-input); }
-        .lang-group { margin-left: auto; display: flex; gap: 5px; padding-right: 10px; }
-        .l-btn { background: none; border: 1px solid var(--border); color: var(--text-secondary); font-size: 10px; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
 
         .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
-        button.main-btn { padding: 10px 20px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
+        button.main-btn { padding: 12px 24px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer;}
     </style>
 </head>
@@ -60,10 +63,11 @@
             <button class="main-btn" onclick="init()">Apply</button>
         </div>
 
-        <div id="info" class="info-box">Press "Next Step" to observe how <b>i</b> row updates <b>DP[i]</b>.</div>
+        <div id="info" class="info-box">Press "Next Step" to begin.</div>
 
         <div class="workspace">
-            <div id="matrix-container" class="grid-matrix"></div>
+            <div id="matrix-container" class="grid-container"></div>
+            
             <div id="dp-container" class="dp-column"></div>
         </div>
 
@@ -77,24 +81,22 @@
 
     <div class="lab-info">
         <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab(this, 'theory')">THEORY</button>
-            <button class="tab-btn" onclick="switchTab(this, 'python')">PYTHON</button>
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
-            <div class="lang-group">
-                <button class="l-btn">EN</button><button class="l-btn">DE</button><button class="l-btn">RU</button>
-            </div>
         </div>
         <div id="theory" class="tab-content active">
             <h3 style="margin-top:0">Longest Increasing Subsequence</h3>
-            <p>Each row <b>i</b> represents the search for the longest subsequence ending at that element. We look back at <b>DP[j]</b> values to find the maximum possible length to extend.</p>
+            <p>We process each element <b>i</b> and compare it with all previous elements <b>j</b>. If <code>nums[i] > nums[j]</code>, we can potentially increase the LIS ending at <b>i</b>.</p>
+            <p><b>Logic:</b> <code>DP[i] = max(DP[i], DP[j] + 1)</code></p>
         </div>
         <div id="python" class="tab-content"><pre><code class="language-python">for i in range(len(nums)):
     for j in range(i):
         if nums[i] > nums[j]:
             dp[i] = max(dp[i], dp[j] + 1)</code></pre></div>
-        <div id="cpp" class="tab-content"><pre><code class="language-cpp">for (int i = 0; i < n; i++) {
-    for (int j = 0; j < i; j++) {
-        if (nums[i] > nums[j]) dp[i] = max(dp[i], dp[j] + 1);
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp">for(int i=0; i<n; i++) {
+    for(int j=0; j<i; j++) {
+        if(nums[i] > nums[j]) dp[i] = max(dp[i], dp[j]+1);
     }
 }</code></pre></div>
     </div>
@@ -113,14 +115,14 @@
 
     function init() {
         nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = [{ i: 0, j: 0, dp: Array(nums.length).fill(1), msg: "Initial: DP[0] is set to 1." }];
+        steps = [{ i: 0, j: 0, dp: Array(nums.length).fill(1), isMatch: true, msg: "Base Case: Row 0 initialized with LIS length 1." }];
         let dp = Array(nums.length).fill(1);
 
         for (let i = 1; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
                 let isMatch = nums[i] > nums[j];
                 if (isMatch) dp[i] = Math.max(dp[i], dp[j] + 1);
-                steps.push({ i, j, dp: [...dp], isMatch, msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Extend DP[${j}] → New DP[${i}] = ${dp[i]}` : `${nums[i]} ≤ ${nums[j]}: Skip.` });
+                steps.push({ i, j, dp: [...dp], isMatch, msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Match found! Updating DP[${i}] using DP[${j}].` : `${nums[i]} ≤ ${nums[j]}: No match.` });
             }
         }
         curStep = 0; render();
@@ -131,7 +133,7 @@
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('stepCounter').textContent = `Step ${curStep} / ${steps.length - 1}`;
 
-        // Matrix
+        // Render Matrix (Strict Flex Rows)
         let mHtml = `<div class="grid-row"><div class="cell label">i \\ j</div>`;
         nums.forEach((n, idx) => mHtml += `<div class="cell label ${idx === s.j ? 'active-white' : ''}">${n}</div>`);
         mHtml += `</div>`;
@@ -154,12 +156,12 @@
         }
         document.getElementById('matrix-container').innerHTML = mHtml;
 
-        // Vertical DP
-        let dpHtml = '<div class="dp-header">DP[i]</div>';
+        // Render Vertical DP
+        let dpHtml = '<div class="dp-spacer"><div class="dp-title">DP ARRAY</div></div>';
         s.dp.forEach((v, idx) => {
             let cls = 'cell dp-cell';
-            if (idx === s.i) cls += ' dp-active'; // Destination
-            if (idx === s.j) cls += ' active-white'; // Source
+            if (idx === s.i) cls += ' dp-writing';
+            if (idx === s.j) cls += ' active-white';
             dpHtml += `<div class="${cls}">${v}</div>`;
         });
         document.getElementById('dp-container').innerHTML = dpHtml;
