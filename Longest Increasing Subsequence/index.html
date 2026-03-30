@@ -2,48 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LIS Lab | Precise Alignment</title>
+    <title>LIS Lab | Final Alignment</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
             --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6;
-            --accent: #7f77dd; --border: #313136; --orange: #e67e22; --green: #1d9e75;
-            --cell-size: 50px; --gap: 10px;
+            --accent: #7f77dd; --border: #313136; --green: #1d9e75;
+            --cell-size: 50px; --gap: 12px;
         }
         body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { max-width: 950px; margin: 0 auto; }
         
         .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); margin-bottom: 24px; }
-        .header { display: flex; gap: 10px; margin-bottom: 25px; }
-        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; flex-grow: 1; outline: none; font-family: monospace; }
+        .header { display: flex; gap: 10px; margin-bottom: 30px; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; flex-grow: 1; outline: none; }
         
-        .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 18px; border-radius: 4px; min-height: 40px; margin-bottom: 30px; font-size: 14px; color: var(--text-main); }
+        .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 18px; border-radius: 4px; min-height: 40px; margin-bottom: 40px; font-size: 14px; }
 
-        /* Perfect Alignment Workspace */
-        .workspace { display: flex; justify-content: center; gap: 40px; }
-        .grid-container { display: flex; flex-direction: column; gap: var(--gap); }
-        .grid-row { display: flex; gap: var(--gap); }
+        /* Row-based Layout for perfect sync */
+        .workspace { display: flex; justify-content: center; gap: 30px; }
+        .main-grid { display: flex; flex-direction: column; gap: var(--gap); }
+        .row-container { display: flex; gap: var(--gap); align-items: center; }
         
-        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; transition: 0.2s; color: var(--text-secondary); box-sizing: border-box; }
+        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; transition: 0.15s; color: var(--text-secondary); box-sizing: border-box; }
         .cell.empty { background: transparent; border: none; }
         .cell.label { color: var(--text-secondary); font-weight: bold; background: transparent; border: none; }
 
         /* Highlights */
-        .active-white { border: 2px solid #fff !important; color: #fff !important; transform: scale(1.05); z-index: 5; }
+        .active-white { border: 2px solid #fff !important; color: #fff !important; transform: scale(1.05); z-index: 10; }
         .match { background: #085041 !important; border-color: var(--green) !important; color: #fff !important; }
         .no-match { background: #3d1c1c !important; opacity: 0.5; }
         
-        /* Vertical DP */
-        .dp-column { display: flex; flex-direction: column; gap: var(--gap); }
-        .dp-spacer { height: calc(var(--cell-size) + var(--gap)); position: relative; } /* Space for header row */
+        /* DP Cell specific */
         .dp-cell { background: var(--bg-input); font-weight: bold; color: var(--text-main); }
-        .dp-writing { border: 2px solid var(--accent) !important; color: var(--accent) !important; box-shadow: 0 0 15px rgba(127,119,221,0.2); }
-        .dp-title { position: absolute; top: 0; width: 100%; text-align: center; font-size: 10px; color: var(--accent); font-weight: 800; letter-spacing: 1px; }
+        .dp-target { border: 2px solid var(--accent) !important; color: var(--accent) !important; box-shadow: 0 0 15px rgba(127,119,221,0.3); }
+        .dp-title { color: var(--accent); font-size: 11px; font-weight: 800; text-align: center; width: var(--cell-size); }
 
-        /* Lab Tabs */
+        /* Tabs */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 5px; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 6px; }
         .tab-btn { background: none; border: none; padding: 12px 20px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; text-transform: uppercase; }
         .tab-btn.active { color: var(--accent); background: var(--bg-input); }
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
@@ -51,7 +49,7 @@
 
         .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
         button.main-btn { padding: 12px 24px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
-        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer;}
+        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; cursor: pointer;}
     </style>
 </head>
 <body>
@@ -63,12 +61,11 @@
             <button class="main-btn" onclick="init()">Apply</button>
         </div>
 
-        <div id="info" class="info-box">Press "Next Step" to begin.</div>
+        <div id="info" class="info-box">Longest Increasing Subsequence visualizer initialized.</div>
 
         <div class="workspace">
-            <div id="matrix-container" class="grid-container"></div>
-            
-            <div id="dp-container" class="dp-column"></div>
+            <div id="visual-area" class="main-grid">
+                </div>
         </div>
 
         <div class="controls">
@@ -86,19 +83,13 @@
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
         </div>
         <div id="theory" class="tab-content active">
-            <h3 style="margin-top:0">Longest Increasing Subsequence</h3>
-            <p>We process each element <b>i</b> and compare it with all previous elements <b>j</b>. If <code>nums[i] > nums[j]</code>, we can potentially increase the LIS ending at <b>i</b>.</p>
-            <p><b>Logic:</b> <code>DP[i] = max(DP[i], DP[j] + 1)</code></p>
+            <h3 style="margin-top:0">Parallel DP Calculation</h3>
+            <p>Observe how each <b>row i</b> scans previous columns <b>j</b>. The final result for the entire row is stored in the <b>DP Array</b> cell directly to the right.</p>
         </div>
         <div id="python" class="tab-content"><pre><code class="language-python">for i in range(len(nums)):
     for j in range(i):
         if nums[i] > nums[j]:
             dp[i] = max(dp[i], dp[j] + 1)</code></pre></div>
-        <div id="cpp" class="tab-content"><pre><code class="language-cpp">for(int i=0; i<n; i++) {
-    for(int j=0; j<i; j++) {
-        if(nums[i] > nums[j]) dp[i] = max(dp[i], dp[j]+1);
-    }
-}</code></pre></div>
     </div>
 </div>
 
@@ -115,14 +106,14 @@
 
     function init() {
         nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = [{ i: 0, j: 0, dp: Array(nums.length).fill(1), isMatch: true, msg: "Base Case: Row 0 initialized with LIS length 1." }];
+        steps = [{ i: 0, j: 0, dp: Array(nums.length).fill(1), isMatch: true, msg: "Start: Row 0 represents the first element." }];
         let dp = Array(nums.length).fill(1);
 
         for (let i = 1; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
                 let isMatch = nums[i] > nums[j];
                 if (isMatch) dp[i] = Math.max(dp[i], dp[j] + 1);
-                steps.push({ i, j, dp: [...dp], isMatch, msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Match found! Updating DP[${i}] using DP[${j}].` : `${nums[i]} ≤ ${nums[j]}: No match.` });
+                steps.push({ i, j, dp: [...dp], isMatch, msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Match! Updating DP[${i}] using DP[${j}].` : `${nums[i]} ≤ ${nums[j]}: No increase.` });
             }
         }
         curStep = 0; render();
@@ -130,16 +121,24 @@
 
     function render() {
         const s = steps[curStep];
+        const container = document.getElementById('visual-area');
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('stepCounter').textContent = `Step ${curStep} / ${steps.length - 1}`;
 
-        // Render Matrix (Strict Flex Rows)
-        let mHtml = `<div class="grid-row"><div class="cell label">i \\ j</div>`;
-        nums.forEach((n, idx) => mHtml += `<div class="cell label ${idx === s.j ? 'active-white' : ''}">${n}</div>`);
-        mHtml += `</div>`;
+        let html = '';
+        
+        // Header Row
+        html += `<div class="row-container"><div class="cell label">i \\ j</div>`;
+        nums.forEach((n, idx) => html += `<div class="cell label ${idx === s.j ? 'active-white' : ''}">${n}</div>`);
+        html += `<div style="width: 40px;"></div><div class="dp-title">DP</div></div>`;
 
+        // Matrix + DP Rows
         for (let i = 0; i < nums.length; i++) {
-            mHtml += `<div class="grid-row"><div class="cell label ${i === s.i ? 'active-white' : ''}">${nums[i]}</div>`;
+            html += `<div class="row-container">`;
+            // Row Label
+            html += `<div class="cell label ${i === s.i ? 'active-white' : ''}">${nums[i]}</div>`;
+            
+            // Matrix Cells
             for (let j = 0; j < nums.length; j++) {
                 let cls = 'cell', content = '';
                 if (j <= i) {
@@ -147,24 +146,23 @@
                     if (stIdx !== -1 && stIdx <= curStep) {
                         content = (i === j) ? '1' : steps[stIdx].dp[i];
                         if (i !== j) cls += steps[stIdx].isMatch ? ' match' : ' no-match';
-                    } else { content = '1'; }
+                    } else content = '1';
                     if (i === s.i && j === s.j) cls += ' active-white';
                 } else cls += ' empty';
-                mHtml += `<div class="${cls}">${content}</div>`;
+                html += `<div class="${cls}">${content}</div>`;
             }
-            mHtml += `</div>`;
-        }
-        document.getElementById('matrix-container').innerHTML = mHtml;
 
-        // Render Vertical DP
-        let dpHtml = '<div class="dp-spacer"><div class="dp-title">DP ARRAY</div></div>';
-        s.dp.forEach((v, idx) => {
-            let cls = 'cell dp-cell';
-            if (idx === s.i) cls += ' dp-writing';
-            if (idx === s.j) cls += ' active-white';
-            dpHtml += `<div class="${cls}">${v}</div>`;
-        });
-        document.getElementById('dp-container').innerHTML = dpHtml;
+            // Spacer
+            html += `<div style="width: 40px;"></div>`;
+
+            // DP Cell (Parallel to row)
+            let dpCls = 'cell dp-cell';
+            if (i === s.i) dpCls += ' dp-target';
+            if (i === s.j) dpCls += ' active-white';
+            html += `<div class="${dpCls}">${s.dp[i]}</div></div>`;
+        }
+        
+        container.innerHTML = html;
     }
 
     function step(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
