@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LIS Final Lab | AlgoView</title>
+    <title>LIS Lab | Final Alignment</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
             --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
@@ -11,39 +12,52 @@
             --cell-size: 50px; --gap: 12px;
         }
         body { margin: 0; padding: 20px; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .container { max-width: 900px; margin: 0 auto; }
-        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); }
+        .container { max-width: 950px; margin: 0 auto; }
         
-        .workspace { display: flex; justify-content: center; gap: 30px; margin-top: 20px; }
-        .main-grid { display: flex; flex-direction: column; gap: var(--gap); }
-        .row-container { display: flex; gap: var(--gap); align-items: center; min-height: var(--cell-size); }
+        .visualizer-card { background: var(--bg-card); border-radius: 20px; padding: 30px; border: 1px solid var(--border); margin-bottom: 24px; }
+        .header { display: flex; gap: 10px; margin-bottom: 30px; }
+        input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; flex-grow: 1; outline: none; }
         
-        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 12px; border: 1px solid var(--border); font-size: 14px; transition: 0.2s; color: var(--text-secondary); box-sizing: border-box; }
-        .label { color: var(--text-secondary); font-weight: bold; background: transparent; border: none; }
+        .info-box { background: rgba(255,255,255,0.03); border-left: 4px solid var(--accent); padding: 18px; border-radius: 4px; min-height: 40px; margin-bottom: 40px; font-size: 14px; }
 
-        /* Состояния ячеек */
+        .workspace { display: flex; justify-content: center; gap: 30px; }
+        .main-grid { display: flex; flex-direction: column; gap: var(--gap); }
+        .row-container { display: flex; gap: var(--gap); align-items: center; }
+        
+        .cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; background: #26262a; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; transition: 0.15s; color: var(--text-secondary); box-sizing: border-box; }
+        .cell.empty { background: transparent; border: none; }
+        .cell.label { color: var(--text-secondary); font-weight: bold; background: transparent; border: none; }
+
         .active-white { border: 2px solid #fff !important; color: #fff !important; transform: scale(1.05); z-index: 10; }
         .match { background: #085041 !important; border-color: var(--green) !important; color: #fff !important; }
         .no-match { background: #3d1c1c !important; opacity: 0.5; }
         
-        /* DP колонки */
         .dp-cell { background: var(--bg-input); font-weight: bold; color: var(--text-main); }
         .dp-target { border: 2px solid var(--accent) !important; color: var(--accent) !important; box-shadow: 0 0 15px rgba(127,119,221,0.3); }
-        .dp-title { color: var(--accent); font-size: 11px; font-weight: 800; text-align: center; margin-bottom: 5px; }
+        .dp-title { color: var(--accent); font-size: 11px; font-weight: 800; text-align: center; width: var(--cell-size); }
+
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); padding: 6px; }
+        .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 8px; text-transform: uppercase; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-input); }
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content.active { display: block; }
 
         .controls { display: flex; gap: 10px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
-        button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
-        .main-btn { background: var(--accent); color: white; }
-        .secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button.main-btn { padding: 12px 24px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
+        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); padding: 12px 20px; border-radius: 8px; cursor: pointer;}
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="visualizer-card">
-        <div id="info" style="margin-bottom: 20px; color: var(--text-secondary);">
-            Каждая строка <b>i</b> вычисляет значение <b>DP[i]</b>, сравнивая текущее число с предыдущими.
+        <div class="header">
+            <input id="numsInput" type="text" value="10, 22, 9, 33, 21, 50">
+            <button class="main-btn" onclick="init()">Apply</button>
         </div>
+
+        <div id="info" class="info-box">Longest Increasing Subsequence visualizer initialized.</div>
 
         <div class="workspace">
             <div id="visual-area" class="main-grid"></div>
@@ -51,29 +65,57 @@
 
         <div class="controls">
             <button class="secondary" onclick="step(-1)">← Back</button>
-            <button class="main-btn" onclick="step(1)">Next Step →</button>
+            <button class="main-btn" id="nextBtn" onclick="step(1)">Next Step →</button>
             <button class="secondary" onclick="init()">Reset</button>
+            <div id="stepCounter" style="margin-left: auto; color: var(--text-secondary); font-size: 12px; align-self: center;"></div>
         </div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
+        </div>
+        <div id="theory" class="tab-content active">
+            <h3 style="margin-top:0">Parallel DP Calculation</h3>
+            <p>Observe how each <b>row i</b> scans previous columns <b>j < i</b>. The final result for the entire row is stored in the <b>DP Array</b> cell directly to the right.</p>
+        </div>
+        <div id="python" class="tab-content"><pre><code class="language-python">for i in range(len(nums)):
+    for j in range(i):
+        if nums[i] > nums[j]:
+            dp[i] = max(dp[i], dp[j] + 1)</code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code class="language-cpp">for (int i = 1; i < n; i++) {
+    for (int j = 0; j < i; j++) {
+        if (nums[i] > nums[j]) {
+            dp[i] = max(dp[i], dp[j] + 1);
+        }
+    }
+}</code></pre></div>
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+
 <script>
-    let nums = [10, 22, 9, 33, 21, 50];
-    let steps = [], curStep = 0;
+    let nums = [], steps = [], curStep = 0;
+
+    function switchTab(btn, id) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active'); document.getElementById(id).classList.add('active');
+    }
 
     function init() {
-        steps = [{ i: 0, j: 0, dp: [1, 1, 1, 1, 1, 1], msg: "Начинаем с первого элемента. DP[0] = 1." }];
-        let dp = [1, 1, 1, 1, 1, 1];
+        nums = document.getElementById('numsInput').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        steps = [{ i: 0, j: -1, dp: Array(nums.length).fill(1), isMatch: false, msg: "Start: Row 0 has no elements to compare with (j < 0)." }];
+        let dp = Array(nums.length).fill(1);
 
         for (let i = 1; i < nums.length; i++) {
-            for (let j = 0; j <= i; j++) {
-                if (j < i) {
-                    let isMatch = nums[i] > nums[j];
-                    if (isMatch) dp[i] = Math.max(dp[i], dp[j] + 1);
-                    steps.push({ i, j, dp: [...dp], isMatch, msg: isMatch ? `Обновляем DP[${i}] через DP[${j}]` : "Пропускаем..." });
-                } else {
-                    steps.push({ i, j, dp: [...dp], isMatch: null, msg: `Завершили строку для ${nums[i]}.` });
-                }
+            for (let j = 0; j < i; j++) {
+                let isMatch = nums[i] > nums[j];
+                if (isMatch) dp[i] = Math.max(dp[i], dp[j] + 1);
+                steps.push({ i, j, dp: [...dp], isMatch, msg: isMatch ? `<b>${nums[i]} > ${nums[j]}</b>: Match! Updating DP[${i}] using DP[${j}].` : `${nums[i]} ≤ ${nums[j]}: No increase.` });
             }
         }
         curStep = 0; render();
@@ -82,40 +124,47 @@
     function render() {
         const s = steps[curStep];
         const container = document.getElementById('visual-area');
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('stepCounter').textContent = `Step ${curStep} / ${steps.length - 1}`;
+
         let html = '';
         
-        // Header
+        // Header Row
         html += `<div class="row-container"><div class="cell label">i \\ j</div>`;
         nums.forEach((n, idx) => html += `<div class="cell label ${idx === s.j ? 'active-white' : ''}">${n}</div>`);
         html += `<div style="width: 40px;"></div><div class="dp-title">DP</div></div>`;
 
-        // Rows
+        // Matrix + DP Rows
         for (let i = 0; i < nums.length; i++) {
             html += `<div class="row-container">`;
             html += `<div class="cell label ${i === s.i ? 'active-white' : ''}">${nums[i]}</div>`;
             
             for (let j = 0; j < nums.length; j++) {
-                if (j <= i) {
-                    let cls = 'cell', val = '1';
+                let cls = 'cell', content = '';
+                // Изменение: j < i (строгий треугольник без диагонали)
+                if (j < i) {
                     const stIdx = steps.findIndex(x => x.i === i && x.j === j);
                     if (stIdx !== -1 && stIdx <= curStep) {
-                        val = steps[stIdx].dp[i];
-                        if (i !== j) cls += steps[stIdx].isMatch ? ' match' : ' no-match';
-                    }
+                        content = steps[stIdx].dp[i];
+                        cls += steps[stIdx].isMatch ? ' match' : ' no-match';
+                    } else content = '1';
                     if (i === s.i && j === s.j) cls += ' active-white';
-                    html += `<div class="${cls}">${val}</div>`;
                 } else {
-                    html += `<div style="width: var(--cell-size);"></div>`; // Просто пустота вместо ячеек
+                    cls += ' empty';
                 }
+                html += `<div class="${cls}">${content}</div>`;
             }
 
             html += `<div style="width: 40px;"></div>`;
+
             let dpCls = 'cell dp-cell';
             if (i === s.i) dpCls += ' dp-target';
-            if (i === s.j && s.i !== s.j) dpCls += ' active-white';
+            if (i === s.j) dpCls += ' active-white';
             html += `<div class="${dpCls}">${s.dp[i]}</div></div>`;
         }
+        
         container.innerHTML = html;
+        Prism.highlightAll();
     }
 
     function step(dir) { if (curStep + dir >= 0 && curStep + dir < steps.length) { curStep += dir; render(); } }
