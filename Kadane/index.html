@@ -191,7 +191,7 @@
         curIdx = 0; render();
     }
 
-    function initV1() {
+    function initV2() {
         let dp = Array(A.length).fill(null), curSum = A[0], gMax = A[0], start = 0, lastDrop = -1;
         dp[0] = A[0];
         steps.push({ i: 0, dp: [...dp], res: gMax, chain: [0, 0], drop: -1, line: 2 });
@@ -206,7 +206,7 @@
         steps.push({ i: -1, dp: [...dp], res: gMax, chain: [start, A.length-1], drop: lastDrop, line: 7 });
     }
 
-    function initV2() {
+    function initV1() {
         let global_max = 0, local_min = 0, res = -Infinity;
         let dp = Array(A.length).fill(null);
         let minIdx = -1, bestStart = 0, bestEnd = 0;
