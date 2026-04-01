@@ -20,6 +20,7 @@
             --pivot-color: #f1c40f;
             --suffix-bg: rgba(127, 119, 221, 0.15);
             --match-color: #1d9e75;
+            --line-hl: rgba(127, 119, 221, 0.25);
         }
 
         * { box-sizing: border-box; }
@@ -31,7 +32,6 @@
         
         .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
         
-        /* VISUALIZER SECTION */
         .visualizer-card {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 20px; padding: 30px; margin-bottom: 30px;
@@ -58,7 +58,6 @@
         }
         .info-box b { color: var(--accent); }
 
-        /* VIZ AREA - Восстановление оригинальной логики ячеек */
         .viz-area { position: relative; margin: 60px 0; min-height: 80px; }
         .array-row { display: flex; justify-content: center; gap: 10px; }
 
@@ -83,7 +82,6 @@
         .cell.swapped { background: var(--match-color); color: white; border-color: white; }
         .cell.active { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
-        /* LAB TABS */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
@@ -93,7 +91,11 @@
         .sub-btn.active { border-color: var(--accent); color: var(--accent); }
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
-        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; }
+
+        /* Кодовые обертки для подсветки строк */
+        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; position: relative; }
+        .code-line { display: block; width: 100%; }
+        .code-line.active { background: var(--line-hl); box-shadow: inset 3px 0 0 var(--accent); }
     </style>
 </head>
 <body>
@@ -143,16 +145,22 @@
             RU: "<h3>Алгоритм Нараяны</h3><p>Алгоритм нахождения следующей перестановки в лексикографическом порядке. Состоит из 4 шагов: поиск индекса <b>i</b>, поиск индекса <b>j</b>, обмен значений и реверс хвоста последовательности.</p>"
         },
         python: {
-            v1: "def next_permutation(nums):\n    i = len(nums) - 2\n    while i >= 0 and nums[i] >= nums[i+1]:\n        i -= 1\n    if i >= 0:\n        j = len(nums) - 1\n        while nums[j] <= nums[i]:\n            j -= 1\n        nums[i], nums[j] = nums[j], nums[i]\n    nums[i+1:] = reversed(nums[i+1:])",
-            v2: "# Implementation for yielding all permutations\ndef permutations(arr):\n    arr.sort()\n    yield list(arr)\n    while True:\n        # ... Narayana's logic ...\n        if not success: break\n        yield list(arr)"
+            v1: "def my_next_permutation(arr):\n    n = len(arr)\n    if n <= 1: return False\n    i = n - 1\n    while True:\n        i1 = i\n        i -= 1\n        if arr[i] < arr[i1]:\n            j = n\n            while not (arr[i] < arr[j-1]):\n                j -= 1\n            arr[i], arr[j-1] = arr[j-1], arr[i]\n            arr[i1:] = reversed(arr[i1:])\n            return True\n        if i == 0:\n            arr.reverse()\n            return False",
+            v2: "def next_permutation(nums):\n    i = len(nums) - 2\n    while i >= 0 and nums[i] >= nums[i+1]:\n        i -= 1\n    if i >= 0:\n        j = len(nums) - 1\n        while nums[j] <= nums[i]:\n            j -= 1\n        nums[i], nums[j] = nums[j], nums[i]\n    nums[i+1:] = reversed(nums[i+1:])"
         },
         cpp: {
-            v1: "void nextPermutation(vector<int>& nums) {\n    std::next_permutation(nums.begin(), nums.end());\n}",
-            v2: "bool my_next_permutation(BidirectionalIt first, BidirectionalIt last) {\n    if (first == last) return false;\n    auto i = last; \n    if (first == --i) return false;\n    while (true) {\n        auto i1 = i; \n        if (*--i < *i1) {\n            auto j = last;\n            while (!(*i < *--j));\n            std::iter_swap(i, j);\n            std::reverse(i1, last);\n            return true;\n        }\n        if (i == first) {\n            std::reverse(first, last);\n            return false;\n        }\n    }\n}"
+            v1: "bool my_next_permutation(BidirectionalIt first, BidirectionalIt last) {\n    if (first == last) return false;\n    auto i = last; \n    if (first == --i) return false;\n    while (true) {\n        auto i1 = i; \n        if (*--i < *i1) {\n            auto j = last;\n            while (!(*i < *--j));\n            std::iter_swap(i, j);\n            std::reverse(i1, last);\n            return true;\n        }\n        if (i == first) {\n            std::reverse(first, last);\n            return false;\n        }\n    }\n}",
+            v2: "void nextPermutation(vector<int>& nums) {\n    std::next_permutation(nums.begin(), nums.end());\n}"
         }
     };
 
-    let steps = [], cur = 0, lastInitial = "", currentMainTab = 'theory';
+    let steps = [], cur = 0, lastInitial = "", currentMainTab = 'theory', currentVer = 'v1';
+
+    function wrapLines(code) {
+        return code.split('\n').map((line, idx) => 
+            `<span class="code-line" data-line="${idx + 1}">${line}</span>`
+        ).join('\n');
+    }
 
     function switchMainTab(btn, tabId) {
         currentMainTab = tabId;
@@ -165,26 +173,50 @@
     function renderContextControls() {
         const panel = document.getElementById('context-panel'); panel.innerHTML = '';
         const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
-        list.forEach((item, idx) => {
+        list.forEach((item) => {
             const b = document.createElement('button');
-            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.className = 'sub-btn' + (item === (currentMainTab === 'theory' ? 'EN' : currentVer) ? ' active' : '');
             b.textContent = item;
             b.onclick = () => {
+                if (currentMainTab !== 'theory') currentVer = item;
                 document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
                 b.classList.add('active'); updateContent(item);
             };
             panel.appendChild(b);
         });
-        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
+        updateContent(currentMainTab === 'theory' ? 'EN' : currentVer);
     }
 
     function updateContent(key) {
         const display = document.getElementById(currentMainTab + '-display');
         if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
         else {
-            display.textContent = db[currentMainTab][key];
+            display.innerHTML = wrapLines(db[currentMainTab][key]);
             Prism.highlightElement(display);
+            syncCodeHighlight();
         }
+    }
+
+    function syncCodeHighlight() {
+        if (currentMainTab === 'theory') return;
+        const display = document.getElementById(currentMainTab + '-display');
+        display.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+        
+        const lineMap = {
+            v1: { findI: 8, findJ: 11, swap: 12, rev: 13, end: 14, last: 17 },
+            v2: { findI: 3, findJ: 8, swap: 9, rev: 10, end: 10, last: 3 }
+        };
+
+        const step = steps[cur];
+        let lineNum = 1;
+        if (step.activeIdx !== undefined && step.label === 'i') lineNum = lineMap[currentVer].findI;
+        else if (step.label === 'j') lineNum = lineMap[currentVer].findJ;
+        else if (step.pivotIdx !== undefined && step.matchIdx !== undefined) lineNum = lineMap[currentVer].swap;
+        else if (step.suffixRange) lineNum = lineMap[currentVer].rev;
+        else if (step.isLast) lineNum = lineMap[currentVer].last;
+
+        const target = display.querySelector(`[data-line="${lineNum}"]`);
+        if (target) target.classList.add('active');
     }
 
     function rebuild() {
@@ -207,7 +239,7 @@
         }
 
         if (i === -1) {
-            _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot found.</b> This is the last lexicographical permutation." });
+            _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot found.</b> Reversing sequence." });
             return _steps;
         }
 
@@ -256,6 +288,7 @@
             }
             container.appendChild(cell);
         });
+        syncCodeHighlight();
     }
 
     function go(dir) {
