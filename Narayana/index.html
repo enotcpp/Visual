@@ -2,83 +2,128 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Narayana's Permutation | Manual Highlight</title>
+    <title>Narayana's Permutation | AlgoView Lab</title>
+    
     <style>
         :root {
-            --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
-            --text-main: #e1e1e3; --text-secondary: #9ba1a6; --accent: #7f77dd;
-            --border: #313136; --code-bg: #0d0d0f; --line-hl: rgba(127, 119, 221, 0.15);
-            --pivot-color: #f1c40f; --match-color: #1d9e75;
+            --bg-main: #1a1a1c;
+            --bg-card: #242426;
+            --bg-input: #2d2d30;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --border: #3e3e42;
+            --code-bg: #0d0d0f;
+            --pivot-color: #f1c40f;
+            --suffix-bg: rgba(127, 119, 221, 0.15);
+            --match-color: #1d9e75;
+            --line-hl: rgba(127, 119, 221, 0.25);
         }
 
-        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-
-        .visualizer-section {
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
+        
+        .visualizer-card {
             background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            border-radius: 20px; padding: 30px; margin-bottom: 30px;
         }
+
         .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
-        .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; outline: none; }
-        button { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); cursor: pointer; transition: 0.2s; }
-        button:hover { border-color: var(--accent); }
-        button.primary { background: var(--accent); color: white; border: none; }
-
-        .viz-area { display: flex; justify-content: center; gap: 10px; margin: 60px 0; min-height: 60px; }
-        .cell {
-            width: 55px; height: 55px; background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; position: relative; transition: all 0.3s;
+        .inputs input { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-main); padding: 10px; border-radius: 8px; font-size: 14px; width: 280px;
+            font-family: monospace; outline: none;
         }
-        .cell.pivot { border: 2px solid var(--pivot-color); color: var(--pivot-color); }
-        .cell.swapped { background: var(--match-color); border-color: white; color: white; }
-        .cell.active { border-color: var(--accent); transform: translateY(-5px); }
-        .cell.suffix { background: rgba(127, 119, 221, 0.1); border-style: dashed; }
+        
+        button {
+            padding: 10px 18px; border-radius: 8px; border: none;
+            background: var(--accent); color: white; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s; font-size: 14px;
+        }
+        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
 
-        .ptr { position: absolute; top: -35px; left: 50%; transform: translateX(-50%); font-size: 11px; padding: 2px 6px; border-radius: 4px; color: white; background: var(--accent); }
+        .info-box {
+            background: var(--bg-main); border-left: 4px solid var(--accent);
+            padding: 20px; min-height: 85px; margin-bottom: 40px; font-size: 14px; line-height: 1.6;
+        }
+
+        .viz-area { position: relative; margin: 60px 0; min-height: 80px; }
+        .array-row { display: flex; justify-content: center; gap: 10px; }
+
+        .cell {
+            width: 58px; height: 58px; border-radius: 12px;
+            border: 1px solid var(--border); background: var(--bg-card);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: bold; position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .index-label {
+            position: absolute; top: -40px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent); color: white;
+            padding: 2px 10px; border-radius: 6px;
+            font-size: 14px; font-weight: 800;
+        }
+
+        .cell.pivot { border: 3px solid var(--pivot-color); color: var(--pivot-color); }
+        .cell.suffix-focus { background: var(--suffix-bg); border-color: var(--accent); border-style: dashed; }
+        .cell.swapped { background: var(--match-color); color: white; border-color: white; }
+        .cell.active { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-weight: 700; cursor: pointer; }
+        .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
-
-        .tab-content { display: none; padding: 30px; }
+        
+        .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
-        /* МАНУАЛЬНАЯ РАСКРАСКА КОДА */
-        code { font-family: monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; }
-        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; }
+        /* РУЧНАЯ ПОДСВЕТКА КОДА */
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.2s; }
         .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
         .indent { display: inline-block; width: 20px; }
-        .kw { color: #cc99cd; } .fn { color: #e67e22; } .cm { color: #777; } .num { color: #f8c555; } .type { color: #82aaff; }
+        .kw { color: #cc99cd; } .fn { color: #82aaff; } .cm { color: #676e95; } .num { color: #f8c555; } .op { color: #89ddff; }
     </style>
 </head>
 <body>
 
 <div class="wrap">
-    <div class="visualizer-section">
-        <h1>🔄 Next Permutation</h1>
+    <div class="visualizer-card">
         <div class="inputs">
-            <input id="arr-input" type="text" value="1, 2, 3">
-            <button onclick="rebuild()" class="primary">Apply</button>
+            <input id="in-arr" type="text" value="0, 1, 2, 5, 3, 3, 0">
+            <button onclick="rebuild()">Apply Sequence</button>
         </div>
-        <div id="info" style="height: 20px; color: var(--text-secondary); margin-bottom: 20px;">Ready.</div>
-        <div class="viz-area" id="viz-area"></div>
-        <div class="inputs">
-            <button onclick="go(-1)">← Back</button>
-            <button onclick="go(1)" class="primary">Next Step →</button>
-            <button onclick="resetAll()">Reset</button>
-            <span id="ctr" style="margin-left: auto; font-size: 13px; color: var(--text-secondary);"></span>
+        <div class="info-box" id="info">Click "Next Step" to start.</div>
+        <div class="viz-area"><div class="array-row" id="array-row"></div></div>
+        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+            <button class="secondary" onclick="go(-1)">< Back</button>
+            <button onclick="go(1)">Next Step ></button>
+            <button class="secondary" onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
         </div>
     </div>
 
     <div class="lab-info">
         <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
-            <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
-            <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
         </div>
-        <div id="theory" class="tab-content active"><h3>Narayana's Algorithm</h3><p>Generates the next permutation in lexicographical order.</p></div>
+        <div id="theory" class="tab-content active">
+            <h3>Narayana's Algorithm</h3>
+            <p>1. Find largest <b>i</b> such that <b>a[i] < a[i+1]</b>.</p>
+            <p>2. Find largest <b>j</b> such that <b>a[i] < a[j]</b>.</p>
+            <p>3. Swap <b>a[i]</b> and <b>a[j]</b>.</p>
+            <p>4. Reverse suffix from <b>i+1</b> to end.</p>
+        </div>
         <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
         <div id="cpp" class="tab-content"><pre><code id="cpp-display"></code></pre></div>
     </div>
@@ -86,124 +131,123 @@
 
 <script>
     const db = {
-        python: {
-            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">next_permutation</span>(arr):</span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span>i = <span class="fn">len</span>(arr) - <span class="num">2</span></span>` +
-                `<span class="code-line" data-l="5"><span class="indent"></span><span class="kw">while</span> i >= <span class="num">0</span> <span class="kw">and</span> arr[i] >= arr[i+1]:</span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span>i -= <span class="num">1</span></span>` +
-                `<span class="code-line" data-l="7"><span class="indent"></span><span class="kw">if</span> i >= <span class="num">0</span>:</span>` +
-                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span>j = <span class="fn">len</span>(arr) - <span class="num">1</span></span>` +
-                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="kw">while</span> arr[j] &lt;= arr[i]:</span>` +
-                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span>j -= <span class="num">1</span></span>` +
-                `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span>arr[i], arr[j] = arr[j], arr[i]</span>` +
-                `<span class="code-line" data-l="12"><span class="indent"></span>arr[i+1:] = <span class="fn">reversed</span>(arr[i+1:])</span>`
-        },
-        cpp: {
-            v1: `<span class="code-line" data-l="1"><span class="kw">bool</span> <span class="fn">next_permutation</span>(Iter first, Iter last) {</span>` +
-                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">auto</span> i = last; <span class="kw">if</span> (first == last || first == --i) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">while</span> (<span class="kw">true</span>) {</span>` +
-                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> i1 = i;</span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (*--i &lt; *i1) {</span>` +
-                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> j = last;</span>` +
-                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">while</span> (!(*i &lt; *--j));</span>` +
-                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">iter_swap</span>(i, j);</span>` +
-                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">reverse</span>(i1, last);</span>` +
-                `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">return</span> <span class="kw">true</span>;</span>` +
-                `<span class="code-line" data-l="12"><span class="indent"></span><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="13"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (i == first) { <span class="fn">reverse</span>(first, last); <span class="kw">return</span> <span class="kw">false</span>; }</span>` +
-                `<span class="code-line" data-l="14"><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="15">}</span>`
-        }
+        python: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">next_permutation</span>(arr):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span>n = <span class="fn">len</span>(arr)</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span>i = n - <span class="num">2</span></span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">while</span> i >= <span class="num">0</span> <span class="kw">and</span> arr[i] >= arr[i+1]:</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>i -= <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">if</span> i >= <span class="num">0</span>:</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span>j = n - <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="kw">while</span> arr[j] &lt;= arr[i]:</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span>j -= <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span>arr[i], arr[j] = arr[j], arr[i]</span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span>arr[i+1:] = <span class="fn">reversed</span>(arr[i+1:])</span>`,
+        
+        cpp: `<span class="code-line" data-l="1"><span class="kw">bool</span> <span class="fn">next_permutation</span>(BidirectionalIt first, BidirectionalIt last) {</span>` +
+             `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">if</span> (first == last) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
+             `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">auto</span> i = last; <span class="kw">if</span> (first == --i) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
+             `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">while</span> (<span class="kw">true</span>) {</span>` +
+             `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> i1 = i;</span>` +
+             `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (*--i &lt; *i1) {</span>` +
+             `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> j = last;</span>` +
+             `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">while</span> (!(*i &lt; *--j));</span>` +
+             `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">iter_swap</span>(i, j);</span>` +
+             `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">reverse</span>(i1, last);</span>` +
+             `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">return</span> <span class="kw">true</span>;</span>` +
+             `<span class="code-line" data-l="12"><span class="indent"></span><span class="indent"></span>}</span>` +
+             `<span class="code-line" data-l="13"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (i == first) { <span class="fn">reverse</span>(first, last); <span class="kw">return</span> <span class="kw">false</span>; }</span>` +
+             `<span class="code-line" data-l="14"><span class="indent"></span>}</span>` +
+             `<span class="code-line" data-l="15">}</span>`
     };
 
-    let steps = [], cur = 0, currentTab = 'theory', arr = [];
+    let steps = [], cur = 0, currentMainTab = 'theory';
 
-    function switchTab(btn, tab) {
-        currentTab = tab;
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(tab).classList.add('active');
-        if (tab !== 'theory') {
-            document.getElementById(tab + '-display').innerHTML = db[tab].v1;
+        btn.classList.add('active'); 
+        document.getElementById(tabId).classList.add('active');
+        if (tabId !== 'theory') {
+            document.getElementById(tabId + '-display').innerHTML = db[tabId];
             syncCodeHighlight();
         }
     }
 
     function syncCodeHighlight() {
-        if (currentTab === 'theory') return;
-        const lines = document.getElementById(currentTab + '-display').querySelectorAll('.code-line');
-        lines.forEach(l => l.classList.remove('active'));
+        if (currentMainTab === 'theory') return;
+        const container = document.getElementById(currentMainTab + '-display');
+        container.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
         const s = steps[cur];
         if (s && s.line) {
-            const target = document.querySelector(`#${currentTab}-display [data-l="${s.line}"]`);
+            const target = container.querySelector(`[data-l="${s.line}"]`);
             if (target) target.classList.add('active');
         }
     }
 
-    function buildSteps(input) {
-        let s = [], data = [...input], n = data.length;
-        s.push({ arr: [...data], msg: "Ready.", line: 1 });
+    function buildSteps(arr) {
+        let s = [], data = [...arr], n = data.length;
+        s.push({ arr: [...data], msg: "Initial state.", line: 1 });
         
         let i = n - 2;
         while (i >= 0) {
-            s.push({ arr: [...data], activeIdx: i, label: 'i', msg: `Search i: check index ${i}`, line: 5 });
+            s.push({ arr: [...data], activeIdx: i, label: 'i', msg: `Comparing index ${i} and ${i+1}`, line: 4 });
+            if (currentMainTab === 'cpp') s[s.length-1].line = 6;
             if (data[i] < data[i+1]) break;
             i--;
         }
 
         if (i < 0) {
-            s.push({ arr: [...data], msg: "Last permutation. Reverse all.", line: 13 });
+            s.push({ arr: [...data], msg: "No pivot. Reversing sequence.", line: 13 });
             data.reverse();
-            s.push({ arr: [...data], msg: "Reset to first.", line: 13 });
+            s.push({ arr: [...data], msg: "Sequence reset.", line: 13 });
             return s;
         }
 
-        s.push({ arr: [...data], pivotIdx: i, msg: `Pivot found at ${i}`, line: 7 });
+        s.push({ arr: [...data], pivotIdx: i, msg: `Pivot found: ${data[i]}`, line: 6 });
         
         let j = n - 1;
         while (j > i) {
-            s.push({ arr: [...data], pivotIdx: i, activeIdx: j, label: 'j', msg: `Search j: check index ${j}`, line: 9 });
+            s.push({ arr: [...data], pivotIdx: i, activeIdx: j, label: 'j', msg: `Checking index ${j}`, line: 8 });
             if (data[j] > data[i]) break;
             j--;
         }
 
         let sw = [...data]; [sw[i], sw[j]] = [sw[j], sw[i]];
-        s.push({ arr: [...sw], pivotIdx: j, matchIdx: i, msg: "Swap i and j", line: 11 });
-        
+        s.push({ arr: [...sw], pivotIdx: j, matchIdx: i, msg: "Swap pivot and j.", line: 10 });
+        if (currentMainTab === 'cpp') s[s.length-1].line = 9;
+
         let res = [...sw];
         let tail = res.slice(i + 1).reverse();
         res.splice(i + 1, tail.length, ...tail);
-        s.push({ arr: [...res], suffixRange: [i + 1, n - 1], msg: "Reverse suffix", line: 12 });
+        s.push({ arr: [...res], suffixRange: [i + 1, n - 1], msg: "Suffix reversed.", line: 11 });
+        if (currentMainTab === 'cpp') s[s.length-1].line = 10;
         
         return s;
     }
 
     function render() {
-        const s = steps[cur], container = document.getElementById('viz-area');
+        const s = steps[cur], container = document.getElementById('array-row');
         container.innerHTML = '';
         document.getElementById('info').textContent = s.msg;
         document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
         
-        s.arr.forEach((v, idx) => {
-            const d = document.createElement('div');
-            d.className = 'cell';
-            if (idx === s.pivotIdx) d.classList.add('pivot');
-            if (idx === s.matchIdx) d.classList.add('swapped');
+        s.arr.forEach((val, idx) => {
+            const cell = document.createElement('div');
+            cell.className = 'cell' + (idx === s.pivotIdx ? ' pivot' : '') + (idx === s.matchIdx ? ' swapped' : '');
+            if (s.suffixRange && idx >= s.suffixRange[0]) cell.classList.add('suffix-focus');
+            cell.textContent = val;
             if (s.activeIdx === idx) {
-                d.classList.add('active');
-                d.innerHTML = `<div class="ptr">${s.label}</div>`;
+                cell.classList.add('active');
+                cell.innerHTML += `<div class="index-label">${s.label}</div>`;
             }
-            if (s.suffixRange && idx >= s.suffixRange[0]) d.classList.add('suffix');
-            d.innerHTML += v;
-            container.appendChild(d);
+            container.appendChild(cell);
         });
         syncCodeHighlight();
     }
 
     function go(d) {
         if (d === 1 && cur === steps.length - 1) {
-            // Бесконечная генерация: берем текущее состояние и строим новые шаги
             steps = buildSteps(steps[cur].arr);
             cur = 0; render(); return;
         }
@@ -211,9 +255,11 @@
     }
 
     function rebuild() {
-        arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        const val = document.getElementById('in-arr').value;
+        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
         steps = buildSteps(arr); cur = 0; render();
     }
+    function resetAll() { rebuild(); }
 
     rebuild();
 </script>
