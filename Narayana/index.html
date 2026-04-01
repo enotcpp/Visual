@@ -2,175 +2,208 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Narayana's Permutation | Restoration</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <title>Narayana's Permutation | Manual Highlight</title>
     <style>
         :root {
-            --bg-main: #1a1a1c; --bg-card: #242426; --bg-input: #2d2d30;
+            --bg-main: #141416; --bg-card: #1e1e22; --bg-input: #26262a;
             --text-main: #e1e1e3; --text-secondary: #9ba1a6; --accent: #7f77dd;
-            --border: #3e3e42; --code-bg: #0d0d0f; --pivot-color: #f1c40f;
-            --suffix-bg: rgba(127, 119, 221, 0.15); --match-color: #1d9e75;
-            --line-hl: rgba(127, 119, 221, 0.3);
+            --border: #313136; --code-bg: #0d0d0f; --line-hl: rgba(127, 119, 221, 0.15);
+            --pivot-color: #f1c40f; --match-color: #1d9e75;
         }
-        body { margin: 0; padding: 2rem 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
-        .visualizer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 30px; }
+
+        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+        .visualizer-section {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+        }
         .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
-        .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 10px; border-radius: 8px; width: 280px; }
-        button { padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
-        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        .viz-area { margin: 60px 0; }
-        .array-row { display: flex; justify-content: center; gap: 10px; }
-        .cell { width: 58px; height: 58px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; position: relative; transition: 0.3s; }
-        .index-label { position: absolute; top: -40px; background: var(--accent); color: white; padding: 2px 10px; border-radius: 6px; font-size: 14px; }
-        .cell.pivot { border: 3px solid var(--pivot-color); color: var(--pivot-color); }
-        .cell.swapped { background: var(--match-color); color: white; }
-        .cell.suffix-focus { background: var(--suffix-bg); border-style: dashed; }
-        .cell.active { border-color: var(--accent); transform: translateY(-4px); }
+        .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; outline: none; }
+        button { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); cursor: pointer; transition: 0.2s; }
+        button:hover { border-color: var(--accent); }
+        button.primary { background: var(--accent); color: white; border: none; }
+
+        .viz-area { display: flex; justify-content: center; gap: 10px; margin: 60px 0; min-height: 60px; }
+        .cell {
+            width: 55px; height: 55px; background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: bold; position: relative; transition: all 0.3s;
+        }
+        .cell.pivot { border: 2px solid var(--pivot-color); color: var(--pivot-color); }
+        .cell.swapped { background: var(--match-color); border-color: white; color: white; }
+        .cell.active { border-color: var(--accent); transform: translateY(-5px); }
+        .cell.suffix { background: rgba(127, 119, 221, 0.1); border-style: dashed; }
+
+        .ptr { position: absolute; top: -35px; left: 50%; transform: translateX(-50%); font-size: 11px; padding: 2px 6px; border-radius: 4px; color: white; background: var(--accent); }
+
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 12px; }
+        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-weight: 700; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
-        .tab-content { display: none; padding: 25px; }
+
+        .tab-content { display: none; padding: 30px; }
         .tab-content.active { display: block; }
-        .code-container { position: relative; background: var(--code-bg); padding: 16px; border-radius: 10px; }
-        pre[class*="language-"] { margin: 0 !important; background: transparent !important; }
-        code[class*="language-"] { font-size: 13px !important; line-height: 20px !important; display: block; }
-        .line-highlight { position: absolute; left: 0; width: 100%; height: 20px; background: var(--line-hl); border-left: 4px solid var(--accent); display: none; z-index: 1; }
+
+        /* МАНУАЛЬНАЯ РАСКРАСКА КОДА */
+        code { font-family: monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; }
+        .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
+        .indent { display: inline-block; width: 20px; }
+        .kw { color: #cc99cd; } .fn { color: #e67e22; } .cm { color: #777; } .num { color: #f8c555; } .type { color: #82aaff; }
     </style>
 </head>
 <body>
+
 <div class="wrap">
-    <div class="visualizer-card">
+    <div class="visualizer-section">
+        <h1>🔄 Next Permutation</h1>
         <div class="inputs">
-            <input id="in-arr" type="text" value="0, 1, 2, 5, 3, 3, 0">
-            <button onclick="rebuild()">Apply</button>
+            <input id="arr-input" type="text" value="1, 2, 3">
+            <button onclick="rebuild()" class="primary">Apply</button>
         </div>
-        <div id="info" style="margin-bottom: 20px; min-height: 40px;">Ready.</div>
-        <div class="viz-area"><div class="array-row" id="array-row"></div></div>
-        <div class="inputs" style="margin-bottom: 0;">
-            <button class="secondary" onclick="go(-1)">< Back</button>
-            <button onclick="go(1)">Next Step ></button>
-            <button class="secondary" onclick="resetAll()">Reset</button>
+        <div id="info" style="height: 20px; color: var(--text-secondary); margin-bottom: 20px;">Ready.</div>
+        <div class="viz-area" id="viz-area"></div>
+        <div class="inputs">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; font-size: 13px; color: var(--text-secondary);"></span>
         </div>
     </div>
+
     <div class="lab-info">
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
             <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
         </div>
-        <div id="theory" class="tab-content active">
-            <h3>Theory</h3>
-            <p>1. Find largest <b>i</b>: a[i] < a[i+1]<br>2. Find largest <b>j</b>: a[i] < a[j]<br>3. Swap a[i], a[j]<br>4. Reverse suffix a[i+1...].</p>
-        </div>
-        <div id="code-tab" class="tab-content">
-            <div class="code-container">
-                <div id="highlight-bar" class="line-highlight"></div>
-                <pre><code id="code-display"></code></pre>
-            </div>
-        </div>
+        <div id="theory" class="tab-content active"><h3>Narayana's Algorithm</h3><p>Generates the next permutation in lexicographical order.</p></div>
+        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code id="cpp-display"></code></pre></div>
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-
 <script>
-    const codes = {
-        python: `def my_next_permutation(arr):\n    n = len(arr)\n    if n <= 1: return False\n    i = n - 1\n    while True:\n        i1 = i\n        i -= 1\n        if arr[i] < arr[i1]:\n            j = n\n            while not (arr[i] < arr[j-1]):\n                j -= 1\n            arr[i], arr[j-1] = arr[j-1], arr[i]\n            arr[i1:] = reversed(arr[i1:])\n            return True\n        if i == 0:\n            arr.reverse()\n            return False`,
-        cpp: `bool my_next_permutation(BidirectionalIt first, BidirectionalIt last) {\n    if (first == last) return false;\n    auto i = last; \n    if (first == --i) return false;\n    while (true) {\n        auto i1 = i; \n        if (*--i < *i1) {\n            auto j = last;\n            while (!(*i < *--j));\n            std::iter_swap(i, j);\n            std::reverse(i1, last);\n            return true;\n        }\n        if (i == first) {\n            std::reverse(first, last);\n            return false;\n        }\n    }\n}`
+    const db = {
+        python: {
+            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">next_permutation</span>(arr):</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span>i = <span class="fn">len</span>(arr) - <span class="num">2</span></span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="kw">while</span> i >= <span class="num">0</span> <span class="kw">and</span> arr[i] >= arr[i+1]:</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span>i -= <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="kw">if</span> i >= <span class="num">0</span>:</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span>j = <span class="fn">len</span>(arr) - <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="kw">while</span> arr[j] &lt;= arr[i]:</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span>j -= <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span>arr[i], arr[j] = arr[j], arr[i]</span>` +
+                `<span class="code-line" data-l="12"><span class="indent"></span>arr[i+1:] = <span class="fn">reversed</span>(arr[i+1:])</span>`
+        },
+        cpp: {
+            v1: `<span class="code-line" data-l="1"><span class="kw">bool</span> <span class="fn">next_permutation</span>(Iter first, Iter last) {</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">auto</span> i = last; <span class="kw">if</span> (first == last || first == --i) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">while</span> (<span class="kw">true</span>) {</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> i1 = i;</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (*--i &lt; *i1) {</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> j = last;</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">while</span> (!(*i &lt; *--j));</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">iter_swap</span>(i, j);</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">reverse</span>(i1, last);</span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">return</span> <span class="kw">true</span>;</span>` +
+                `<span class="code-line" data-l="12"><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="13"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (i == first) { <span class="fn">reverse</span>(first, last); <span class="kw">return</span> <span class="kw">false</span>; }</span>` +
+                `<span class="code-line" data-l="14"><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="15">}</span>`
+        }
     };
 
-    let steps = [], cur = 0, currentTab = 'theory';
+    let steps = [], cur = 0, currentTab = 'theory', arr = [];
 
     function switchTab(btn, tab) {
         currentTab = tab;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
-
-        if (tab === 'theory') document.getElementById('theory').classList.add('active');
-        else {
-            document.getElementById('code-tab').classList.add('active');
-            const display = document.getElementById('code-display');
-            display.className = 'language-' + tab;
-            display.textContent = codes[tab];
-            Prism.highlightElement(display);
-            syncLine();
+        document.getElementById(tab).classList.add('active');
+        if (tab !== 'theory') {
+            document.getElementById(tab + '-display').innerHTML = db[tab].v1;
+            syncCodeHighlight();
         }
     }
 
-    function syncLine() {
-        const bar = document.getElementById('highlight-bar');
-        const step = steps[cur];
-        if (currentTab === 'theory' || !step) { bar.style.display = 'none'; return; }
-
-        const lines = {
-            cpp: { i: 8, j: 10, swap: 11, rev: 12, last: 16 },
-            python: { i: 8, j: 10, swap: 12, rev: 13, last: 16 }
-        };
-
-        let target = -1;
-        if (step.label === 'i') target = lines[currentTab].i;
-        else if (step.label === 'j') target = lines[currentTab].j;
-        else if (step.pivotIdx !== undefined && step.matchIdx !== undefined && !step.suffixRange) target = lines[currentTab].swap;
-        else if (step.suffixRange) target = lines[currentTab].rev;
-        else if (step.isLast) target = lines[currentTab].last;
-
-        if (target > 0) {
-            bar.style.top = `${16 + (target - 1) * 20}px`;
-            bar.style.display = 'block';
-        } else bar.style.display = 'none';
+    function syncCodeHighlight() {
+        if (currentTab === 'theory') return;
+        const lines = document.getElementById(currentTab + '-display').querySelectorAll('.code-line');
+        lines.forEach(l => l.classList.remove('active'));
+        const s = steps[cur];
+        if (s && s.line) {
+            const target = document.querySelector(`#${currentTab}-display [data-l="${s.line}"]`);
+            if (target) target.classList.add('active');
+        }
     }
 
-    function buildSteps(arr) {
-        let s = [], data = [...arr], n = data.length;
-        s.push({ arr: [...data], msg: "Starting search..." });
-        let i = -1;
-        for (let k = n - 2; k >= 0; k--) {
-            s.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Search i: ${data[k]} < ${data[k+1]}?` });
-            if (data[k] < data[k+1]) { i = k; break; }
+    function buildSteps(input) {
+        let s = [], data = [...input], n = data.length;
+        s.push({ arr: [...data], msg: "Ready.", line: 1 });
+        
+        let i = n - 2;
+        while (i >= 0) {
+            s.push({ arr: [...data], activeIdx: i, label: 'i', msg: `Search i: check index ${i}`, line: 5 });
+            if (data[i] < data[i+1]) break;
+            i--;
         }
-        if (i === -1) { s.push({ arr: [...data], isLast: true, msg: "Last permutation. Resetting." }); return s; }
-        s.push({ arr: [...data], pivotIdx: i, msg: `Pivot found: ${data[i]}` });
-        let j = -1;
-        for (let k = n - 1; k > i; k--) {
-            s.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Search j: ${data[i]} < ${data[k]}?` });
-            if (data[k] > data[i]) { j = k; break; }
+
+        if (i < 0) {
+            s.push({ arr: [...data], msg: "Last permutation. Reverse all.", line: 13 });
+            data.reverse();
+            s.push({ arr: [...data], msg: "Reset to first.", line: 13 });
+            return s;
         }
+
+        s.push({ arr: [...data], pivotIdx: i, msg: `Pivot found at ${i}`, line: 7 });
+        
+        let j = n - 1;
+        while (j > i) {
+            s.push({ arr: [...data], pivotIdx: i, activeIdx: j, label: 'j', msg: `Search j: check index ${j}`, line: 9 });
+            if (data[j] > data[i]) break;
+            j--;
+        }
+
         let sw = [...data]; [sw[i], sw[j]] = [sw[j], sw[i]];
-        s.push({ arr: [...sw], pivotIdx: j, matchIdx: i, msg: "Swap values." });
-        s.push({ arr: [...sw], suffixRange: [i + 1, n - 1], msg: "Reverse suffix." });
-        let res = [...sw]; let tail = res.slice(i + 1).reverse();
+        s.push({ arr: [...sw], pivotIdx: j, matchIdx: i, msg: "Swap i and j", line: 11 });
+        
+        let res = [...sw];
+        let tail = res.slice(i + 1).reverse();
         res.splice(i + 1, tail.length, ...tail);
-        s.push({ arr: [...res], suffixRange: [i + 1, n - 1], msg: "New permutation ready!" });
+        s.push({ arr: [...res], suffixRange: [i + 1, n - 1], msg: "Reverse suffix", line: 12 });
+        
         return s;
     }
 
     function render() {
-        const s = steps[cur], container = document.getElementById('array-row');
+        const s = steps[cur], container = document.getElementById('viz-area');
         container.innerHTML = '';
         document.getElementById('info').textContent = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        
         s.arr.forEach((v, idx) => {
-            const div = document.createElement('div');
-            div.className = 'cell' + (idx === s.pivotIdx ? ' pivot' : '') + (idx === s.matchIdx ? ' swapped' : '');
-            if (s.suffixRange && idx >= s.suffixRange[0] && idx <= s.suffixRange[1]) div.classList.add('suffix-focus');
-            div.textContent = v;
+            const d = document.createElement('div');
+            d.className = 'cell';
+            if (idx === s.pivotIdx) d.classList.add('pivot');
+            if (idx === s.matchIdx) d.classList.add('swapped');
             if (s.activeIdx === idx) {
-                div.classList.add('active');
-                const l = document.createElement('div'); l.className = 'index-label'; l.textContent = s.label;
-                div.appendChild(l);
+                d.classList.add('active');
+                d.innerHTML = `<div class="ptr">${s.label}</div>`;
             }
-            container.appendChild(div);
+            if (s.suffixRange && idx >= s.suffixRange[0]) d.classList.add('suffix');
+            d.innerHTML += v;
+            container.appendChild(d);
         });
-        syncLine();
+        syncCodeHighlight();
     }
 
     function go(d) {
         if (d === 1 && cur === steps.length - 1) {
-            // АВТОМАТИЧЕСКИЙ ПЕРЕХОД К НОВОЙ ПЕРЕСТАНОВКЕ
+            // Бесконечная генерация: берем текущее состояние и строим новые шаги
             steps = buildSteps(steps[cur].arr);
             cur = 0; render(); return;
         }
@@ -178,11 +211,9 @@
     }
 
     function rebuild() {
-        const val = document.getElementById('in-arr').value;
-        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
         steps = buildSteps(arr); cur = 0; render();
     }
-    function resetAll() { rebuild(); }
 
     rebuild();
 </script>
