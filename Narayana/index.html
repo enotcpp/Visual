@@ -12,12 +12,13 @@
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
+            --accent-secondary: #1d9e75;
             --border: #3e3e42;
             --code-bg: #0d0d0f;
             --pivot-color: #f1c40f;
             --suffix-bg: rgba(127, 119, 221, 0.15);
             --match-color: #1d9e75;
-            --line-hl: rgba(127, 119, 221, 0.25);
+            --line-hl: rgba(127, 119, 221, 0.15); /* Цвет подсветки строки */
         }
 
         * { box-sizing: border-box; }
@@ -47,11 +48,13 @@
             transition: opacity 0.2s; font-size: 14px;
         }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button:hover { opacity: 0.9; }
 
         .info-box {
             background: var(--bg-main); border-left: 4px solid var(--accent);
             padding: 20px; min-height: 85px; margin-bottom: 40px; font-size: 14px; line-height: 1.6;
         }
+        .info-box b { color: var(--accent); }
 
         .viz-area { position: relative; margin: 60px 0; min-height: 80px; }
         .array-row { display: flex; justify-content: center; gap: 10px; }
@@ -81,12 +84,14 @@
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
-        
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
-        /* РУЧНАЯ ПОДСВЕТКА КОДА */
-        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; }
+        /* СТИЛИ КОДА КАК В BINARY SEARCH */
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; background: var(--code-bg); padding: 15px; border-radius: 10px; }
         .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.2s; }
         .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
         .indent { display: inline-block; width: 20px; }
@@ -101,8 +106,13 @@
             <input id="in-arr" type="text" value="0, 1, 2, 5, 3, 3, 0">
             <button onclick="rebuild()">Apply Sequence</button>
         </div>
+
         <div class="info-box" id="info">Click "Next Step" to start.</div>
-        <div class="viz-area"><div class="array-row" id="array-row"></div></div>
+        
+        <div class="viz-area">
+            <div class="array-row" id="array-row"></div>
+        </div>
+
         <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
             <button class="secondary" onclick="go(-1)">< Back</button>
             <button onclick="go(1)">Next Step ></button>
@@ -116,51 +126,53 @@
             <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
             <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
             <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
         </div>
-        <div id="theory" class="tab-content active">
-            <h3>Narayana's Algorithm</h3>
-            <p>1. Find largest <b>i</b> such that <b>a[i] < a[i+1]</b>.</p>
-            <p>2. Find largest <b>j</b> such that <b>a[i] < a[j]</b>.</p>
-            <p>3. Swap <b>a[i]</b> and <b>a[j]</b>.</p>
-            <p>4. Reverse suffix from <b>i+1</b> to end.</p>
-        </div>
-        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
-        <div id="cpp" class="tab-content"><pre><code id="cpp-display"></code></pre></div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><code id="python-display"></code></div>
+        <div id="cpp" class="tab-content"><code id="cpp-display"></code></div>
     </div>
 </div>
 
 <script>
     const db = {
-        python: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">next_permutation</span>(arr):</span>` +
-                `<span class="code-line" data-l="2"><span class="indent"></span>n = <span class="fn">len</span>(arr)</span>` +
-                `<span class="code-line" data-l="3"><span class="indent"></span>i = n - <span class="num">2</span></span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">while</span> i >= <span class="num">0</span> <span class="kw">and</span> arr[i] >= arr[i+1]:</span>` +
-                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>i -= <span class="num">1</span></span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">if</span> i >= <span class="num">0</span>:</span>` +
-                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span>j = n - <span class="num">1</span></span>` +
-                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="kw">while</span> arr[j] &lt;= arr[i]:</span>` +
-                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span>j -= <span class="num">1</span></span>` +
-                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span>arr[i], arr[j] = arr[j], arr[i]</span>` +
-                `<span class="code-line" data-l="11"><span class="indent"></span>arr[i+1:] = <span class="fn">reversed</span>(arr[i+1:])</span>`,
-        
-        cpp: `<span class="code-line" data-l="1"><span class="kw">bool</span> <span class="fn">next_permutation</span>(BidirectionalIt first, BidirectionalIt last) {</span>` +
-             `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">if</span> (first == last) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
-             `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">auto</span> i = last; <span class="kw">if</span> (first == --i) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
-             `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">while</span> (<span class="kw">true</span>) {</span>` +
-             `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> i1 = i;</span>` +
-             `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (*--i &lt; *i1) {</span>` +
-             `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> j = last;</span>` +
-             `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">while</span> (!(*i &lt; *--j));</span>` +
-             `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">iter_swap</span>(i, j);</span>` +
-             `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">reverse</span>(i1, last);</span>` +
-             `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">return</span> <span class="kw">true</span>;</span>` +
-             `<span class="code-line" data-l="12"><span class="indent"></span><span class="indent"></span>}</span>` +
-             `<span class="code-line" data-l="13"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (i == first) { <span class="fn">reverse</span>(first, last); <span class="kw">return</span> <span class="kw">false</span>; }</span>` +
-             `<span class="code-line" data-l="14"><span class="indent"></span>}</span>` +
-             `<span class="code-line" data-l="15">}</span>`
+        theory: {
+            EN: "<h3>Narayana's Algorithm</h3><p>Generates the next lexicographical permutation of a sequence. It involves finding the largest index <b>i</b> such that <b>a[i] < a[i+1]</b>, then the largest index <b>j</b> such that <b>a[i] < a[j]</b>, swapping them, and reversing the suffix.</p>",
+            RU: "<h3>Алгоритм Нараяны</h3><p>Алгоритм нахождения следующей перестановки в лексикографическом порядке. Состоит из 4 шагов: поиск индекса <b>i</b>, поиск индекса <b>j</b>, обмен значений и реверс хвоста последовательности.</p>"
+        },
+        python: {
+            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">next_permutation</span>(nums):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span>i = <span class="fn">len</span>(nums) - <span class="num">2</span></span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">while</span> i >= <span class="num">0</span> <span class="kw">and</span> nums[i] >= nums[i+1]:</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>i -= <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="kw">if</span> i >= <span class="num">0</span>:</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span>j = <span class="fn">len</span>(nums) - <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">while</span> nums[j] &lt;= nums[i]:</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>j -= <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span>nums[i], nums[j] = nums[j], nums[i]</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span>nums[i+1:] = <span class="fn">reversed</span>(nums[i+1:])</span>`,
+            v2: `<span class="code-line"><span class="cm"># Generator version coming soon...</span></span>`
+        },
+        cpp: {
+            v1: `<span class="code-line" data-l="1"><span class="kw">void</span> <span class="fn">nextPermutation</span>(vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span>std::<span class="fn">next_permutation</span>(nums.<span class="fn">begin</span>(), nums.<span class="fn">end</span>());</span>` +
+                `<span class="code-line" data-l="1">}</span>`,
+            v2: `<span class="code-line" data-l="1"><span class="kw">bool</span> <span class="fn">my_next_permutation</span>(Iter first, Iter last) {</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">auto</span> i = last; <span class="kw">if</span> (first == last || first == --i) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="kw">while</span> (<span class="kw">true</span>) {</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> i1 = i; <span class="kw">if</span> (*--i &lt; *i1) {</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> j = last; <span class="kw">while</span> (!(*i &lt; *--j));</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span>std::<span class="fn">iter_swap</span>(i, j);</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span>std::<span class="fn">reverse</span>(i1, last);</span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">return</span> <span class="kw">true</span>;</span>` +
+                `<span class="code-line" data-l="12"><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="13"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (i == first) { std::<span class="fn">reverse</span>(first, last); <span class="kw">return</span> <span class="kw">false</span>; }</span>` +
+                `<span class="code-line" data-l="14"><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="15">}</span>`
+        }
     };
 
-    let steps = [], cur = 0, currentMainTab = 'theory';
+    let steps = [], cur = 0, lastInitial = "", currentMainTab = 'theory';
 
     function switchMainTab(btn, tabId) {
         currentMainTab = tabId;
@@ -168,100 +180,135 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active'); 
         document.getElementById(tabId).classList.add('active');
-        if (tabId !== 'theory') {
-            document.getElementById(tabId + '-display').innerHTML = db[tabId];
+        renderContextControls();
+    }
+
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active'); updateContent(item);
+            };
+            panel.appendChild(b);
+        });
+        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
+    }
+
+    function updateContent(key) {
+        const display = document.getElementById(currentMainTab + '-display');
+        if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
+        else {
+            display.innerHTML = db[currentMainTab][key];
             syncCodeHighlight();
         }
     }
 
+    // СИНХРОНИЗАЦИЯ ПОДСВЕТКИ (как в Binary Search)
     function syncCodeHighlight() {
         if (currentMainTab === 'theory') return;
-        const container = document.getElementById(currentMainTab + '-display');
-        container.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
-        const s = steps[cur];
-        if (s && s.line) {
-            const target = container.querySelector(`[data-l="${s.line}"]`);
-            if (target) target.classList.add('active');
+        const containerId = currentMainTab + '-display';
+        const lines = document.getElementById(containerId).querySelectorAll('.code-line');
+        lines.forEach(l => l.classList.remove('active'));
+        
+        const currentStep = steps[cur];
+        if (currentStep && currentStep.line) {
+            const targetLine = document.querySelector(`#${containerId} [data-l="${currentStep.line}"]`);
+            if (targetLine) targetLine.classList.add('active');
         }
     }
 
+    function rebuild() {
+        const val = document.getElementById('in-arr').value;
+        lastInitial = val;
+        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        steps = buildSteps(arr);
+        cur = 0; render();
+    }
+
     function buildSteps(arr) {
-        let s = [], data = [...arr], n = data.length;
-        s.push({ arr: [...data], msg: "Initial state.", line: 1 });
-        
-        let i = n - 2;
-        while (i >= 0) {
-            s.push({ arr: [...data], activeIdx: i, label: 'i', msg: `Comparing index ${i} and ${i+1}`, line: 4 });
-            if (currentMainTab === 'cpp') s[s.length-1].line = 6;
-            if (data[i] < data[i+1]) break;
-            i--;
+        let _steps = [];
+        let data = [...arr], n = data.length;
+        _steps.push({ arr: [...data], msg: "Ready.", line: 1 });
+
+        let i = -1;
+        for (let k = n - 2; k >= 0; k--) {
+            _steps.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Search i: ${data[k]} < ${data[k+1]}?`, line: 3 });
+            if (data[k] < data[k+1]) { i = k; break; }
         }
 
-        if (i < 0) {
-            s.push({ arr: [...data], msg: "No pivot. Reversing sequence.", line: 13 });
-            data.reverse();
-            s.push({ arr: [...data], msg: "Sequence reset.", line: 13 });
-            return s;
+        if (i === -1) {
+            _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot found.</b> Last permutation.", line: 13 });
+            return _steps;
         }
 
-        s.push({ arr: [...data], pivotIdx: i, msg: `Pivot found: ${data[i]}`, line: 6 });
-        
-        let j = n - 1;
-        while (j > i) {
-            s.push({ arr: [...data], pivotIdx: i, activeIdx: j, label: 'j', msg: `Checking index ${j}`, line: 8 });
-            if (data[j] > data[i]) break;
-            j--;
+        _steps.push({ arr: [...data], pivotIdx: i, msg: `Pivot found: ${data[i]}.`, line: 5 });
+
+        let j = -1;
+        for (let k = n - 1; k > i; k--) {
+            _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Search j: ${data[i]} < ${data[k]}?`, line: 7 });
+            if (data[k] > data[i]) { j = k; break; }
         }
 
-        let sw = [...data]; [sw[i], sw[j]] = [sw[j], sw[i]];
-        s.push({ arr: [...sw], pivotIdx: j, matchIdx: i, msg: "Swap pivot and j.", line: 10 });
-        if (currentMainTab === 'cpp') s[s.length-1].line = 9;
+        _steps.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found j: ${data[j]}.`, line: 8 });
 
-        let res = [...sw];
-        let tail = res.slice(i + 1).reverse();
-        res.splice(i + 1, tail.length, ...tail);
-        s.push({ arr: [...res], suffixRange: [i + 1, n - 1], msg: "Suffix reversed.", line: 11 });
-        if (currentMainTab === 'cpp') s[s.length-1].line = 10;
+        let swapped = [...data];
+        [swapped[i], swapped[j]] = [swapped[j], swapped[i]];
+        _steps.push({ arr: [...swapped], pivotIdx: j, matchIdx: i, msg: `Swap a[i] and a[j].`, line: 9 });
+
+        _steps.push({ arr: [...swapped], suffixRange: [i + 1, n - 1], msg: `Reverse suffix from index ${i+1}.`, line: 10 });
+
+        let final = [...swapped];
+        let part2 = final.slice(i + 1).reverse();
+        final.splice(i + 1, part2.length, ...part2);
         
-        return s;
+        _steps.push({ arr: [...final], suffixRange: [i + 1, n - 1], msg: "<b>Next permutation found!</b>", line: 10 });
+        return _steps;
     }
 
     function render() {
         const s = steps[cur], container = document.getElementById('array-row');
         container.innerHTML = '';
-        document.getElementById('info').textContent = s.msg;
+        document.getElementById('info').innerHTML = s.msg;
         document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
-        
+
         s.arr.forEach((val, idx) => {
             const cell = document.createElement('div');
-            cell.className = 'cell' + (idx === s.pivotIdx ? ' pivot' : '') + (idx === s.matchIdx ? ' swapped' : '');
-            if (s.suffixRange && idx >= s.suffixRange[0]) cell.classList.add('suffix-focus');
+            cell.className = 'cell';
             cell.textContent = val;
+            if (idx === s.pivotIdx) cell.classList.add('pivot');
+            if (idx === s.matchIdx) cell.classList.add('swapped');
+            if (s.suffixRange && idx >= s.suffixRange[0] && idx <= s.suffixRange[1]) cell.classList.add('suffix-focus');
             if (s.activeIdx === idx) {
                 cell.classList.add('active');
-                cell.innerHTML += `<div class="index-label">${s.label}</div>`;
+                const lbl = document.createElement('div');
+                lbl.className = 'index-label'; lbl.textContent = s.label;
+                cell.appendChild(lbl);
             }
             container.appendChild(cell);
         });
-        syncCodeHighlight();
+        syncCodeHighlight(); // Подсвечиваем строку при каждом рендере
     }
 
-    function go(d) {
-        if (d === 1 && cur === steps.length - 1) {
+    function go(dir) {
+        if (dir === 1 && cur === steps.length - 1) {
+            if (steps[cur].isLast) return;
             steps = buildSteps(steps[cur].arr);
             cur = 0; render(); return;
         }
-        if (cur + d >= 0 && cur + d < steps.length) { cur += d; render(); }
+        if(cur + dir >= 0 && cur + dir < steps.length) { cur += dir; render(); }
     }
 
-    function rebuild() {
-        const val = document.getElementById('in-arr').value;
-        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = buildSteps(arr); cur = 0; render();
+    function resetAll() {
+        document.getElementById('in-arr').value = lastInitial;
+        rebuild();
     }
-    function resetAll() { rebuild(); }
 
-    rebuild();
+    renderContextControls(); rebuild();
 </script>
 </body>
 </html>
