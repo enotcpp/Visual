@@ -19,7 +19,7 @@
             --pivot-color: #f1c40f;
             --suffix-bg: rgba(127, 119, 221, 0.15);
             --match-color: #1d9e75;
-            --line-hl: rgba(127, 119, 221, 0.3); /* Цвет подсветки активной строки */
+            --line-hl: rgba(127, 119, 221, 0.3);
         }
 
         * { box-sizing: border-box; }
@@ -87,35 +87,27 @@
         .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
         .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
         .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+        
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
         pre[class*="language-"] { 
-            margin: 0; 
-            border-radius: 10px; 
+            margin: 0; border-radius: 10px; 
             background: var(--code-bg) !important; 
-            font-size: 13px; 
-            overflow: hidden; /* Важно для подсветки строк */
+            font-size: 13px; position: relative;
         }
         
-        /* Стили для кастомной подсветки строк ПОВЕРХ Prism */
+        code[class*="language-"] { display: block; white-space: pre; position: relative; z-index: 2; }
+
         .code-wrapper { position: relative; }
         .line-highlight-overlay {
             position: absolute;
             left: 0; width: 100%;
             background: var(--line-hl);
             border-left: 3px solid var(--accent);
-            pointer-events: none; /* Чтобы можно было выделять код сквозь оверлей */
-            display: none; /* По умолчанию скрыт */
+            pointer-events: none;
+            display: none;
             z-index: 1;
-        }
-        
-        /* Сохраняем отступы */
-        code[class*="language-"] {
-            display: block;
-            white-space: pre;
-            position: relative;
-            z-index: 2; /* Код должен быть над оверлеем */
         }
     </style>
 </head>
@@ -127,13 +119,8 @@
             <input id="in-arr" type="text" value="0, 1, 2, 5, 3, 3, 0">
             <button onclick="rebuild()">Apply Sequence</button>
         </div>
-
         <div class="info-box" id="info">Click "Next Step" to start.</div>
-        
-        <div class="viz-area">
-            <div class="array-row" id="array-row"></div>
-        </div>
-
+        <div class="viz-area"><div class="array-row" id="array-row"></div></div>
         <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
             <button class="secondary" onclick="go(-1)">< Back</button>
             <button onclick="go(1)">Next Step ></button>
@@ -150,14 +137,12 @@
             <div class="context-controls" id="context-panel"></div>
         </div>
         <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
-        
         <div id="python" class="tab-content">
             <div class="code-wrapper">
                 <div class="line-highlight-overlay" id="python-overlay"></div>
                 <pre><code class="language-python" id="python-display"></code></pre>
             </div>
         </div>
-        
         <div id="cpp" class="tab-content">
             <div class="code-wrapper">
                 <div class="line-highlight-overlay" id="cpp-overlay"></div>
@@ -170,17 +155,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/normalize-whitespace/prism-normalize-whitespace.min.js"></script>
 
 <script>
     const db = {
         theory: {
-            EN: "<h3>Narayana's Algorithm</h3><p>Lexicographical permutation...</p>",
-            RU: "<h3>Алгоритм Нараяны</h3><p>Алгоритм нахождения следующей перестановки...</p>"
+            EN: "<h3>Narayana's Algorithm</h3><p>Generates the next lexicographical permutation.</p>",
+            RU: "<h3>Алгоритм Нараяны</h3><p>Находит следующую перестановку.</p>"
         },
         python: {
             v1: "def my_next_permutation(arr):\n    n = len(arr)\n    if n <= 1: return False\n    i = n - 1\n    while True:\n        i1 = i\n        i -= 1\n        if arr[i] < arr[i1]:\n            j = n\n            while not (arr[i] < arr[j-1]):\n                j -= 1\n            arr[i], arr[j-1] = arr[j-1], arr[i]\n            arr[i1:] = reversed(arr[i1:])\n            return True\n        if i == 0:\n            arr.reverse()\n            return False",
-            v2: "def next_permutation(nums):\n    # logic here..."
+            v2: "def next_permutation(nums):\n    pass"
         },
         cpp: {
             v1: "bool my_next_permutation(BidirectionalIt first, BidirectionalIt last) {\n    if (first == last) return false;\n    auto i = last; \n    if (first == --i) return false;\n    while (true) {\n        auto i1 = i; \n        if (*--i < *i1) {\n            auto j = last;\n            while (!(*i < *--j));\n            std::iter_swap(i, j);\n            std::reverse(i1, last);\n            return true;\n        }\n        if (i == first) {\n            std::reverse(first, last);\n            return false;\n        }\n    }\n}",
@@ -188,27 +172,31 @@
         }
     };
 
-    let steps = [], cur = 0, lastInitial = "", currentMainTab = 'theory', currentVer = 'v1';
+    let steps = [], cur = 0, currentMainTab = 'theory', currentVer = 'v1';
+
+    function escapeHtml(text) {
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
 
     function switchMainTab(btn, tabId) {
         currentMainTab = tabId;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active'); document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active'); 
+        document.getElementById(tabId).classList.add('active');
         renderContextControls();
     }
 
     function renderContextControls() {
         const panel = document.getElementById('context-panel'); panel.innerHTML = '';
         const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
-        list.forEach((item) => {
+        list.forEach(item => {
             const b = document.createElement('button');
             b.className = 'sub-btn' + (item === (currentMainTab === 'theory' ? 'EN' : currentVer) ? ' active' : '');
             b.textContent = item;
             b.onclick = () => {
                 if (currentMainTab !== 'theory') currentVer = item;
-                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-                b.classList.add('active'); updateContent(item);
+                updateContent(item);
             };
             panel.appendChild(b);
         });
@@ -218,122 +206,74 @@
     function updateContent(key) {
         const display = document.getElementById(currentMainTab + '-display');
         const overlay = document.getElementById(currentMainTab + '-overlay');
-        
-        if (overlay) overlay.style.display = 'none'; // Скрываем оверлей при смене контента
-
-        if (currentMainTab === 'theory') {
-            display.innerHTML = db.theory[key];
-        } else {
-            // Prism нормально красит C++, если использовать textContent и правильную инициализацию
-            display.textContent = db[currentMainTab][key];
-            Prism.highlightElement(display);
-            syncCodeHighlight();
-        }
-    }
-
-function updateContent(key) {
-        const display = document.getElementById(currentMainTab + '-display');
-        const overlay = document.getElementById(currentMainTab + '-overlay');
-        
         if (overlay) overlay.style.display = 'none';
 
         if (currentMainTab === 'theory') {
             display.innerHTML = db.theory[key];
         } else {
-            // Используем textContent для чистого кода
-            display.textContent = db[currentMainTab][key];
-            
-            // Запускаем подсветку Prism
+            display.innerHTML = escapeHtml(db[currentMainTab][key]);
             Prism.highlightElement(display);
-
-            // Ждем следующего кадра отрисовки, чтобы расчеты высоты были верными
-            requestAnimationFrame(() => {
-                syncCodeHighlight();
-            });
+            setTimeout(syncCodeHighlight, 0);
         }
     }
 
     function syncCodeHighlight() {
         if (currentMainTab === 'theory') return;
-        
         const overlay = document.getElementById(currentMainTab + '-overlay');
         if (!overlay) return;
 
-        // Точный маппинг строк для C++ (v1)
         const lineMap = {
-            v1: { findI: 8, findJ: 10, swap: 11, rev: 12, last: 16 }
+            cpp_v1: { findI: 8, findJ: 10, swap: 11, rev: 12, last: 16 },
+            python_v1: { findI: 8, findJ: 10, swap: 12, rev: 13, last: 16 }
         };
 
         const step = steps[cur];
-        let lineNum = -1; // По умолчанию ничего не подсвечиваем
+        let lineNum = -1;
+        const mapKey = `${currentMainTab}_${currentVer}`;
 
-        if (step && currentVer === 'v1' && currentMainTab === 'cpp') {
-            if (step.activeIdx !== undefined && step.label === 'i') lineNum = lineMap.v1.findI;
-            else if (step.label === 'j') lineNum = lineMap.v1.findJ;
-            else if (step.pivotIdx !== undefined && step.matchIdx !== undefined && !step.suffixRange) lineNum = lineMap.v1.swap;
-            else if (step.suffixRange) lineNum = lineMap.v1.rev;
-            else if (step.isLast) lineNum = lineMap.v1.last;
+        if (step && lineMap[mapKey]) {
+            if (step.activeIdx !== undefined && step.label === 'i') lineNum = lineMap[mapKey].findI;
+            else if (step.label === 'j') lineNum = lineMap[mapKey].findJ;
+            else if (step.pivotIdx !== undefined && step.matchIdx !== undefined && !step.suffixRange) lineNum = lineMap[mapKey].swap;
+            else if (step.suffixRange) lineNum = lineMap[mapKey].rev;
+            else if (step.isLast) lineNum = lineMap[mapKey].last;
         }
 
         if (lineNum > 0) {
-            // Константы для Prism Tomorrow
             const lineHeight = 19.5; 
-            const paddingTop = 16; // Стандартный padding для pre в 1em/1.2em
-
+            const paddingTop = 16;
             overlay.style.height = `${lineHeight}px`;
-            // (lineNum - 1) — чтобы 1-я строка имела отступ 0px + padding
-            overlay.style.top = `${paddingTop + (lineNum - 1) * lineHeight}px`; 
+            overlay.style.top = `${paddingTop + (lineNum - 1) * lineHeight}px`;
             overlay.style.display = 'block';
         } else {
             overlay.style.display = 'none';
         }
     }
 
-    function rebuild() {
-        const val = document.getElementById('in-arr').value;
-        lastInitial = val;
-        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = buildSteps(arr);
-        cur = 0; render();
-    }
-
     function buildSteps(arr) {
         let _steps = [];
         let data = [...arr], n = data.length;
-        _steps.push({ arr: [...data], msg: "Current state. Ready to find the next permutation." });
-
+        _steps.push({ arr: [...data], msg: "Ready." });
         let i = -1;
         for (let k = n - 2; k >= 0; k--) {
-            _steps.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Checking if ${data[k]} < ${data[k+1]}...` });
+            _steps.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Search i: a[${k}] < a[${k+1}]?` });
             if (data[k] < data[k+1]) { i = k; break; }
         }
-
-        if (i === -1) {
-            _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot found.</b> Reversing sequence." });
-            return _steps;
-        }
-
-        _steps.push({ arr: [...data], pivotIdx: i, msg: `Pivot found at index <b>${i}</b> (value: ${data[i]}).` });
-
+        if (i === -1) { _steps.push({ arr: [...data], isLast: true, msg: "No pivot." }); return _steps; }
+        _steps.push({ arr: [...data], pivotIdx: i, msg: `Pivot found: ${data[i]}` });
         let j = -1;
         for (let k = n - 1; k > i; k--) {
-            _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Looking for <b>j</b> where a[i] < a[j].` });
+            _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Search j: a[i] < a[j]?` });
             if (data[k] > data[i]) { j = k; break; }
         }
-
-        _steps.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found <b>j</b> at index ${j} (value: ${data[j]}).` });
-
-        let swapped = [...data];
-        [swapped[i], swapped[j]] = [swapped[j], swapped[i]];
-        _steps.push({ arr: [...swapped], pivotIdx: j, matchIdx: i, msg: `Swap <b>a[i]</b> with <b>a[j]</b>.` });
-
-        _steps.push({ arr: [...swapped], suffixRange: [i + 1, n - 1], msg: `<b>Suffix identified</b>: indexes ${i+1} to ${n-1} will be reversed.` });
-
-        let final = [...swapped];
-        let part2 = final.slice(i + 1).reverse();
-        final.splice(i + 1, part2.length, ...part2);
-        
-        _steps.push({ arr: [...final], suffixRange: [i + 1, n - 1], msg: "<b>Next permutation found!</b>" });
+        _steps.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found j: ${data[j]}` });
+        let sw = [...data]; [sw[i], sw[j]] = [sw[j], sw[i]];
+        _steps.push({ arr: [...sw], pivotIdx: j, matchIdx: i, msg: `Swap!` });
+        _steps.push({ arr: [...sw], suffixRange: [i + 1, n - 1], msg: `Reverse suffix.` });
+        let final = [...sw];
+        let p2 = final.slice(i + 1).reverse();
+        final.splice(i + 1, p2.length, ...p2);
+        _steps.push({ arr: [...final], suffixRange: [i + 1, n - 1], msg: "Done!" });
         return _steps;
     }
 
@@ -342,40 +282,31 @@ function updateContent(key) {
         container.innerHTML = '';
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
-
         s.arr.forEach((val, idx) => {
             const cell = document.createElement('div');
-            cell.className = 'cell';
-            cell.textContent = val;
-            if (idx === s.pivotIdx) cell.classList.add('pivot');
-            if (idx === s.matchIdx) cell.classList.add('swapped');
+            cell.className = 'cell' + (idx === s.pivotIdx ? ' pivot' : '') + (idx === s.matchIdx ? ' swapped' : '');
             if (s.suffixRange && idx >= s.suffixRange[0] && idx <= s.suffixRange[1]) cell.classList.add('suffix-focus');
+            cell.textContent = val;
             if (s.activeIdx === idx) {
                 cell.classList.add('active');
-                const lbl = document.createElement('div');
-                lbl.className = 'index-label'; lbl.textContent = s.label;
+                const lbl = document.createElement('div'); lbl.className = 'index-label'; lbl.textContent = s.label;
                 cell.appendChild(lbl);
             }
             container.appendChild(cell);
         });
-        syncCodeHighlight(); // Вызываем подсветку ПОСЛЕ рендера визуализации
+        syncCodeHighlight();
     }
 
-    function go(dir) {
-        if (dir === 1 && cur === steps.length - 1) {
-            if (steps[cur].isLast) return;
-            steps = buildSteps(steps[cur].arr);
-            cur = 0; render(); return;
-        }
-        if(cur + dir >= 0 && cur + dir < steps.length) { cur += dir; render(); }
+    function go(d) { if(cur+d >= 0 && cur+d < steps.length) { cur+=d; render(); } }
+    function rebuild() {
+        const val = document.getElementById('in-arr').value;
+        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        steps = buildSteps(arr); cur = 0; render();
     }
+    function resetAll() { rebuild(); }
 
-    function resetAll() {
-        document.getElementById('in-arr').value = lastInitial;
-        rebuild();
-    }
-
-    renderContextControls(); rebuild();
+    renderContextControls();
+    rebuild();
 </script>
 </body>
 </html>
