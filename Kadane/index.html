@@ -119,6 +119,7 @@
 
 <script>
 const db = {
+const db = {
         theory: {
             EN: "<h3>Kadane's Algorithm</h3><p>Calculates the maximum subarray sum in O(n). If adding an element results in a sum smaller than the element itself, we start a new subarray from that point.</p>",
             RU: "<h3>Алгоритм Кадана</h3><p>Находит подмассив с максимальной суммой за O(n). Если накопленная сумма становится меньше текущего числа, мы «сбрасываем» старую цепочку и начинаем заново.</p>",
@@ -132,13 +133,16 @@ const db = {
                 `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>cur = <span class="fn">max</span>(x, cur + x)</span>` +
                 `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>res = <span class="fn">max</span>(res, cur)</span>` +
                 `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">return</span> res</span>`,
-            v2: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">kadane_v2</span>(nums):</span>` +
-                `<span class="code-line" data-l="2"><span class="indent"></span>pref, min_p, res = <span class="num">0</span>, <span class="num">0</span>, <span class="fn">float</span>(<span class="cm">'-inf'</span>)</span>` +
-                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> x <span class="kw">in</span> nums:</span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>pref += x</span>` +
-                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> pref - min_p > res: res = pref - min_p</span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> pref < min_p: min_p = pref</span>` +
-                `<span class="code-line" data-l="7"><span class="indent"></span><span class="kw">return</span> res</span>`
+            v2: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">kadane</span>(nums):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span>global_max, local_min = <span class="num">0</span>, <span class="num">0</span></span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span>res = <span class="fn">float</span>(<span class="cm">'-inf'</span>)</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> x <span class="kw">in</span> nums:</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>global_max += x</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> global_max - local_min > res:</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span>res = global_max - local_min</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> global_max < local_min:</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span>local_min = global_max</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="kw">return</span> res</span>`
         },
         cpp: {
             v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">kadane</span>(vector&lt;<span class="kw">int</span>&gt;&amp; arr) {</span>` +
@@ -149,15 +153,20 @@ const db = {
                 `<span class="code-line" data-l="6"><span class="indent"></span>}</span>` +
                 `<span class="code-line" data-l="7"><span class="indent"></span><span class="kw">return</span> res;</span>` +
                 `<span class="code-line" data-l="8">}</span>`,
-            v2: `<span class="code-line" data-l="1"><span class="kw">static</span> T <span class="fn">max_sub_array</span>(<span class="kw">const</span> Vector&lt;T&gt;&amp; nums) {</span>` +
-                `<span class="code-line" data-l="2"><span class="indent"></span>T sum = <span class="num">0</span>, min_p = <span class="num">0</span>, res = numeric_limits::min&lt;T&gt;();</span>` +
-                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span>(<span class="kw">int</span> i = <span class="num">0</span>; i < nums.size(); ++i) {</span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>sum += nums[i];</span>` +
-                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (sum - min_p > res) res = sum - min_p;</span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (sum < min_p) min_p = sum;</span>` +
-                `<span class="code-line" data-l="7"><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="8"><span class="indent"></span><span class="kw">return</span> res;</span>` +
-                `<span class="code-line" data-l="9">}</span>`
+            v2: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">kadane</span>(<span class="kw">const</span> vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> global_max = <span class="num">0</span>, local_min = <span class="num">0</span>;</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">int</span> res = numeric_limits&lt;<span class="kw">int</span>&gt;::min();</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i < nums.size(); ++i) {</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>global_max += nums[i];</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (global_max - local_min > res) {</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span>res = global_max - local_min;</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (global_max < local_min) {</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span>local_min = global_max;</span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="12"><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="13"><span class="indent"></span><span class="kw">return</span> res;</span>` +
+                `<span class="code-line" data-l="14">}</span>`
         }
     };
 
