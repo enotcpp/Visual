@@ -44,14 +44,12 @@
             font-size: 18px; font-weight: bold; font-family: monospace; transition: 0.2s;
         }
 
-        /* СОСТОЯНИЯ */
         .a-chain { border: 3px solid var(--pos) !important; } 
         .a-current { border: 3px solid var(--orange) !important; }
         .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 15px rgba(255,255,255,0.2); } 
         .dp-active { background: var(--pos) !important; color: white; border-color: transparent !important; } 
         .dim { opacity: 0.3; }
 
-        /* ТАБЫ И НИЖНЯЯ ПАНЕЛЬ */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
@@ -63,7 +61,6 @@
         .tab-content { display: none; padding: 30px; min-height: 150px; }
         .tab-content.active { display: block; }
         
-        /* СТИЛИ КОДА */
         code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; }
         .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.2s; }
         .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
@@ -78,8 +75,8 @@
         <div class="header-top">
             <h1>∑ Kadane's Algorithm</h1>
             <div class="stats">
-                <div><div class="stat-label">Drop Value</div><div class="stat-val" id="drop-val" style="color:#fff"></div></div>
-                <div><div class="stat-label">Global Max</div><div class="stat-val" id="g-max" style="color:var(--pos)">0</div></div>
+                <div><div class="stat-label" id="drop-label">Drop Value</div><div class="stat-val" id="drop-val" style="color:#fff"></div></div>
+                <div><div class="stat-label">Result (Max)</div><div class="stat-val" id="g-max" style="color:var(--pos)">0</div></div>
             </div>
         </div>
 
@@ -89,10 +86,10 @@
             <button onclick="generateRandom()">Random</button>
         </div>
 
-        <div class="grid-label">Input Array A (Green: Chain | Orange: Cursor)</div>
+        <div class="grid-label">Input Array A (Green: Max Subarray | Orange: Current)</div>
         <div class="grid-area" id="grid-a"></div>
 
-        <div class="grid-label">DP Array (White: Drop Point | Green: Current Sum)</div>
+        <div class="grid-label" id="dp-label">DP / Prefix Array</div>
         <div class="grid-area" id="grid-dp"></div>
 
         <div class="inputs">
@@ -120,10 +117,10 @@
 <script>
     const db = {
         theory: {
-            EN: "<h3>Kadane's Algorithm</h3><p>Calculates the maximum subarray sum in O(n). If adding an element results in a sum smaller than the element itself, we start a new subarray from that point.</p>",
-            RU: "<h3>Алгоритм Кадана</h3><p>Находит подмассив с максимальной суммой за O(n). Если накопленная сумма становится меньше текущего числа, мы «сбрасываем» старую цепочку и начинаем заново.</p>",
-            UKR: "<h3>Алгоритм Кадана</h3><p>Знаходить підмасив з максимальною сумою. Якщо сума стає меншою за поточне число, ми скидаємо ланцюжок і починаємо новий.</p>",
-            DE: "<h3>Kadane-Algorithmus</h3><p>Findet die maximale Teilarray-Summe. Wenn die Summe kleiner als das aktuelle Element wird, beginnen wir eine neue Kette.</p>"
+            EN: "<h3>Kadane's Algorithm</h3><p>V1: Standard DP approach. V2: Prefix sum approach (tracks global sum and min prefix point).</p>",
+            RU: "<h3>Алгоритм Кадана</h3><p>V1: Классический динамический подход. V2: Подход через префиксные суммы (находит максимальный разрыв между текущей суммой и минимальным «дном»).</p>",
+            UKR: "<h3>Алгоритм Кадана</h3><p>V1: Класичний підхід. V2: Підхід через префіксні суми.</p>",
+            DE: "<h3>Kadane-Algorithmus</h3><p>V1: Standard-DP. V2: Präfixsummen-Ansatz.</p>"
         },
         python: {
             v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">max_subarray</span>(arr):</span>` +
@@ -170,6 +167,7 @@
     };
 
     let A = [], steps = [], curIdx = 0, playTimer = null;
+    let currentMainTab = 'theory', currentVer = 'v1';
 
     function generateRandom() {
         const len = Math.floor(Math.random() * 8) + 5;
@@ -182,37 +180,62 @@
     function rebuild() {
         A = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
         if (A.length === 0) return;
-        initKadane();
+        initAlgorithm();
     }
 
-    function initKadane() {
+    function initAlgorithm() {
         clearInterval(playTimer);
         steps = [];
-        let dp = Array(A.length).fill(null), curSum = A[0], gMax = A[0], start = 0, lastDrop = -1;
-        
-        dp[0] = A[0];
-        // Начальное состояние
-        steps.push({ i: 0, dp: [...dp], res: gMax, chain: [0, 0], drop: -1, line: 2 });
+        if (currentVer === 'v1') initV1();
+        else initV2();
+        curIdx = 0; render();
+    }
 
+    function initV1() {
+        let dp = Array(A.length).fill(null), curSum = A[0], gMax = A[0], start = 0, lastDrop = -1;
+        dp[0] = A[0];
+        steps.push({ i: 0, dp: [...dp], res: gMax, chain: [0, 0], drop: -1, line: 2 });
         for (let i = 1; i < A.length; i++) {
-            let line = 4;
-            if (A[i] > (curSum + A[i])) {
-                curSum = A[i]; start = i; lastDrop = i - 1;
-            } else {
-                curSum += A[i];
-            }
+            if (A[i] > (curSum + A[i])) { curSum = A[i]; start = i; lastDrop = i - 1; } 
+            else { curSum += A[i]; }
             dp[i] = curSum;
-            // Шаг cur = max
             steps.push({ i: i, dp: [...dp], res: gMax, chain: [start, i], drop: lastDrop, line: 4 });
-            
-            // Шаг res = max
             gMax = Math.max(gMax, curSum);
             steps.push({ i: i, dp: [...dp], res: gMax, chain: [start, i], drop: lastDrop, line: 5 });
         }
-        // Финальный шаг
-        steps.push({ i: -1, dp: [...dp], res: gMax, chain: [start, A.length-1], drop: lastDrop, line: 6 });
-        
-        curIdx = 0; render();
+        steps.push({ i: -1, dp: [...dp], res: gMax, chain: [start, A.length-1], drop: lastDrop, line: 7 });
+    }
+
+    function initV2() {
+        let global_max = 0, local_min = 0, res = -Infinity;
+        let dp = Array(A.length).fill(null);
+        let minIdx = -1, bestStart = 0, bestEnd = 0;
+
+        steps.push({ i: -1, dp: [...dp], res: "-", lMin: 0, chain: [0, -1], drop: -1, line: 2 });
+
+        for (let i = 0; i < A.length; i++) {
+            global_max += A[i];
+            dp[i] = global_max;
+            steps.push({ i: i, dp: [...dp], res: res === -Infinity ? "-" : res, lMin: local_min, chain: [bestStart, bestEnd], drop: minIdx, line: 5 });
+
+            if (global_max - local_min > res) {
+                res = global_max - local_min;
+                bestStart = minIdx + 1;
+                bestEnd = i;
+                steps.push({ i: i, dp: [...dp], res: res, lMin: local_min, chain: [bestStart, bestEnd], drop: minIdx, line: 7 });
+            } else {
+                steps.push({ i: i, dp: [...dp], res: res, lMin: local_min, chain: [bestStart, bestEnd], drop: minIdx, line: 6 });
+            }
+
+            if (global_max < local_min) {
+                local_min = global_max;
+                minIdx = i;
+                steps.push({ i: i, dp: [...dp], res: res, lMin: local_min, chain: [bestStart, bestEnd], drop: minIdx, line: 10 });
+            } else {
+                steps.push({ i: i, dp: [...dp], res: res, lMin: local_min, chain: [bestStart, bestEnd], drop: minIdx, line: 9 });
+            }
+        }
+        steps.push({ i: -1, dp: [...dp], res: res, lMin: local_min, chain: [bestStart, bestEnd], drop: minIdx, line: 13 });
     }
 
     function syncCode() {
@@ -220,7 +243,6 @@
         const containerId = currentMainTab + '-display';
         const lines = document.getElementById(containerId).querySelectorAll('.code-line');
         lines.forEach(l => l.classList.remove('active'));
-        
         const currentStep = steps[curIdx];
         if (currentStep) {
             const target = document.querySelector(`#${containerId} [data-l="${currentStep.line}"]`);
@@ -231,15 +253,20 @@
     function render() {
         const s = steps[curIdx];
         if (!s) return;
+        
+        document.getElementById('drop-label').textContent = currentVer === 'v2' ? 'Local Min' : 'Reset Value';
+        document.getElementById('dp-label').textContent = currentVer === 'v2' ? 'Prefix Sums Array' : 'Current Sub-Sums Array';
+        document.getElementById('g-max').textContent = s.res;
+        document.getElementById('drop-val').textContent = currentVer === 'v2' ? s.lMin : (s.drop !== -1 ? A[s.drop] : '');
+        document.getElementById('step-info').textContent = `Step ${curIdx + 1}/${steps.length}`;
+
         const gA = document.getElementById('grid-a'), gDP = document.getElementById('grid-dp');
         gA.innerHTML = ''; gDP.innerHTML = '';
-        document.getElementById('g-max').textContent = s.res;
-        document.getElementById('drop-val').textContent = s.drop !== -1 ? A[s.drop] : '';
-        document.getElementById('step-info').textContent = `Step ${curIdx + 1}/${steps.length}`;
 
         A.forEach((val, i) => {
             const cA = document.createElement('div');
-            cA.className = 'cell' + (i >= s.chain[0] && i <= s.chain[1] ? ' a-chain' : '') + (i === s.i ? ' a-current' : '');
+            const inChain = i >= s.chain[0] && i <= s.chain[1];
+            cA.className = 'cell' + (inChain ? ' a-chain' : '') + (i === s.i ? ' a-current' : '');
             cA.textContent = val;
             gA.appendChild(cA);
 
@@ -264,7 +291,6 @@
 
     function resetAll() { clearInterval(playTimer); playTimer = null; curIdx = 0; render(); }
 
-    let currentMainTab = 'theory';
     function switchMainTab(btn, id) {
         currentMainTab = id;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -278,29 +304,26 @@
         const panel = document.getElementById('context-panel');
         panel.innerHTML = '';
         const opts = currentMainTab === 'theory' ? ['EN', 'RU', 'UKR', 'DE'] : ['v1', 'v2'];
-        opts.forEach((opt, idx) => {
+        opts.forEach((opt) => {
             const b = document.createElement('button');
-            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.className = 'sub-btn' + (opt === (currentMainTab === 'theory' ? 'RU' : currentVer) ? ' active' : '');
             b.textContent = opt;
             b.onclick = () => {
+                if (currentMainTab !== 'theory') {
+                    currentVer = opt;
+                    initAlgorithm();
+                }
                 document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
                 b.classList.add('active');
-                if(currentMainTab === 'theory') {
-                    document.getElementById('theory-display').innerHTML = db.theory[opt];
-                } else {
-                    document.getElementById(currentMainTab + '-display').innerHTML = db[currentMainTab][opt];
-                    syncCode();
-                }
+                const targetDisplay = document.getElementById(currentMainTab + '-display');
+                targetDisplay.innerHTML = currentMainTab === 'theory' ? db.theory[opt] : db[currentMainTab][opt];
+                syncCode();
             };
             panel.appendChild(b);
         });
-        
-        if(currentMainTab === 'theory') {
-            document.getElementById('theory-display').innerHTML = db.theory[opts[0]];
-        } else {
-            document.getElementById(currentMainTab + '-display').innerHTML = db[currentMainTab][opts[0]];
-            syncCode();
-        }
+        const defaultOpt = currentMainTab === 'theory' ? 'RU' : currentVer;
+        document.getElementById(currentMainTab + '-display').innerHTML = currentMainTab === 'theory' ? db.theory[defaultOpt] : db[currentMainTab][defaultOpt];
+        syncCode();
     }
 
     rebuild(); renderContext();
