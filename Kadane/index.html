@@ -123,13 +123,13 @@
             DE: "<h3>Kadane-Algorithmus</h3><p>V1: Standard-DP. V2: Präfixsummen-Ansatz.</p>"
         },
         python: {
-            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">max_subarray</span>(arr):</span>` +
+            v2: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">max_subarray</span>(arr):</span>` +
                 `<span class="code-line" data-l="2"><span class="indent"></span>cur = res = arr[<span class="num">0</span>]</span>` +
                 `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> x <span class="kw">in</span> arr[<span class="num">1</span>:]:</span>` +
                 `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>cur = <span class="fn">max</span>(x, cur + x)</span>` +
                 `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>res = <span class="fn">max</span>(res, cur)</span>` +
                 `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">return</span> res</span>`,
-            v2: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">kadane</span>(nums):</span>` +
+            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">kadane</span>(nums):</span>` +
                 `<span class="code-line" data-l="2"><span class="indent"></span>global_max, local_min = <span class="num">0</span>, <span class="num">0</span></span>` +
                 `<span class="code-line" data-l="3"><span class="indent"></span>res = <span class="fn">float</span>(<span class="cm">'-inf'</span>)</span>` +
                 `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums)):</span>` +
@@ -141,7 +141,7 @@
                 `<span class="code-line" data-l="10"><span class="indent"></span><span class="kw">return</span> res</span>`
         },
         cpp: {
-            v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">kadane</span>(vector&lt;<span class="kw">int</span>&gt;&amp; arr) {</span>` +
+            v2: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">kadane</span>(vector&lt;<span class="kw">int</span>&gt;&amp; arr) {</span>` +
                 `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> cur = <span class="num">0</span>, res = arr[<span class="num">0</span>];</span>` +
                 `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> x : arr) {</span>` +
                 `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>cur = <span class="fn">max</span>(x, cur + x);</span>` +
@@ -149,7 +149,7 @@
                 `<span class="code-line" data-l="6"><span class="indent"></span>}</span>` +
                 `<span class="code-line" data-l="7"><span class="indent"></span><span class="kw">return</span> res;</span>` +
                 `<span class="code-line" data-l="8">}</span>`,
-            v2: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">kadane</span>(<span class="kw">const</span> vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>` +
+            v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">kadane</span>(<span class="kw">const</span> vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>` +
                 `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> global_max = <span class="num">0</span>, local_min = <span class="num">0</span>;</span>` +
                 `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">int</span> res = numeric_limits&lt;<span class="kw">int</span>&gt;::min();</span>` +
                 `<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i < nums.size(); ++i) {</span>` +
