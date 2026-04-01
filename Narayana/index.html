@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Narayana's Permutation | Fixed Version</title>
+    <title>Narayana's Permutation | Final Fixed</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     
@@ -19,10 +19,10 @@
             --pivot-color: #f1c40f;
             --suffix-bg: rgba(127, 119, 221, 0.15);
             --match-color: #1d9e75;
-            --line-hl: rgba(127, 119, 221, 0.35);
+            --line-hl: rgba(127, 119, 221, 0.3);
         }
 
-        body { margin: 0; padding: 2rem 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
+        body { margin: 0; padding: 2rem 0; font-family: -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); }
         .wrap { max-width: 850px; margin: 0 auto; padding: 0 20px; }
         
         .visualizer-card {
@@ -45,42 +45,37 @@
         .viz-area { margin: 60px 0; }
         .array-row { display: flex; justify-content: center; gap: 10px; }
         .cell {
-            width: 55px; height: 55px; border-radius: 12px;
+            width: 58px; height: 58px; border-radius: 12px;
             border: 1px solid var(--border); background: var(--bg-card);
             display: flex; align-items: center; justify-content: center;
             font-size: 20px; font-weight: bold; position: relative;
         }
         .index-label {
-            position: absolute; top: -35px; background: var(--accent);
-            padding: 2px 8px; border-radius: 4px; font-size: 12px;
+            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: white; padding: 2px 10px; border-radius: 6px; font-size: 14px;
         }
 
-        .cell.pivot { border: 2px solid var(--pivot-color); color: var(--pivot-color); }
-        .cell.swapped { background: var(--match-color); border-color: #fff; }
-        .cell.suffix-focus { background: var(--suffix-bg); border-style: dashed; }
+        .cell.pivot { border: 3px solid var(--pivot-color); color: var(--pivot-color); }
+        .cell.swapped { background: var(--match-color); color: white; border-color: white; }
+        .cell.suffix-focus { background: var(--suffix-bg); border-color: var(--accent); border-style: dashed; }
+        .cell.active { border-color: var(--accent); transform: translateY(-4px); }
 
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; padding: 15px 20px; color: var(--text-secondary); cursor: pointer; font-weight: bold; }
+        .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 12px; }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
         
-        .code-wrapper { position: relative; padding: 16px; background: var(--code-bg); }
-        pre[class*="language-"] { margin: 0 !important; padding: 0 !important; background: transparent !important; }
-        code[class*="language-"] { 
-            font-size: 13px !important; 
-            line-height: 20px !important; /* Фиксированная высота строки */
-            display: block;
-        }
+        .tab-content { display: none; padding: 25px; }
+        .tab-content.active { display: block; }
 
-        .line-highlight-overlay {
-            position: absolute;
-            left: 0; width: 100%;
-            height: 20px; /* Должна совпадать с line-height */
-            background: var(--line-hl);
-            border-left: 4px solid var(--accent);
-            display: none;
-            pointer-events: none;
-            z-index: 1;
+        .code-container { position: relative; background: var(--code-bg); border-radius: 10px; padding: 16px; }
+        pre[class*="language-"] { margin: 0 !important; background: transparent !important; }
+        code[class*="language-"] { font-size: 13px !important; line-height: 20px !important; display: block; }
+
+        .line-highlight {
+            position: absolute; left: 0; width: 100%; height: 20px;
+            background: var(--line-hl); border-left: 4px solid var(--accent);
+            pointer-events: none; display: none; z-index: 1;
         }
     </style>
 </head>
@@ -92,23 +87,36 @@
             <input id="in-arr" type="text" value="0, 1, 2, 5, 3, 3, 0">
             <button onclick="rebuild()">Apply</button>
         </div>
-        <div id="info" style="margin-bottom: 20px; color: var(--accent);">Ready.</div>
+        <div id="info" style="margin-bottom: 20px; min-height: 40px; line-height: 1.6;">Click "Next" to start.</div>
         <div class="viz-area"><div class="array-row" id="array-row"></div></div>
-        <div class="inputs">
-            <button class="secondary" onclick="go(-1)">Back</button>
-            <button onclick="go(1)">Next Step</button>
+        <div class="inputs" style="margin-bottom: 0;">
+            <button class="secondary" onclick="go(-1)">< Back</button>
+            <button onclick="go(1)">Next Step ></button>
             <button class="secondary" onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; color: var(--text-secondary); font-size: 12px;"></span>
         </div>
     </div>
 
     <div class="lab-info">
         <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab(this, 'python')">Python</button>
+            <button class="tab-btn active" onclick="switchTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchTab(this, 'python')">Python</button>
             <button class="tab-btn" onclick="switchTab(this, 'cpp')">C++</button>
         </div>
-        <div class="code-wrapper">
-            <div id="line-overlay" class="line-highlight-overlay"></div>
-            <pre><code id="code-display" class="language-python"></code></pre>
+        
+        <div id="theory" class="tab-content active">
+            <h3>Narayana's Algorithm</h3>
+            <p>1. Find largest <b>i</b> such that <b>a[i] < a[i+1]</b>.</p>
+            <p>2. Find largest <b>j</b> such that <b>a[i] < a[j]</b>.</p>
+            <p>3. Swap <b>a[i]</b> and <b>a[j]</b>.</p>
+            <p>4. Reverse the suffix starting from <b>i+1</b>.</p>
+        </div>
+
+        <div id="code-tab" class="tab-content">
+            <div class="code-container">
+                <div id="highlight-bar" class="line-highlight"></div>
+                <pre><code id="code-display"></code></pre>
+            </div>
         </div>
     </div>
 </div>
@@ -118,107 +126,139 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
-    const db = {
-        python: "def my_next_permutation(arr):\n    n = len(arr)\n    if n <= 1: return False\n    i = n - 1\n    while True:\n        i1 = i\n        i -= 1\n        if arr[i] < arr[i1]:\n            j = n\n            while not (arr[i] < arr[j-1]):\n                j -= 1\n            arr[i], arr[j-1] = arr[j-1], arr[i]\n            arr[i1:] = reversed(arr[i1:])\n            return True\n        if i == 0:\n            arr.reverse()\n            return False",
-        cpp: "bool my_next_permutation(BidirectionalIt first, BidirectionalIt last) {\n    if (first == last) return false;\n    auto i = last; \n    if (first == --i) return false;\n    while (true) {\n        auto i1 = i; \n        if (*--i < *i1) {\n            auto j = last;\n            while (!(*i < *--j));\n            std::iter_swap(i, j);\n            std::reverse(i1, last);\n            return true;\n        }\n        if (i == first) {\n            std::reverse(first, last);\n            return false;\n        }\n    }\n}"
+    const codes = {
+        python: `def my_next_permutation(arr):
+    n = len(arr)
+    if n <= 1: return False
+    i = n - 1
+    while True:
+        i1 = i
+        i -= 1
+        if arr[i] < arr[i1]:
+            j = n
+            while not (arr[i] < arr[j-1]):
+                j -= 1
+            arr[i], arr[j-1] = arr[j-1], arr[i]
+            arr[i1:] = reversed(arr[i1:])
+            return True
+        if i == 0:
+            arr.reverse()
+            return False`,
+        cpp: `bool my_next_permutation(BidirectionalIt first, BidirectionalIt last) {
+    if (first == last) return false;
+    auto i = last; 
+    if (first == --i) return false;
+    while (true) {
+        auto i1 = i; 
+        if (*--i < *i1) {
+            auto j = last;
+            while (!(*i < *--j));
+            std::iter_swap(i, j);
+            std::reverse(i1, last);
+            return true;
+        }
+        if (i == first) {
+            std::reverse(first, last);
+            return false;
+        }
+    }
+}`
     };
 
-    let steps = [], cur = 0, currentLang = 'python';
+    let steps = [], cur = 0, currentTab = 'theory';
 
-    function switchTab(btn, lang) {
-        currentLang = lang;
+    function switchTab(btn, tab) {
+        currentTab = tab;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
-        updateCodeView();
+
+        if (tab === 'theory') {
+            document.getElementById('theory').classList.add('active');
+        } else {
+            const codeTab = document.getElementById('code-tab');
+            const display = document.getElementById('code-display');
+            codeTab.classList.add('active');
+            display.className = 'language-' + tab;
+            // Экранирование для корректного цвета в Prism
+            display.textContent = codes[tab];
+            Prism.highlightElement(display);
+            syncLine();
+        }
     }
 
-    function updateCodeView() {
-        const display = document.getElementById('code-display');
-        display.className = 'language-' + currentLang;
-        
-        // Экранируем символы для корректной подсветки C++
-        let code = db[currentLang];
-        display.innerHTML = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        
-        Prism.highlightElement(display);
-        syncHighlight();
-    }
-
-    function syncHighlight() {
-        const overlay = document.getElementById('line-overlay');
+    function syncLine() {
+        const bar = document.getElementById('highlight-bar');
         const step = steps[cur];
-        
-        // Маппинг строк (1-based)
-        const maps = {
-            cpp: { i: 8, j: 10, swap: 11, rev: 12, end: 16 },
-            python: { i: 8, j: 10, swap: 12, rev: 13, end: 16 }
+        if (currentTab === 'theory' || !step) { bar.style.display = 'none'; return; }
+
+        // ТОЧНЫЙ МАППИНГ СТРОК
+        const lines = {
+            cpp: { i: 8, j: 10, swap: 11, rev: 12, last: 16 },
+            python: { i: 8, j: 10, swap: 12, rev: 13, last: 16 }
         };
 
-        let line = -1;
-        if (step) {
-            if (step.label === 'i') line = maps[currentLang].i;
-            else if (step.label === 'j') line = maps[currentLang].j;
-            else if (step.pivotIdx !== undefined && step.matchIdx !== undefined && !step.suffixRange) line = maps[currentLang].swap;
-            else if (step.suffixRange) line = maps[currentLang].rev;
-            else if (step.isLast) line = maps[currentLang].end;
-        }
+        let target = -1;
+        if (step.label === 'i') target = lines[currentTab].i;
+        else if (step.label === 'j') target = lines[currentTab].j;
+        else if (step.pivotIdx !== undefined && step.matchIdx !== undefined && !step.suffixRange) target = lines[currentTab].swap;
+        else if (step.suffixRange) target = lines[currentTab].rev;
+        else if (step.isLast) target = lines[currentTab].last;
 
-        if (line > 0) {
-            overlay.style.top = `${16 + (line - 1) * 20}px`; // 16px - padding контейнера, 20px - высота строки
-            overlay.style.display = 'block';
+        if (target > 0) {
+            bar.style.top = `${16 + (target - 1) * 20}px`; // 16px - padding, 20px - line-height
+            bar.style.display = 'block';
         } else {
-            overlay.style.display = 'none';
+            bar.style.display = 'none';
         }
     }
 
     function buildSteps(arr) {
-        let _steps = [], data = [...arr], n = data.length;
-        _steps.push({ arr: [...data], msg: "Start" });
+        let s = [], data = [...arr], n = data.length;
+        s.push({ arr: [...data], msg: "Initial sequence." });
         let i = -1;
         for (let k = n - 2; k >= 0; k--) {
-            _steps.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Check i=${k}` });
+            s.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Comparing a[${k}] (${data[k]}) and a[${k+1}] (${data[k+1]})` });
             if (data[k] < data[k+1]) { i = k; break; }
         }
-        if (i === -1) { _steps.push({ arr: [...data], isLast: true, msg: "Finish" }); return _steps; }
-        
+        if (i === -1) { s.push({ arr: [...data], isLast: true, msg: "No pivot. Reversing." }); return s; }
+        s.push({ arr: [...data], pivotIdx: i, msg: `Pivot found at index ${i}.` });
         let j = -1;
         for (let k = n - 1; k > i; k--) {
-            _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Check j=${k}` });
+            s.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Comparing pivot with a[${k}] (${data[k]})` });
             if (data[k] > data[i]) { j = k; break; }
         }
-        
+        s.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found j at index ${j}.` });
         let sw = [...data]; [sw[i], sw[j]] = [sw[j], sw[i]];
-        _steps.push({ arr: [...sw], pivotIdx: j, matchIdx: i, msg: "Swap" });
-        _steps.push({ arr: [...sw], suffixRange: [i + 1, n - 1], msg: "Reverse" });
-        
-        let res = [...sw];
-        let tail = res.slice(i + 1).reverse();
+        s.push({ arr: [...sw], pivotIdx: j, matchIdx: i, msg: "Swapping elements." });
+        s.push({ arr: [...sw], suffixRange: [i + 1, n - 1], msg: "Reversing suffix." });
+        let res = [...sw]; let tail = res.slice(i + 1).reverse();
         res.splice(i + 1, tail.length, ...tail);
-        _steps.push({ arr: [...res], suffixRange: [i + 1, n - 1], msg: "Done" });
-        return _steps;
+        s.push({ arr: [...res], suffixRange: [i + 1, n - 1], msg: "Next permutation found!" });
+        return s;
     }
 
     function render() {
         const s = steps[cur], container = document.getElementById('array-row');
         container.innerHTML = '';
-        document.getElementById('info').textContent = s.msg;
-        s.arr.forEach((val, idx) => {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            if (idx === s.pivotIdx) cell.classList.add('pivot');
-            if (idx === s.matchIdx) cell.classList.add('swapped');
-            if (s.suffixRange && idx >= s.suffixRange[0] && idx <= s.suffixRange[1]) cell.classList.add('suffix-focus');
-            cell.textContent = val;
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        s.arr.forEach((v, idx) => {
+            const div = document.createElement('div');
+            div.className = 'cell' + (idx === s.pivotIdx ? ' pivot' : '') + (idx === s.matchIdx ? ' swapped' : '');
+            if (s.suffixRange && idx >= s.suffixRange[0] && idx <= s.suffixRange[1]) div.classList.add('suffix-focus');
+            div.textContent = v;
             if (s.activeIdx === idx) {
+                div.classList.add('active');
                 const l = document.createElement('div'); l.className = 'index-label'; l.textContent = s.label;
-                cell.appendChild(l);
+                div.appendChild(l);
             }
-            container.appendChild(cell);
+            container.appendChild(div);
         });
-        syncHighlight();
+        syncLine();
     }
 
-    function go(d) { if (cur+d >= 0 && cur+d < steps.length) { cur+=d; render(); } }
+    function go(d) { if(cur+d >=0 && cur+d < steps.length) { cur+=d; render(); } }
     function rebuild() {
         const val = document.getElementById('in-arr').value;
         const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
@@ -226,7 +266,6 @@
     }
     function resetAll() { rebuild(); }
 
-    updateCodeView();
     rebuild();
 </script>
 </body>
