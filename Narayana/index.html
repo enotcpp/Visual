@@ -231,22 +231,41 @@
         }
     }
 
-    // НОВАЯ ЛОГИКА ПОДСВЕТКИ ОВЕРЛЕЕМ
+function updateContent(key) {
+        const display = document.getElementById(currentMainTab + '-display');
+        const overlay = document.getElementById(currentMainTab + '-overlay');
+        
+        if (overlay) overlay.style.display = 'none';
+
+        if (currentMainTab === 'theory') {
+            display.innerHTML = db.theory[key];
+        } else {
+            // Используем textContent для чистого кода
+            display.textContent = db[currentMainTab][key];
+            
+            // Запускаем подсветку Prism
+            Prism.highlightElement(display);
+
+            // Ждем следующего кадра отрисовки, чтобы расчеты высоты были верными
+            requestAnimationFrame(() => {
+                syncCodeHighlight();
+            });
+        }
+    }
+
     function syncCodeHighlight() {
         if (currentMainTab === 'theory') return;
         
-        const display = document.getElementById(currentMainTab + '-display');
         const overlay = document.getElementById(currentMainTab + '-overlay');
         if (!overlay) return;
 
-        // Маппинг шагов на номера строк для C++ V1
+        // Точный маппинг строк для C++ (v1)
         const lineMap = {
-            v1: { findI: 7, findJ: 9, swap: 10, rev: 11, last: 15 },
-            v2: { findI: 2, findJ: 2, swap: 2, rev: 2, last: 2 } 
+            v1: { findI: 8, findJ: 10, swap: 11, rev: 12, last: 16 }
         };
 
         const step = steps[cur];
-        let lineNum = 1;
+        let lineNum = -1; // По умолчанию ничего не подсвечиваем
 
         if (step && currentVer === 'v1' && currentMainTab === 'cpp') {
             if (step.activeIdx !== undefined && step.label === 'i') lineNum = lineMap.v1.findI;
@@ -257,16 +276,13 @@
         }
 
         if (lineNum > 0) {
-            // Рассчитываем положение оверлея
-            // Prism Tomorrow использует line-height: 1.5. Размер шрифта 13px.
-            // 13 * 1.5 = 19.5px - высота одной строки.
+            // Константы для Prism Tomorrow
             const lineHeight = 19.5; 
-            // Получаем отступ pre (padding)
-            const prePadding = 13; // 1em ≈ 13px
+            const paddingTop = 16; // Стандартный padding для pre в 1em/1.2em
 
             overlay.style.height = `${lineHeight}px`;
-            // lineNum - 1, т.к. строки считаем с 1
-            overlay.style.top = `${prePadding + (lineNum - 1) * lineHeight}px`; 
+            // (lineNum - 1) — чтобы 1-я строка имела отступ 0px + padding
+            overlay.style.top = `${paddingTop + (lineNum - 1) * lineHeight}px`; 
             overlay.style.display = 'block';
         } else {
             overlay.style.display = 'none';
