@@ -18,7 +18,7 @@
             --pivot-color: #f1c40f;
             --suffix-bg: rgba(127, 119, 221, 0.15);
             --match-color: #1d9e75;
-            --line-hl: rgba(127, 119, 221, 0.2);
+            --line-hl: rgba(127, 119, 221, 0.15); /* Цвет подсветки строки */
         }
 
         * { box-sizing: border-box; }
@@ -90,6 +90,7 @@
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
+        /* СТИЛИ КОДА КАК В BINARY SEARCH */
         code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; background: var(--code-bg); padding: 15px; border-radius: 10px; }
         .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.2s; }
         .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
@@ -150,28 +151,28 @@
                 `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>j -= <span class="num">1</span></span>` +
                 `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span>nums[i], nums[j] = nums[j], nums[i]</span>` +
                 `<span class="code-line" data-l="10"><span class="indent"></span>nums[i+1:] = <span class="fn">reversed</span>(nums[i+1:])</span>`,
-            v2: `<span class="code-line"><span class="kw">import</span> itertools</span><br><span class="code-line"><span class="cm"># Standard library way:</span></span><br><span class="code-line"><span class="kw">def</span> <span class="fn">get_all</span>(arr):</span><br><span class="code-line"><span class="indent"></span><span class="kw">return</span> <span class="fn">list</span>(itertools.<span class="fn">permutations</span>(arr))</span>`
+            v2: `<span class="code-line"><span class="cm"># Generator version coming soon...</span></span>`
         },
         cpp: {
-            v1: `<span class="code-line" data-l="1"><span class="kw">bool</span> <span class="fn">next_permutation</span>(Iter first, Iter last) {</span>` +
-                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">auto</span> i = last; <span class="kw">if</span> (first == last || first == --i) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
-                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">while</span> (<span class="kw">true</span>) {</span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> i1 = i;</span>` +
-                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (*--i &lt; *i1) {</span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> j = last;</span>` +
-                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">while</span> (!(*i &lt; *--j));</span>` +
-                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">iter_swap</span>(i, j);</span>` +
-                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="fn">reverse</span>(i1, last);</span>` +
-                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">return</span> <span class="kw">true</span>;</span>` +
-                `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="12"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (i == first) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
-                `<span class="code-line" data-l="13"><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="14">}</span>`,
-            v2: `<span class="code-line"><span class="kw">void</span> <span class="fn">std_way</span>(vector&lt;<span class="kw">int</span>&gt;&amp; v) {</span><br><span class="code-line"><span class="indent"></span>std::<span class="fn">next_permutation</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());</span><br><span class="code-line">}</span>`
+            v1: `<span class="code-line" data-l="1"><span class="kw">void</span> <span class="fn">nextPermutation</span>(vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span>std::<span class="fn">next_permutation</span>(nums.<span class="fn">begin</span>(), nums.<span class="fn">end</span>());</span>` +
+                `<span class="code-line" data-l="1">}</span>`,
+            v2: `<span class="code-line" data-l="1"><span class="kw">bool</span> <span class="fn">my_next_permutation</span>(Iter first, Iter last) {</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">auto</span> i = last; <span class="kw">if</span> (first == last || first == --i) <span class="kw">return</span> <span class="kw">false</span>;</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="kw">while</span> (<span class="kw">true</span>) {</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> i1 = i; <span class="kw">if</span> (*--i &lt; *i1) {</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">auto</span> j = last; <span class="kw">while</span> (!(*i &lt; *--j));</span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span>std::<span class="fn">iter_swap</span>(i, j);</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span>std::<span class="fn">reverse</span>(i1, last);</span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">return</span> <span class="kw">true</span>;</span>` +
+                `<span class="code-line" data-l="12"><span class="indent"></span><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="13"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (i == first) { std::<span class="fn">reverse</span>(first, last); <span class="kw">return</span> <span class="kw">false</span>; }</span>` +
+                `<span class="code-line" data-l="14"><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="15">}</span>`
         }
     };
 
-    let steps = [], cur = 0, lastInitial = "", currentMainTab = 'theory', activeSubTab = 'v1';
+    let steps = [], cur = 0, lastInitial = "", currentMainTab = 'theory';
 
     function switchMainTab(btn, tabId) {
         currentMainTab = tabId;
@@ -185,21 +186,17 @@
     function renderContextControls() {
         const panel = document.getElementById('context-panel'); panel.innerHTML = '';
         const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
-        list.forEach((item) => {
+        list.forEach((item, idx) => {
             const b = document.createElement('button');
-            b.className = 'sub-btn' + (activeSubTab === item || (currentMainTab === 'theory' && item === 'EN' && activeSubTab === 'v1') ? ' active' : '');
-            if (currentMainTab === 'theory' && !['EN','RU'].includes(activeSubTab)) activeSubTab = 'EN';
-            
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
             b.textContent = item;
             b.onclick = () => {
                 document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-                b.classList.add('active'); 
-                activeSubTab = item;
-                updateContent(item);
+                b.classList.add('active'); updateContent(item);
             };
             panel.appendChild(b);
         });
-        updateContent(activeSubTab);
+        updateContent(currentMainTab === 'theory' ? 'EN' : 'v1');
     }
 
     function updateContent(key) {
@@ -211,65 +208,65 @@
         }
     }
 
+    // СИНХРОНИЗАЦИЯ ПОДСВЕТКИ (как в Binary Search)
     function syncCodeHighlight() {
-        if (currentMainTab === 'theory' || activeSubTab !== 'v1') return;
+        if (currentMainTab === 'theory') return;
         const containerId = currentMainTab + '-display';
         const lines = document.getElementById(containerId).querySelectorAll('.code-line');
         lines.forEach(l => l.classList.remove('active'));
         
-        const s = steps[cur];
-        if (s) {
-            let lineNum = s.line;
-            // Корректировка строк для C++ V1
-            if (currentMainTab === 'cpp') {
-                if (s.type === 'find_i') lineNum = 5;
-                if (s.type === 'found_i') lineNum = 5;
-                if (s.type === 'find_j') lineNum = 7;
-                if (s.type === 'found_j') lineNum = 7;
-                if (s.type === 'swap') lineNum = 8;
-                if (s.type === 'reverse') lineNum = 9;
-                if (s.isLast) lineNum = 12;
-            }
-            const target = document.querySelector(`#${containerId} [data-l="${lineNum}"]`);
-            if (target) target.classList.add('active');
+        const currentStep = steps[cur];
+        if (currentStep && currentStep.line) {
+            const targetLine = document.querySelector(`#${containerId} [data-l="${currentStep.line}"]`);
+            if (targetLine) targetLine.classList.add('active');
         }
+    }
+
+    function rebuild() {
+        const val = document.getElementById('in-arr').value;
+        lastInitial = val;
+        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        steps = buildSteps(arr);
+        cur = 0; render();
     }
 
     function buildSteps(arr) {
         let _steps = [];
         let data = [...arr], n = data.length;
-        _steps.push({ arr: [...data], msg: "Starting Narayana's algorithm.", line: 1, type: 'init' });
+        _steps.push({ arr: [...data], msg: "Ready.", line: 1 });
 
         let i = -1;
         for (let k = n - 2; k >= 0; k--) {
-            _steps.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Comparing a[${k}] and a[${k+1}]`, line: 3, type: 'find_i' });
+            _steps.push({ arr: [...data], activeIdx: k, label: 'i', msg: `Search i: ${data[k]} < ${data[k+1]}?`, line: 3 });
             if (data[k] < data[k+1]) { i = k; break; }
         }
 
         if (i === -1) {
-            _steps.push({ arr: [...data], isLast: true, msg: "<b>Sorted descending.</b> No next permutation.", line: 5, type: 'end' });
+            _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot found.</b> Last permutation.", line: 13 });
             return _steps;
         }
 
-        _steps.push({ arr: [...data], pivotIdx: i, msg: `Pivot found: <b>${data[i]}</b>`, line: 5, type: 'found_i' });
+        _steps.push({ arr: [...data], pivotIdx: i, msg: `Pivot found: ${data[i]}.`, line: 5 });
 
         let j = -1;
         for (let k = n - 1; k > i; k--) {
-            _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Looking for j where ${data[i]} < a[j]`, line: 7, type: 'find_j' });
+            _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Search j: ${data[i]} < ${data[k]}?`, line: 7 });
             if (data[k] > data[i]) { j = k; break; }
         }
 
-        _steps.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found j: <b>${data[j]}</b>`, line: 7, type: 'found_j' });
+        _steps.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found j: ${data[j]}.`, line: 8 });
 
         let swapped = [...data];
         [swapped[i], swapped[j]] = [swapped[j], swapped[i]];
-        _steps.push({ arr: [...swapped], pivotIdx: j, matchIdx: i, msg: `Swap pivot and j.`, line: 9, type: 'swap' });
+        _steps.push({ arr: [...swapped], pivotIdx: j, matchIdx: i, msg: `Swap a[i] and a[j].`, line: 9 });
+
+        _steps.push({ arr: [...swapped], suffixRange: [i + 1, n - 1], msg: `Reverse suffix from index ${i+1}.`, line: 10 });
 
         let final = [...swapped];
         let part2 = final.slice(i + 1).reverse();
         final.splice(i + 1, part2.length, ...part2);
         
-        _steps.push({ arr: [...final], suffixRange: [i + 1, n - 1], msg: "<b>Reverse suffix.</b> New permutation ready!", line: 10, type: 'reverse' });
+        _steps.push({ arr: [...final], suffixRange: [i + 1, n - 1], msg: "<b>Next permutation found!</b>", line: 10 });
         return _steps;
     }
 
@@ -294,7 +291,7 @@
             }
             container.appendChild(cell);
         });
-        syncCodeHighlight();
+        syncCodeHighlight(); // Подсвечиваем строку при каждом рендере
     }
 
     function go(dir) {
@@ -304,14 +301,6 @@
             cur = 0; render(); return;
         }
         if(cur + dir >= 0 && cur + dir < steps.length) { cur += dir; render(); }
-    }
-
-    function rebuild() {
-        const val = document.getElementById('in-arr').value;
-        lastInitial = val;
-        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = buildSteps(arr);
-        cur = 0; render();
     }
 
     function resetAll() {
