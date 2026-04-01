@@ -14,13 +14,12 @@
             --text-main: #e1e1e3;
             --text-secondary: #9ba1a6;
             --accent: #7f77dd;
-            --accent-secondary: #1d9e75;
             --border: #3e3e42;
             --code-bg: #0d0d0f;
             --pivot-color: #f1c40f;
             --suffix-bg: rgba(127, 119, 221, 0.15);
             --match-color: #1d9e75;
-            --line-hl: rgba(127, 119, 221, 0.25);
+            --line-hl: rgba(127, 119, 221, 0.3); /* Цвет подсветки активной строки */
         }
 
         * { box-sizing: border-box; }
@@ -50,7 +49,6 @@
             transition: opacity 0.2s; font-size: 14px;
         }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        button:hover { opacity: 0.9; }
 
         .info-box {
             background: var(--bg-main); border-left: 4px solid var(--accent);
@@ -92,9 +90,33 @@
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
-        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; position: relative; padding: 1em; }
-        .code-line { display: block; width: 100%; }
-        .code-line.active { background: var(--line-hl); box-shadow: inset 3px 0 0 var(--accent); }
+        pre[class*="language-"] { 
+            margin: 0; 
+            border-radius: 10px; 
+            background: var(--code-bg) !important; 
+            font-size: 13px; 
+            overflow: hidden; /* Важно для подсветки строк */
+        }
+        
+        /* Стили для кастомной подсветки строк ПОВЕРХ Prism */
+        .code-wrapper { position: relative; }
+        .line-highlight-overlay {
+            position: absolute;
+            left: 0; width: 100%;
+            background: var(--line-hl);
+            border-left: 3px solid var(--accent);
+            pointer-events: none; /* Чтобы можно было выделять код сквозь оверлей */
+            display: none; /* По умолчанию скрыт */
+            z-index: 1;
+        }
+        
+        /* Сохраняем отступы */
+        code[class*="language-"] {
+            display: block;
+            white-space: pre;
+            position: relative;
+            z-index: 2; /* Код должен быть над оверлеем */
+        }
     </style>
 </head>
 <body>
@@ -128,39 +150,45 @@
             <div class="context-controls" id="context-panel"></div>
         </div>
         <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
-        <div id="python" class="tab-content"><pre><code class="language-python" id="python-display"></code></pre></div>
-        <div id="cpp" class="tab-content"><pre><code class="language-cpp" id="cpp-display"></code></pre></div>
+        
+        <div id="python" class="tab-content">
+            <div class="code-wrapper">
+                <div class="line-highlight-overlay" id="python-overlay"></div>
+                <pre><code class="language-python" id="python-display"></code></pre>
+            </div>
+        </div>
+        
+        <div id="cpp" class="tab-content">
+            <div class="code-wrapper">
+                <div class="line-highlight-overlay" id="cpp-overlay"></div>
+                <pre><code class="language-cpp" id="cpp-display"></code></pre>
+            </div>
+        </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/normalize-whitespace/prism-normalize-whitespace.min.js"></script>
 
 <script>
     const db = {
         theory: {
-            EN: "<h3>Narayana's Algorithm</h3><p>Generates the next lexicographical permutation of a sequence. It involves finding the largest index <b>i</b> such that <b>a[i] < a[i+1]</b>, then the largest index <b>j</b> such that <b>a[i] < a[j]</b>, swapping them, and reversing the suffix.</p>",
-            RU: "<h3>Алгоритм Нараяны</h3><p>Алгоритм нахождения следующей перестановки в лексикографическом порядке. Состоит из 4 шагов: поиск индекса <b>i</b>, поиск индекса <b>j</b>, обмен значений и реверс хвоста последовательности.</p>"
+            EN: "<h3>Narayana's Algorithm</h3><p>Lexicographical permutation...</p>",
+            RU: "<h3>Алгоритм Нараяны</h3><p>Алгоритм нахождения следующей перестановки...</p>"
         },
         python: {
-            v1: wrapLines("def my_next_permutation(arr):\n    n = len(arr)\n    if n <= 1: return False\n    i = n - 1\n    while True:\n        i1 = i\n        i -= 1\n        if arr[i] < arr[i1]:\n            j = n\n            while not (arr[i] < arr[j-1]):\n                j -= 1\n            arr[i], arr[j-1] = arr[j-1], arr[i]\n            arr[i1:] = reversed(arr[i1:])\n            return True\n        if i == 0:\n            arr.reverse()\n            return False"),
-            v2: wrapLines("def next_permutation(nums):\n    i = len(nums) - 2\n    while i >= 0 and nums[i] >= nums[i+1]:\n        i -= 1\n    if i >= 0:\n        j = len(nums) - 1\n        while nums[j] <= nums[i]:\n            j -= 1\n        nums[i], nums[j] = nums[j], nums[i]\n    nums[i+1:] = reversed(nums[i+1:])")
+            v1: "def my_next_permutation(arr):\n    n = len(arr)\n    if n <= 1: return False\n    i = n - 1\n    while True:\n        i1 = i\n        i -= 1\n        if arr[i] < arr[i1]:\n            j = n\n            while not (arr[i] < arr[j-1]):\n                j -= 1\n            arr[i], arr[j-1] = arr[j-1], arr[i]\n            arr[i1:] = reversed(arr[i1:])\n            return True\n        if i == 0:\n            arr.reverse()\n            return False",
+            v2: "def next_permutation(nums):\n    # logic here..."
         },
         cpp: {
-            v1: wrapLines("bool my_next_permutation(BidirectionalIt first, BidirectionalIt last) {\n    if (first == last) return false;\n    auto i = last; \n    if (first == --i) return false;\n    while (true) {\n        auto i1 = i; \n        if (*--i < *i1) {\n            auto j = last;\n            while (!(*i < *--j));\n            std::iter_swap(i, j);\n            std::reverse(i1, last);\n            return true;\n        }\n        if (i == first) {\n            std::reverse(first, last);\n            return false;\n        }\n    }\n}"),
-            v2: wrapLines("void nextPermutation(vector<int>& nums) {\n    std::next_permutation(nums.begin(), nums.end());\n}")
+            v1: "bool my_next_permutation(BidirectionalIt first, BidirectionalIt last) {\n    if (first == last) return false;\n    auto i = last; \n    if (first == --i) return false;\n    while (true) {\n        auto i1 = i; \n        if (*--i < *i1) {\n            auto j = last;\n            while (!(*i < *--j));\n            std::iter_swap(i, j);\n            std::reverse(i1, last);\n            return true;\n        }\n        if (i == first) {\n            std::reverse(first, last);\n            return false;\n        }\n    }\n}",
+            v2: "void nextPermutation(vector<int>& nums) {\n    std::next_permutation(nums.begin(), nums.end());\n}"
         }
     };
 
     let steps = [], cur = 0, lastInitial = "", currentMainTab = 'theory', currentVer = 'v1';
-
-    // Обертка каждой строки кода в data-line="X" при наполнении базы данных
-    function wrapLines(code) {
-        return code.split('\n').map((line, idx) => 
-            `<span class="code-line" data-line="${idx + 1}">${line}</span>`
-        ).join('\n');
-    }
 
     function switchMainTab(btn, tabId) {
         currentMainTab = tabId;
@@ -189,20 +217,29 @@
 
     function updateContent(key) {
         const display = document.getElementById(currentMainTab + '-display');
-        if (currentMainTab === 'theory') display.innerHTML = db.theory[key];
-        else {
-            display.innerHTML = db[currentMainTab][key];
+        const overlay = document.getElementById(currentMainTab + '-overlay');
+        
+        if (overlay) overlay.style.display = 'none'; // Скрываем оверлей при смене контента
+
+        if (currentMainTab === 'theory') {
+            display.innerHTML = db.theory[key];
+        } else {
+            // Prism нормально красит C++, если использовать textContent и правильную инициализацию
+            display.textContent = db[currentMainTab][key];
             Prism.highlightElement(display);
             syncCodeHighlight();
         }
     }
 
+    // НОВАЯ ЛОГИКА ПОДСВЕТКИ ОВЕРЛЕЕМ
     function syncCodeHighlight() {
         if (currentMainTab === 'theory') return;
-        const display = document.getElementById(currentMainTab + '-display');
-        display.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
         
-        // Маппинг шагов визуализации на номера строк в C++ V1
+        const display = document.getElementById(currentMainTab + '-display');
+        const overlay = document.getElementById(currentMainTab + '-overlay');
+        if (!overlay) return;
+
+        // Маппинг шагов на номера строк для C++ V1
         const lineMap = {
             v1: { findI: 7, findJ: 9, swap: 10, rev: 11, last: 15 },
             v2: { findI: 2, findJ: 2, swap: 2, rev: 2, last: 2 } 
@@ -211,7 +248,7 @@
         const step = steps[cur];
         let lineNum = 1;
 
-        if (currentVer === 'v1' && currentMainTab === 'cpp') {
+        if (step && currentVer === 'v1' && currentMainTab === 'cpp') {
             if (step.activeIdx !== undefined && step.label === 'i') lineNum = lineMap.v1.findI;
             else if (step.label === 'j') lineNum = lineMap.v1.findJ;
             else if (step.pivotIdx !== undefined && step.matchIdx !== undefined && !step.suffixRange) lineNum = lineMap.v1.swap;
@@ -219,8 +256,21 @@
             else if (step.isLast) lineNum = lineMap.v1.last;
         }
 
-        const target = display.querySelector(`[data-line="${lineNum}"]`);
-        if (target) target.classList.add('active');
+        if (lineNum > 0) {
+            // Рассчитываем положение оверлея
+            // Prism Tomorrow использует line-height: 1.5. Размер шрифта 13px.
+            // 13 * 1.5 = 19.5px - высота одной строки.
+            const lineHeight = 19.5; 
+            // Получаем отступ pre (padding)
+            const prePadding = 13; // 1em ≈ 13px
+
+            overlay.style.height = `${lineHeight}px`;
+            // lineNum - 1, т.к. строки считаем с 1
+            overlay.style.top = `${prePadding + (lineNum - 1) * lineHeight}px`; 
+            overlay.style.display = 'block';
+        } else {
+            overlay.style.display = 'none';
+        }
     }
 
     function rebuild() {
@@ -292,7 +342,7 @@
             }
             container.appendChild(cell);
         });
-        syncCodeHighlight();
+        syncCodeHighlight(); // Вызываем подсветку ПОСЛЕ рендера визуализации
     }
 
     function go(dir) {
