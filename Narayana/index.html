@@ -194,18 +194,28 @@
         ).join('\n');
     }
 
+// Оборачиваем строки СРАЗУ, чтобы сохранить структуру
+    function wrapLines(code) {
+        return code.split('\n').map((line, idx) => 
+            `<span class="code-line" data-line="${idx + 1}">${line || ' '}</span>`
+        ).join('\n');
+    }
+
     function updateContent(key) {
         const display = document.getElementById(currentMainTab + '-display');
         if (currentMainTab === 'theory') {
             display.innerHTML = db.theory[key];
         } else {
-            // 1. Сначала вставляем чистый текст
-            display.textContent = db[currentMainTab][key];
-            // 2. Заставляем Prism раскрасить синтаксис
-            Prism.highlightElement(display);
-            // 3. Берем результат Prism и оборачиваем строки в наши контейнеры
-            display.innerHTML = applyLineWrappers(display.innerHTML);
-            // 4. Синхронизируем подсветку активной строки
+            // 1. Сначала создаем структуру строк (чистый текст внутри span)
+            const rawCode = db[currentMainTab][key];
+            display.innerHTML = wrapLines(rawCode);
+            
+            // 2. Подсвечиваем каждую строку отдельно, чтобы Prism не ломал наши span
+            display.querySelectorAll('.code-line').forEach(line => {
+                Prism.highlightElement(line);
+            });
+            
+            // 3. Синхронизируем активную строку
             syncCodeHighlight();
         }
     }
