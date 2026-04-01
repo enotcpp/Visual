@@ -16,66 +16,59 @@
             --code-bg: #0d0d0f;
             --pos: #1d9e75;
             --orange: #e67e22;
-            --line-hl: rgba(127, 119, 221, 0.25);
+            --line-hl: rgba(127, 119, 221, 0.15);
         }
 
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .wrap { max-width: 950px; margin: 0 auto; padding: 40px 20px; }
+        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
         .visualizer-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 40px; }
         
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .stats { display: flex; gap: 30px; }
-        .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
-        .stat-val { font-size: 24px; font-weight: bold; font-family: 'JetBrains Mono', monospace; min-height: 28px; }
+        .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; }
+        .stat-val { font-size: 24px; font-weight: bold; font-family: monospace; min-height: 28px; }
 
         .inputs { display: flex; gap: 12px; margin-bottom: 30px; align-items: center; }
-        .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; outline: none; width: 320px; font-family: monospace; }
+        .inputs input { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; outline: none; width: 280px; }
         
         button { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.2s; }
-        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button:hover { border-color: var(--accent); }
         button.primary { background: var(--accent); color: white; border: none; }
-        button.primary:hover { background: #6b62c4; }
 
-        .grid-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 700; opacity: 0.8; }
-        .grid-area { display: flex; justify-content: flex-start; gap: 10px; margin-bottom: 35px; min-height: 60px; flex-wrap: wrap; }
+        .grid-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+        .grid-area { display: flex; justify-content: center; gap: 10px; margin-bottom: 35px; min-height: 60px; flex-wrap: wrap; }
         
         .cell {
             width: 55px; height: 55px; background: var(--bg-input); border: 1px solid var(--border);
             border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: bold; font-family: 'JetBrains Mono', monospace; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 18px; font-weight: bold; font-family: monospace; transition: 0.2s;
         }
 
-        /* СОСТОЯНИЯ ЯЧЕЕК */
-        .a-chain { border: 3px solid var(--pos) !important; box-shadow: 0 0 10px rgba(29, 158, 117, 0.2); } 
-        .a-current { border: 3px solid var(--orange) !important; transform: translateY(-5px); }
-        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 15px rgba(255,255,255,0.3); } 
+        /* СОСТОЯНИЯ */
+        .a-chain { border: 3px solid var(--pos) !important; } 
+        .a-current { border: 3px solid var(--orange) !important; }
+        .drop-point { border: 3px solid #ffffff !important; box-shadow: 0 0 15px rgba(255,255,255,0.2); } 
         .dp-active { background: var(--pos) !important; color: white; border-color: transparent !important; } 
-        .dim { opacity: 0.2; transform: scale(0.95); }
+        .dim { opacity: 0.3; }
 
-        /* ТАБЫ И КОД */
+        /* ТАБЫ И НИЖНЯЯ ПАНЕЛЬ */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
-        .tab-btn.active { color: var(--accent); background: var(--bg-card); border-top: 2px solid var(--accent); }
+        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
         .context-controls { margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 20px; }
-        .sub-btn { font-size: 10px; padding: 4px 10px; opacity: 0.6; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
-        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); background: rgba(127, 119, 221, 0.1); }
+        .sub-btn { font-size: 10px; padding: 4px 8px; opacity: 0.6; border: 1px solid var(--border); background: transparent; color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
 
-        .tab-content { display: none; padding: 30px; min-height: 200px; }
+        .tab-content { display: none; padding: 30px; min-height: 150px; }
         .tab-content.active { display: block; }
         
-        pre { background: var(--code-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin: 0; overflow-x: auto; }
-        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; color: #a6accd; display: block; }
-        .code-line { display: block; padding: 0 12px; border-left: 3px solid transparent; transition: 0.2s; }
+        /* СТИЛИ КОДА */
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.2s; }
         .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
         .indent { display: inline-block; width: 24px; }
-        
-        /* ЦВЕТА СИНТАКСИСА */
-        .kw { color: #cc99cd; } /* Keyword */
-        .fn { color: #e67e22; } /* Function */
-        .cm { color: #676e95; font-style: italic; } /* Comment */
-        .num { color: #f8c555; } /* Number */
-        .type { color: #f07178; } /* Type */
+        .kw { color: #cc99cd; } .fn { color: #e67e22; } .cm { color: #777; } .num { color: #f8c555; }
     </style>
 </head>
 <body>
@@ -85,29 +78,29 @@
         <div class="header-top">
             <h1>∑ Kadane's Algorithm</h1>
             <div class="stats">
-                <div><div class="stat-label">Min So Far (Drop)</div><div class="stat-val" id="drop-val" style="color:#fff">0</div></div>
+                <div><div class="stat-label">Drop Value</div><div class="stat-val" id="drop-val" style="color:#fff"></div></div>
                 <div><div class="stat-label">Global Max</div><div class="stat-val" id="g-max" style="color:var(--pos)">0</div></div>
             </div>
         </div>
 
         <div class="inputs">
             <input id="arr-input" type="text" value="-2, 1, -3, 4, -1, 2, 1, -5, 4">
-            <button onclick="rebuild()" class="primary">Update Array</button>
+            <button onclick="rebuild()" class="primary">Update</button>
             <button onclick="generateRandom()">Random</button>
         </div>
 
-        <div class="grid-label">Input Array A (Green: Active Subarray | Orange: Cursor)</div>
+        <div class="grid-label">Input Array A (Green: Chain | Orange: Cursor)</div>
         <div class="grid-area" id="grid-a"></div>
 
-        <div class="grid-label">State / Prefix Sums (White: Min Point | Green: Current)</div>
+        <div class="grid-label">DP Array (White: Drop Point | Green: Current Sum)</div>
         <div class="grid-area" id="grid-dp"></div>
 
         <div class="inputs">
             <button onclick="go(-1)">← Back</button>
             <button onclick="go(1)" class="primary">Next Step →</button>
-            <button onclick="autoPlay()" id="play-btn">Auto Play</button>
+            <button onclick="autoPlay()">Auto Play</button>
             <button onclick="resetAll()">Reset</button>
-            <span id="step-info" style="margin-left: auto; color: var(--text-secondary); font-size: 13px; font-family: monospace;"></span>
+            <span id="step-info" style="margin-left: auto; color: var(--text-secondary); font-size: 13px;"></span>
         </div>
     </div>
 
@@ -127,8 +120,10 @@
 <script>
     const db = {
         theory: {
-            EN: "<h3>Kadane's Algorithm</h3><p>Calculates the maximum subarray sum in O(n). There are two main ways to think about it: 1) Local Max optimization, and 2) Difference between current prefix sum and minimum prefix sum seen so far.</p>",
-            RU: "<h3>Алгоритм Кадана</h3><p>Находит подмассив с максимальной суммой за O(n). В версии V2 мы используем подход с префиксными суммами: ищем максимальную разность между текущей суммой и минимальной суммой, встреченной ранее ($sum[i] - min\\_prefix$).</p>"
+            EN: "<h3>Kadane's Algorithm</h3><p>Calculates the maximum subarray sum in O(n). If adding an element results in a sum smaller than the element itself, we start a new subarray from that point.</p>",
+            RU: "<h3>Алгоритм Кадана</h3><p>Находит подмассив с максимальной суммой за O(n). Если накопленная сумма становится меньше текущего числа, мы «сбрасываем» старую цепочку и начинаем заново.</p>",
+            UKR: "<h3>Алгоритм Кадана</h3><p>Знаходить підмасив з максимальною сумою. Якщо сума стає меншою за поточне число, ми скидаємо ланцюжок і починаємо новий.</p>",
+            DE: "<h3>Kadane-Algorithmus</h3><p>Findet die maximale Teilarray-Summe. Wenn die Summe kleiner als das aktuelle Element wird, beginnen wir eine neue Kette.</p>"
         },
         python: {
             v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">max_subarray</span>(arr):</span>` +
@@ -137,7 +132,9 @@
                 `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>cur = <span class="fn">max</span>(x, cur + x)</span>` +
                 `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>res = <span class="fn">max</span>(res, cur)</span>` +
                 `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">return</span> res</span>`,
-            v2: `<span class="code-line" data-l="1"><span class="cm"># Alternative logic similar to prefix sums</span></span>`
+            v2: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">kadane</span>(a):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span><span class="cm"># Standard loop implementation</span></span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span>...</span>`
         },
         cpp: {
             v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">kadane</span>(vector&lt;<span class="kw">int</span>&gt;&amp; arr) {</span>` +
@@ -148,83 +145,66 @@
                 `<span class="code-line" data-l="6"><span class="indent"></span>}</span>` +
                 `<span class="code-line" data-l="7"><span class="indent"></span><span class="kw">return</span> res;</span>` +
                 `<span class="code-line" data-l="8">}</span>`,
-            v2: `<span class="code-line" data-l="1"><span class="kw">long long</span> <span class="fn">max_sub_array</span>(<span class="kw">const</span> vector&lt;<span class="kw">int</span>&gt;&amp; nums) {</span>` +
-                `<span class="code-line" data-l="2"><span class="indent"></span><span class="type">long long</span> sum = <span class="num">0</span>, min_p = <span class="num">0</span>, res = INT_MIN;</span>` +
-                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span>(<span class="kw">int</span> x : nums) {</span>` +
-                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>sum += x;</span>` +
-                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (sum - min_p > res) res = sum - min_p;</span>` +
-                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (sum < min_p) min_p = sum;</span>` +
-                `<span class="code-line" data-l="7"><span class="indent"></span>}</span>` +
-                `<span class="code-line" data-l="8"><span class="indent"></span><span class="kw">return</span> res;</span>` +
-                `<span class="code-line" data-l="9">}</span>`
+            v2: `<span class="code-line" data-l="1"><span class="cm">// Alternative Kadane version</span></span>` +
+                `<span class="code-line" data-l="2">...</span>`
         }
     };
 
     let A = [], steps = [], curIdx = 0, playTimer = null;
-    let currentMainTab = 'theory';
-    let currentVer = 'v1';
 
     function generateRandom() {
-        const res = Array.from({length: 8}, () => Math.floor(Math.random() * 21) - 10);
+        const len = Math.floor(Math.random() * 8) + 5;
+        const res = [];
+        for(let i=0; i<len; i++) res.push(Math.floor(Math.random() * 21) - 10);
         document.getElementById('arr-input').value = res.join(', ');
         rebuild();
     }
 
     function rebuild() {
         A = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        if (A.length > 0) initKadane();
+        if (A.length === 0) return;
+        initKadane();
     }
 
     function initKadane() {
-        clearInterval(playTimer); playTimer = null;
-        document.getElementById('play-btn').textContent = "Auto Play";
+        clearInterval(playTimer);
         steps = [];
+        let dp = Array(A.length).fill(null), curSum = A[0], gMax = A[0], start = 0, lastDrop = -1;
         
-        let curSum = 0, gMax = -Infinity, minP = 0, start = 0, bestStart = 0, bestEnd = 0;
-        let dp = Array(A.length).fill(null);
-        let lastMinIdx = -1;
+        dp[0] = A[0];
+        // Начальное состояние (строка 2 в обоих языках)
+        steps.push({ i: 0, dp: [...dp], res: gMax, chain: [0, 0], drop: -1, line: 2 });
 
-        // Step 0: Init
-        steps.push({ i: -1, dp: [...dp], res: "-", minP: 0, chain: [-1, -1], drop: -1, line: 2 });
-
-        for (let i = 0; i < A.length; i++) {
-            curSum += A[i];
+        for (let i = 1; i < A.length; i++) {
+            let line = 4; // По умолчанию cur = max(x, cur + x)
+            if (A[i] > (curSum + A[i])) {
+                curSum = A[i]; start = i; lastDrop = i - 1;
+            } else {
+                curSum += A[i];
+            }
             dp[i] = curSum;
+            // Шаг cur = max
+            steps.push({ i: i, dp: [...dp], res: gMax, chain: [start, i], drop: lastDrop, line: 4 });
             
-            // Шаг обновления суммы (строка 4)
-            steps.push({ i, dp: [...dp], res: gMax === -Infinity ? "-" : gMax, minP, chain: [start, i], drop: lastMinIdx, line: 4 });
-
-            // Шаг обновления результата (строка 5)
-            if (curSum - minP > gMax) {
-                gMax = curSum - minP;
-                bestStart = (lastMinIdx === -1) ? 0 : lastMinIdx + 1;
-                bestEnd = i;
-            }
-            steps.push({ i, dp: [...dp], res: gMax, minP, chain: [bestStart, i], drop: lastMinIdx, line: 5 });
-
-            // Шаг обновления минимума (строка 6)
-            if (curSum < minP) {
-                minP = curSum;
-                lastMinIdx = i;
-            }
-            steps.push({ i, dp: [...dp], res: gMax, minP, chain: [bestStart, i], drop: lastMinIdx, line: 6 });
+            // Шаг res = max
+            gMax = Math.max(gMax, curSum);
+            steps.push({ i: i, dp: [...dp], res: gMax, chain: [start, i], drop: lastDrop, line: 5 });
         }
-        
-        // Финал
-        steps.push({ i: -1, dp: [...dp], res: gMax, minP, chain: [bestStart, bestEnd], drop: lastMinIdx, line: 8 });
+        // Финальный шаг (return)
+        steps.push({ i: -1, dp: [...dp], res: gMax, chain: [start, A.length-1], drop: lastDrop, line: 6 });
         
         curIdx = 0; render();
     }
 
-    function syncCodeHighlight() {
+    function syncCode() {
         if (currentMainTab === 'theory') return;
         const containerId = currentMainTab + '-display';
         const lines = document.getElementById(containerId).querySelectorAll('.code-line');
         lines.forEach(l => l.classList.remove('active'));
         
-        const s = steps[curIdx];
-        if (s) {
-            const target = document.querySelector(`#${containerId} [data-l="${s.line}"]`);
+        const currentStep = steps[curIdx];
+        if (currentStep) {
+            const target = document.querySelector(`#${containerId} [data-l="${currentStep.line}"]`);
             if (target) target.classList.add('active');
         }
     }
@@ -232,13 +212,11 @@
     function render() {
         const s = steps[curIdx];
         if (!s) return;
-        
         const gA = document.getElementById('grid-a'), gDP = document.getElementById('grid-dp');
         gA.innerHTML = ''; gDP.innerHTML = '';
-        
         document.getElementById('g-max').textContent = s.res;
-        document.getElementById('drop-val').textContent = s.minP;
-        document.getElementById('step-info').textContent = `STEP ${curIdx + 1} / ${steps.length}`;
+        document.getElementById('drop-val').textContent = s.drop !== -1 ? A[s.drop] : '';
+        document.getElementById('step-info').textContent = `Step ${curIdx + 1}/${steps.length}`;
 
         A.forEach((val, i) => {
             const cA = document.createElement('div');
@@ -251,36 +229,28 @@
             cD.textContent = s.dp[i] ?? '';
             gDP.appendChild(cD);
         });
-        syncCodeHighlight();
+        syncCode();
     }
 
     function go(d) {
         if(curIdx+d >= 0 && curIdx+d < steps.length) { curIdx+=d; render(); }
-        else { clearInterval(playTimer); playTimer = null; document.getElementById('play-btn').textContent = "Auto Play"; }
+        else { clearInterval(playTimer); playTimer = null; }
     }
 
     function autoPlay() {
-        if (playTimer) { 
-            clearInterval(playTimer); playTimer = null; 
-            document.getElementById('play-btn').textContent = "Auto Play";
-        } else {
-            if (curIdx >= steps.length - 1) curIdx = -1;
-            document.getElementById('play-btn').textContent = "Stop";
-            playTimer = setInterval(() => go(1), 700);
-        }
+        if (playTimer) { clearInterval(playTimer); playTimer = null; return; }
+        if (curIdx === steps.length - 1) curIdx = -1;
+        playTimer = setInterval(() => go(1), 800);
     }
 
-    function resetAll() { 
-        clearInterval(playTimer); playTimer = null; 
-        document.getElementById('play-btn').textContent = "Auto Play";
-        curIdx = 0; render(); 
-    }
+    function resetAll() { clearInterval(playTimer); playTimer = null; curIdx = 0; render(); }
 
+    let currentMainTab = 'theory';
     function switchMainTab(btn, id) {
         currentMainTab = id;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
         document.getElementById(id).classList.add('active');
         renderContext();
     }
@@ -288,30 +258,29 @@
     function renderContext() {
         const panel = document.getElementById('context-panel');
         panel.innerHTML = '';
-        const opts = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1', 'v2'];
+        const opts = currentMainTab === 'theory' ? ['EN', 'RU', 'UKR', 'DE'] : ['v1', 'v2'];
         opts.forEach((opt, idx) => {
             const b = document.createElement('button');
-            b.className = 'sub-btn' + (opt === currentVer || idx === 0 ? ' active' : '');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
             b.textContent = opt;
             b.onclick = () => {
-                currentVer = opt;
                 document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
                 b.classList.add('active');
                 if(currentMainTab === 'theory') {
                     document.getElementById('theory-display').innerHTML = db.theory[opt];
                 } else {
                     document.getElementById(currentMainTab + '-display').innerHTML = db[currentMainTab][opt];
-                    syncCodeHighlight();
+                    syncCode();
                 }
             };
             panel.appendChild(b);
         });
         
-        const initialOpt = currentMainTab === 'theory' ? 'RU' : 'v2';
-        if(currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory['RU'];
-        else {
-            document.getElementById(currentMainTab + '-display').innerHTML = db[currentMainTab][currentVer];
-            syncCodeHighlight();
+        if(currentMainTab === 'theory') {
+            document.getElementById('theory-display').innerHTML = db.theory[opts[0]];
+        } else {
+            document.getElementById(currentMainTab + '-display').innerHTML = db[currentMainTab][opts[0]];
+            syncCode();
         }
     }
 
