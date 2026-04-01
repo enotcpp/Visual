@@ -16,6 +16,7 @@
             --code-bg: #0d0d0f;
             --pos: #1d9e75;
             --orange: #e67e22;
+            --line-hl: rgba(127, 119, 221, 0.15);
         }
 
         body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text-main); }
@@ -61,7 +62,13 @@
 
         .tab-content { display: none; padding: 30px; min-height: 150px; }
         .tab-content.active { display: block; }
-        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; }
+        
+        /* СТИЛИ КОДА */
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.2s; }
+        .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
+        .indent { display: inline-block; width: 24px; }
+        .kw { color: #cc99cd; } .fn { color: #e67e22; } .cm { color: #777; } .num { color: #f8c555; }
     </style>
 </head>
 <body>
@@ -119,12 +126,27 @@
             DE: "<h3>Kadane-Algorithmus</h3><p>Findet die maximale Teilarray-Summe. Wenn die Summe kleiner als das aktuelle Element wird, beginnen wir eine neue Kette.</p>"
         },
         python: {
-            v1: "def max_subarray(arr):\n    cur = res = arr[0]\n    for x in arr[1:]:\n        cur = max(x, cur + x)\n        res = max(res, cur)\n    return res",
-            v2: "import math\n# Standard approach\ndef kadane(a):\n    ..."
+            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">max_subarray</span>(arr):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span>cur = res = arr[<span class="num">0</span>]</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> x <span class="kw">in</span> arr[<span class="num">1</span>:]:</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>cur = <span class="fn">max</span>(x, cur + x)</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>res = <span class="fn">max</span>(res, cur)</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="kw">return</span> res</span>`,
+            v2: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">kadane</span>(a):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span><span class="cm"># Standard loop implementation</span></span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span>...</span>`
         },
         cpp: {
-            v1: "int kadane(vector<int>& arr) {\n    int cur = 0, res = arr[0];\n    for (int x : arr) {\n        cur = max(x, cur + x);\n        res = max(res, cur);\n    }\n    return res;\n}",
-            v2: "// Alternative implementation\n..."
+            v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">kadane</span>(vector&lt;<span class="kw">int</span>&gt;&amp; arr) {</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> cur = <span class="num">0</span>, res = arr[<span class="num">0</span>];</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> x : arr) {</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>cur = <span class="fn">max</span>(x, cur + x);</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>res = <span class="fn">max</span>(res, cur);</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="kw">return</span> res;</span>` +
+                `<span class="code-line" data-l="8">}</span>`,
+            v2: `<span class="code-line" data-l="1"><span class="cm">// Alternative Kadane version</span></span>` +
+                `<span class="code-line" data-l="2">...</span>`
         }
     };
 
@@ -150,19 +172,41 @@
         let dp = Array(A.length).fill(null), curSum = A[0], gMax = A[0], start = 0, lastDrop = -1;
         
         dp[0] = A[0];
-        steps.push({ i: 0, dp: [...dp], res: gMax, chain: [0, 0], drop: -1 });
+        // Начальное состояние (строка 2 в обоих языках)
+        steps.push({ i: 0, dp: [...dp], res: gMax, chain: [0, 0], drop: -1, line: 2 });
 
         for (let i = 1; i < A.length; i++) {
+            let line = 4; // По умолчанию cur = max(x, cur + x)
             if (A[i] > (curSum + A[i])) {
                 curSum = A[i]; start = i; lastDrop = i - 1;
             } else {
                 curSum += A[i];
             }
             dp[i] = curSum;
+            // Шаг cur = max
+            steps.push({ i: i, dp: [...dp], res: gMax, chain: [start, i], drop: lastDrop, line: 4 });
+            
+            // Шаг res = max
             gMax = Math.max(gMax, curSum);
-            steps.push({ i: i, dp: [...dp], res: gMax, chain: [start, i], drop: lastDrop });
+            steps.push({ i: i, dp: [...dp], res: gMax, chain: [start, i], drop: lastDrop, line: 5 });
         }
+        // Финальный шаг (return)
+        steps.push({ i: -1, dp: [...dp], res: gMax, chain: [start, A.length-1], drop: lastDrop, line: 6 });
+        
         curIdx = 0; render();
+    }
+
+    function syncCode() {
+        if (currentMainTab === 'theory') return;
+        const containerId = currentMainTab + '-display';
+        const lines = document.getElementById(containerId).querySelectorAll('.code-line');
+        lines.forEach(l => l.classList.remove('active'));
+        
+        const currentStep = steps[curIdx];
+        if (currentStep) {
+            const target = document.querySelector(`#${containerId} [data-l="${currentStep.line}"]`);
+            if (target) target.classList.add('active');
+        }
     }
 
     function render() {
@@ -185,6 +229,7 @@
             cD.textContent = s.dp[i] ?? '';
             gDP.appendChild(cD);
         });
+        syncCode();
     }
 
     function go(d) {
@@ -221,13 +266,22 @@
             b.onclick = () => {
                 document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
                 b.classList.add('active');
-                if(currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[opt];
-                else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][opt];
+                if(currentMainTab === 'theory') {
+                    document.getElementById('theory-display').innerHTML = db.theory[opt];
+                } else {
+                    document.getElementById(currentMainTab + '-display').innerHTML = db[currentMainTab][opt];
+                    syncCode();
+                }
             };
             panel.appendChild(b);
         });
-        if(currentMainTab === 'theory') document.getElementById('theory-display').innerHTML = db.theory[opts[0]];
-        else document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][opts[0]];
+        
+        if(currentMainTab === 'theory') {
+            document.getElementById('theory-display').innerHTML = db.theory[opts[0]];
+        } else {
+            document.getElementById(currentMainTab + '-display').innerHTML = db[currentMainTab][opts[0]];
+            syncCode();
+        }
     }
 
     rebuild(); renderContext();
