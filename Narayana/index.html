@@ -20,7 +20,7 @@
             --pivot-color: #f1c40f;
             --suffix-bg: rgba(127, 119, 221, 0.15);
             --match-color: #1d9e75;
-            --line-hl: rgba(127, 119, 221, 0.25);
+            --line-hl: rgba(127, 119, 221, 0.35);
         }
 
         * { box-sizing: border-box; }
@@ -89,12 +89,30 @@
         .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
         .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
         .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+        
         .tab-content { display: none; padding: 25px; line-height: 1.6; }
         .tab-content.active { display: block; }
 
-        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; position: relative; }
-        .code-line { display: block; width: 100%; }
-        .code-line.active { background: var(--line-hl); box-shadow: inset 3px 0 0 var(--accent); }
+        pre[class*="language-"] { 
+            margin: 0; 
+            border-radius: 10px; 
+            background: var(--code-bg) !important; 
+            font-size: 13px; 
+            overflow: hidden;
+        }
+        
+        /* Исправленные стили строк */
+        .code-line { 
+            display: block; 
+            width: 100%; 
+            white-space: pre; 
+            padding: 0 15px;
+            border-left: 3px solid transparent;
+        }
+        .code-line.active { 
+            background: var(--line-hl); 
+            border-left-color: var(--accent);
+        }
     </style>
 </head>
 <body>
@@ -155,9 +173,10 @@
 
     let steps = [], cur = 0, lastInitial = "", currentMainTab = 'theory', currentVer = 'v1';
 
+    // Обертка строк БЕЗ потери пробелов
     function wrapLines(code) {
         return code.split('\n').map((line, idx) => 
-            `<span class="code-line" data-line="${idx + 1}">${line}</span>`
+            `<span class="code-line" data-line="${idx + 1}">${line || ' '}</span>`
         ).join('\n');
     }
 
@@ -186,36 +205,16 @@
         updateContent(currentMainTab === 'theory' ? 'EN' : currentVer);
     }
 
-    // Теперь эта функция работает с уже подсвеченным Prism-ом HTML-кодом
-    function applyLineWrappers(html) {
-        const lines = html.split('\n');
-        return lines.map((line, idx) => 
-            `<span class="code-line" data-line="${idx + 1}">${line}</span>`
-        ).join('\n');
-    }
-
-// Оборачиваем строки СРАЗУ, чтобы сохранить структуру
-    function wrapLines(code) {
-        return code.split('\n').map((line, idx) => 
-            `<span class="code-line" data-line="${idx + 1}">${line || ' '}</span>`
-        ).join('\n');
-    }
-
     function updateContent(key) {
         const display = document.getElementById(currentMainTab + '-display');
         if (currentMainTab === 'theory') {
             display.innerHTML = db.theory[key];
         } else {
-            // 1. Сначала создаем структуру строк (чистый текст внутри span)
-            const rawCode = db[currentMainTab][key];
-            display.innerHTML = wrapLines(rawCode);
-            
-            // 2. Подсвечиваем каждую строку отдельно, чтобы Prism не ломал наши span
-            display.querySelectorAll('.code-line').forEach(line => {
-                Prism.highlightElement(line);
-            });
-            
-            // 3. Синхронизируем активную строку
+            // 1. Создаем структуру
+            display.innerHTML = wrapLines(db[currentMainTab][key]);
+            // 2. Красим каждую строку отдельно (сохраняет Prism-стили и наши span)
+            display.querySelectorAll('.code-line').forEach(el => Prism.highlightElement(el));
+            // 3. Подсвечиваем активную строку
             syncCodeHighlight();
         }
     }
@@ -225,27 +224,21 @@
         const display = document.getElementById(currentMainTab + '-display');
         display.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
         
-        // Маппинг строк для C++ V1 (алгоритм на итераторах)
         const lineMap = {
-            v1: { 
-                findI: 7,    // if (*--i < *i1)
-                findJ: 9,    // while (!(*i < *--j))
-                swap: 10,    // std::iter_swap(i, j)
-                rev: 11,     // std::reverse(i1, last)
-                last: 15     // std::reverse(first, last) в случае конца
-            },
-            v2: { findI: 2, findJ: 2, swap: 2, rev: 2, last: 2 } // Для std::next_permutation всё в одной строке
+            v1: { findI: 8, findJ: 10, swap: 11, rev: 12, last: 16 }, // Для C++
+            python_v1: { findI: 8, findJ: 10, swap: 12, rev: 13, last: 16 } // Для Python
         };
 
         const step = steps[cur];
         let lineNum = 0;
+        let mapKey = currentMainTab === 'python' ? 'python_v1' : 'v1';
 
-        if (step) {
-            if (step.activeIdx !== undefined && step.label === 'i') lineNum = lineMap[currentVer].findI;
-            else if (step.label === 'j') lineNum = lineMap[currentVer].findJ;
-            else if (step.pivotIdx !== undefined && step.matchIdx !== undefined && !step.suffixRange) lineNum = lineMap[currentVer].swap;
-            else if (step.suffixRange) lineNum = lineMap[currentVer].rev;
-            else if (step.isLast) lineNum = lineMap[currentVer].last;
+        if (step && currentVer === 'v1') {
+            if (step.activeIdx !== undefined && step.label === 'i') lineNum = lineMap[mapKey].findI;
+            else if (step.label === 'j') lineNum = lineMap[mapKey].findJ;
+            else if (step.pivotIdx !== undefined && step.matchIdx !== undefined && !step.suffixRange) lineNum = lineMap[mapKey].swap;
+            else if (step.suffixRange) lineNum = lineMap[mapKey].rev;
+            else if (step.isLast) lineNum = lineMap[mapKey].last;
         }
 
         if (lineNum > 0) {
@@ -254,18 +247,10 @@
         }
     }
 
-    function rebuild() {
-        const val = document.getElementById('in-arr').value;
-        lastInitial = val;
-        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-        steps = buildSteps(arr);
-        cur = 0; render();
-    }
-
     function buildSteps(arr) {
         let _steps = [];
         let data = [...arr], n = data.length;
-        _steps.push({ arr: [...data], msg: "Current state. Ready to find the next permutation." });
+        _steps.push({ arr: [...data], msg: "Ready. Click Next." });
 
         let i = -1;
         for (let k = n - 2; k >= 0; k--) {
@@ -274,31 +259,31 @@
         }
 
         if (i === -1) {
-            _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot found.</b> Reversing sequence." });
+            _steps.push({ arr: [...data], isLast: true, msg: "<b>No pivot.</b> Reverse all." });
             return _steps;
         }
 
-        _steps.push({ arr: [...data], pivotIdx: i, msg: `Pivot found at index <b>${i}</b> (value: ${data[i]}).` });
+        _steps.push({ arr: [...data], pivotIdx: i, msg: `Pivot found: ${data[i]}` });
 
         let j = -1;
         for (let k = n - 1; k > i; k--) {
-            _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Looking for <b>j</b> where a[i] < a[j].` });
+            _steps.push({ arr: [...data], pivotIdx: i, activeIdx: k, label: 'j', msg: `Find j where a[i] < a[j]` });
             if (data[k] > data[i]) { j = k; break; }
         }
 
-        _steps.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found <b>j</b> at index ${j} (value: ${data[j]}).` });
+        _steps.push({ arr: [...data], pivotIdx: i, matchIdx: j, msg: `Found j: ${data[j]}` });
 
         let swapped = [...data];
         [swapped[i], swapped[j]] = [swapped[j], swapped[i]];
-        _steps.push({ arr: [...swapped], pivotIdx: j, matchIdx: i, msg: `Swap <b>a[i]</b> with <b>a[j]</b>.` });
+        _steps.push({ arr: [...swapped], pivotIdx: j, matchIdx: i, msg: `Swap!` });
 
-        _steps.push({ arr: [...swapped], suffixRange: [i + 1, n - 1], msg: `<b>Suffix identified</b>: indexes ${i+1} to ${n-1} will be reversed.` });
+        _steps.push({ arr: [...swapped], suffixRange: [i + 1, n - 1], msg: `Reverse suffix.` });
 
         let final = [...swapped];
         let part2 = final.slice(i + 1).reverse();
         final.splice(i + 1, part2.length, ...part2);
         
-        _steps.push({ arr: [...final], suffixRange: [i + 1, n - 1], msg: "<b>Next permutation found!</b>" });
+        _steps.push({ arr: [...final], suffixRange: [i + 1, n - 1], msg: "Done!" });
         return _steps;
     }
 
@@ -327,18 +312,18 @@
     }
 
     function go(dir) {
-        if (dir === 1 && cur === steps.length - 1) {
-            if (steps[cur].isLast) return;
-            steps = buildSteps(steps[cur].arr);
-            cur = 0; render(); return;
-        }
         if(cur + dir >= 0 && cur + dir < steps.length) { cur += dir; render(); }
     }
 
-    function resetAll() {
-        document.getElementById('in-arr').value = lastInitial;
-        rebuild();
+    function rebuild() {
+        const val = document.getElementById('in-arr').value;
+        lastInitial = val;
+        const arr = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        steps = buildSteps(arr);
+        cur = 0; render();
     }
+
+    function resetAll() { rebuild(); }
 
     renderContextControls(); rebuild();
 </script>
