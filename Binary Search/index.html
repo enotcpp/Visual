@@ -14,6 +14,7 @@
             --accent: #7f77dd;
             --border: #313136;
             --code-bg: #0d0d0f;
+            --line-hl: rgba(127, 119, 221, 0.15);
         }
 
         body { 
@@ -23,7 +24,6 @@
         
         .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
 
-        /* ВИЗУАЛИЗАТОР (Твой готовый код) */
         .visualizer-section {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 20px; padding: 30px; margin-bottom: 40px;
@@ -41,7 +41,7 @@
         button:hover { border-color: var(--accent); }
         button.primary { background: var(--accent); color: white; border: none; }
 
-        .search-area { display: flex; justify-content: center; gap: 10px; margin: 60px 0; }
+        .search-area { display: flex; justify-content: center; gap: 10px; margin: 60px 0; min-height: 60px;}
         .cell {
             width: 55px; height: 55px; background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 10px; display: flex; align-items: center; justify-content: center;
@@ -52,12 +52,11 @@
         .cell.mid-active { border: 3px solid #e67e22; color: #e67e22; }
         .cell.match { background: #1d9e75; border-color: white; color: white; }
 
-        .ptr { position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 4px; color: white; }
+        .ptr { position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 4px; color: white; z-index: 2; }
         .ptr-l { top: -38px; background: var(--accent); }
         .ptr-r { top: -38px; background: #555; }
         .ptr-m { bottom: -38px; background: #e67e22; }
 
-        /* ПАНЕЛЬ ИНФОРМАЦИИ */
         .lab-info {
             background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
         }
@@ -70,7 +69,6 @@
         }
         .tab-btn.active { color: var(--accent); background: var(--bg-card); }
 
-        /* Контекстные переключатели (Правая часть табов) */
         .context-controls {
             margin-left: auto; display: flex; align-items: center; gap: 8px; padding-right: 20px;
         }
@@ -82,7 +80,13 @@
 
         .tab-content { display: none; padding: 30px; min-height: 200px; }
         .tab-content.active { display: block; }
-        pre { background: var(--code-bg); padding: 20px; border-radius: 10px; color: #a6accd; overflow-x: auto; }
+
+        /* CODE STYLING */
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #a6accd; display: block; }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.2s; }
+        .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
+        .indent { display: inline-block; width: 20px; }
+        .kw { color: #cc99cd; } .fn { color: #e67e22; } .cm { color: #777; } .num { color: #f8c555; }
     </style>
 </head>
 <body>
@@ -94,9 +98,9 @@
             <input id="arr-input" type="text" value="1, 3, 5, 8, 12, 15, 18, 21" style="width: 250px;">
             <label>Target:</label>
             <input id="target-input" type="number" value="8" style="width: 60px;">
-            <button onclick="rebuild()">Update</button>
+            <button onclick="rebuild()" class="primary">Update</button>
         </div>
-        <div class="info-box" id="info" style="margin-bottom: 20px; color: var(--text-secondary);">Ready.</div>
+        <div class="info-box" id="info" style="margin-bottom: 20px; color: var(--text-secondary); height: 20px;">Ready.</div>
         <div class="search-area" id="search-area"></div>
         <div class="inputs">
             <button onclick="go(-1)">← Back</button>
@@ -111,45 +115,53 @@
             <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
             <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
             <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
-
-            <div class="context-controls" id="context-panel">
-                </div>
+            <div class="context-controls" id="context-panel"></div>
         </div>
 
-        <div id="theory" class="tab-content active">
-            <div id="theory-display"></div>
-        </div>
-
-        <div id="python" class="tab-content">
-            <pre><code id="python-display"></code></pre>
-        </div>
-
-        <div id="cpp" class="tab-content">
-            <pre><code id="cpp-display"></code></pre>
-        </div>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content"><pre><code id="python-display"></code></pre></div>
+        <div id="cpp" class="tab-content"><pre><code id="cpp-display"></code></pre></div>
     </div>
 </div>
 
 <script>
-    // БАЗА ДАННЫХ
     const db = {
         theory: {
-            EN: "<h3>Binary Search</h3><p>Binary search follows the 'divide and conquer' approach...</p>",
-            DE: "<h3>Binäre Suche</h3><p>Die binäre Suche folgt dem Prinzip 'Teile und herrsche'...</p>",
-            UKR: "<h3>Бінарний пошук</h3><p>Бінарний пошук працює за принципом 'розділяй і володарюй'...</p>",
-            RU: "<h3>Бинарный поиск</h3><p>Бинарный поиск работает по принципу 'разделяй и властвуй'...</p>"
+            EN: "<h3>Binary Search</h3><p>Binary search follows the 'divide and conquer' approach. It finds the position of a target value within a sorted array by repeatedly dividing the search interval in half.</p>",
+            DE: "<h3>Binäre Suche</h3><p>Die binäre Suche folgt dem Prinzip 'Teile und herrsche'. Sie findet die Position eines Zielwerts in einem sortierten Array, indem sie das Suchintervall wiederholt получено.</p>",
+            UKR: "<h3>Бінарний пошук</h3><p>Бінарний пошук працює за принципом 'розділяй і володарюй'. Він знаходить позицію цільового значення у відсортованому масиві, постійно ділячи навпіл пошуковий інтервал.</p>",
+            RU: "<h3>Бинарный поиск</h3><p>Бинарный поиск работает по принципу 'разделяй и властвуй'. Он находит позицию искомого значения в отсортированном массиве, постоянно деля пополам поисковый интервал.</p>"
         },
         python: {
-            v1: "def binary_search(arr, target):\n    # Iterative version\n    ...",
-            v2: "def binary_search_rec(arr, target, low, high):\n    # Recursive version\n    ..."
+            v1: `<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">binary_search</span>(arr, target):</span>` +
+                `<span class="code-line" data-l="2"><span class="indent"></span>low, high = <span class="num">0</span>, <span class="fn">len</span>(arr) - <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">while</span> low &lt;= high:</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>mid = (low + high) // <span class="num">2</span></span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> arr[mid] == target:</span>` +
+                `<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">return</span> mid</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">elif</span> arr[mid] &lt; target:</span>` +
+                `<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>low = mid + <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="kw">else</span>:</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="indent"></span>high = mid - <span class="num">1</span></span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span><span class="kw">return</span> -<span class="num">1</span></span>`,
+            v2: `<span class="code-line" data-l="1"><span class="cm"># Recursive approach coming soon...</span></span>`
         },
         cpp: {
-            v1: "int binarySearch(int arr[], int n, int x) {\n    // Standard version\n    ...",
-            v2: "// STL version\nstd::binary_search(arr.begin(), arr.end(), x);"
+            v1: `<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">binarySearch</span>(<span class="kw">int</span> arr[], <span class="kw">int</span> l, <span class="kw">int</span> r, <span class="kw">int</span> x) {</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">while</span> (l &lt;= r) {</span>` +
+                `<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="kw">int</span> m = l + (r - l) / <span class="num">2</span>;</span>` +
+                `<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (arr[m] == x) <span class="kw">return</span> m;</span>` +
+                `<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (arr[m] &lt; x) l = m + <span class="num">1</span>;</span>` +
+                `<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span><span class="kw">else</span> r = m - <span class="num">1</span>;</span>` +
+                `<span class="code-line" data-l="3"><span class="indent"></span>}</span>` +
+                `<span class="code-line" data-l="11"><span class="indent"></span><span class="kw">return</span> -<span class="num">1</span>;</span>` +
+                `<span class="code-line" data-l="12">}</span>`,
+            v2: `<span class="code-line" data-l="1"><span class="cm">// STL implementation...</span></span>`
         }
     };
 
     let currentMainTab = 'theory';
+    let arr = [], target = 0, steps = [], cur = 0;
 
     function switchMainTab(btn, tabId) {
         currentMainTab = tabId;
@@ -157,84 +169,126 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(tabId).classList.add('active');
-        
         renderContextControls();
     }
 
     function renderContextControls() {
         const panel = document.getElementById('context-panel');
         panel.innerHTML = '';
-
+        const opts = currentMainTab === 'theory' ? ['EN', 'DE', 'UKR', 'RU'] : ['v1', 'v2'];
+        
+        opts.forEach((opt, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = opt;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active');
+                if (currentMainTab === 'theory') {
+                    document.getElementById('theory-display').innerHTML = db.theory[opt];
+                } else {
+                    document.getElementById(currentMainTab + '-display').innerHTML = db[currentMainTab][opt];
+                    syncCodeHighlight();
+                }
+            };
+            panel.appendChild(b);
+        });
+        
         if (currentMainTab === 'theory') {
-            ['EN', 'DE', 'UKR', 'RU'].forEach(lang => {
-                const b = document.createElement('button');
-                b.className = 'sub-btn' + (lang === 'EN' ? ' active' : '');
-                b.textContent = lang;
-                b.onclick = () => {
-                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-                    b.classList.add('active');
-                    document.getElementById('theory-display').innerHTML = db.theory[lang];
-                };
-                panel.appendChild(b);
-            });
-            document.getElementById('theory-display').innerHTML = db.theory['EN'];
+            document.getElementById('theory-display').innerHTML = db.theory[opts[0]];
         } else {
-            // Для кода показываем v1, v2
-            ['v1', 'v2'].forEach(ver => {
-                const b = document.createElement('button');
-                b.className = 'sub-btn' + (ver === 'v1' ? ' active' : '');
-                b.textContent = ver;
-                b.onclick = () => {
-                    document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
-                    b.classList.add('active');
-                    document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab][ver];
-                };
-                panel.appendChild(b);
-            });
-            document.getElementById(currentMainTab + '-display').textContent = db[currentMainTab]['v1'];
+            document.getElementById(currentMainTab + '-display').innerHTML = db[currentMainTab][opts[0]];
+            syncCodeHighlight();
         }
     }
 
-    // --- ЛОГИКА ДИАГРАММЫ (Твой неизмененный код) ---
-    let arr = [], target = 0, steps = [], cur = 0;
+    function syncCodeHighlight() {
+        if (currentMainTab === 'theory') return;
+        const containerId = currentMainTab + '-display';
+        const lines = document.getElementById(containerId).querySelectorAll('.code-line');
+        lines.forEach(l => l.classList.remove('active'));
+        
+        const currentStep = steps[cur];
+        if (currentStep && currentStep.line) {
+            const targetLine = document.querySelector(`#${containerId} [data-l="${currentStep.line}"]`);
+            if (targetLine) targetLine.classList.add('active');
+        }
+    }
+
     function rebuild() {
         arr = document.getElementById('arr-input').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x)).sort((a,b)=>a-b);
         target = parseInt(document.getElementById('target-input').value);
         init();
     }
+
     function init() {
         steps = []; let l = 0, r = arr.length - 1;
-        steps.push({ l, r, m: null, msg: "Initial search range." });
+        // Step: Initialization (Line 2)
+        steps.push({ l, r, m: null, msg: "Initial search range.", line: 2 });
+        
         while (l <= r) {
+            // Step: Loop start (Line 3)
+            steps.push({ l, r, m: null, msg: `Checking range [${l}, ${r}]`, line: 3 });
+            
             let m = Math.floor((l + r) / 2);
-            steps.push({ l, r, m, msg: `Check M=${m}` });
-            if (arr[m] === target) { steps.push({ l, r, m, msg: "Found!", found: true }); break; }
-            if (arr[m] < target) l = m + 1; else r = m - 1;
+            // Step: Calculate Mid (Line 4)
+            steps.push({ l, r, m, msg: `Calculate middle index M=${m}`, line: 4 });
+            
+            // Step: Check equality (Line 5)
+            steps.push({ l, r, m, msg: `Is arr[${m}](${arr[m]}) == ${target}?`, line: 5 });
+            
+            if (arr[m] === target) {
+                steps.push({ l, r, m, msg: "Match found!", found: true, line: 6 });
+                break;
+            }
+            
+            if (arr[m] < target) {
+                // Step: Check less than (Line 7)
+                steps.push({ l, r, m, msg: `${arr[m]} < ${target}. Move Low pointer.`, line: 7 });
+                l = m + 1;
+                // Step: Update Low (Line 8)
+                steps.push({ l, r, m: null, msg: `New Low = ${l}`, line: 8 });
+            } else {
+                // Step: Else case (Line 9/10)
+                steps.push({ l, r, m, msg: `${arr[m]} > ${target}. Move High pointer.`, line: 9 });
+                r = m - 1;
+                steps.push({ l, r, m: null, msg: `New High = ${r}`, line: 10 });
+            }
         }
+        
+        if (!steps[steps.length-1].found) {
+            steps.push({ l, r: steps[steps.length-1].r, m: null, msg: "Target not found.", line: 11 });
+        }
+        
         cur = 0; render();
     }
+
     function render() {
         const s = steps[cur];
+        if (!s) return;
         const container = document.getElementById('search-area');
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
         container.innerHTML = '';
+        
         arr.forEach((val, i) => {
             const div = document.createElement('div');
             div.className = 'cell ' + (i >= s.l && i <= s.r ? 'in-range' : 'out');
             if (i === s.m) div.classList.add('mid-active');
             if (s.found && i === s.m) div.classList.add('match');
             div.textContent = val;
+            
             if (i === s.l) div.innerHTML += `<div class="ptr ptr-l">L</div>`;
             if (i === s.r) div.innerHTML += `<div class="ptr ptr-r">R</div>`;
             if (i === s.m) div.innerHTML += `<div class="ptr ptr-m">M</div>`;
             container.appendChild(div);
         });
+        syncCodeHighlight();
     }
+
     function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
     function resetAll() { cur=0; render(); }
 
-    // Инициализация
     renderContextControls();
     rebuild();
 </script>
