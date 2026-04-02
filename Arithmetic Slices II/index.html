@@ -169,12 +169,23 @@
         // Pointers Logic
         const ptrI = document.getElementById('ptr-i');
         const ptrJ = document.getElementById('ptr-j');
-        if (s.i === -1) { ptrI.style.opacity = 0; ptrJ.style.opacity = 0; }
-        else {
-            ptrI.style.opacity = 1; ptrJ.style.opacity = (s.j === -1) ? 0 : 1;
-            const containerLeft = document.getElementById('main-array').offsetLeft;
-            ptrI.style.left = (containerLeft + s.i * 69) + "px";
-            ptrJ.style.left = (containerLeft + s.j * 69) + "px";
+        const cells = document.querySelectorAll('.cell');
+        
+        if (s.i === -1 || !cells[s.i]) { 
+            ptrI.style.opacity = 0; 
+            ptrJ.style.opacity = 0; 
+        } else {
+            ptrI.style.opacity = 1;
+            // Привязываемся к offsetLeft конкретной DOM-ячейки i
+            ptrI.style.left = cells[s.i].offsetLeft + "px";
+        
+            if (s.j === -1 || !cells[s.j]) {
+                ptrJ.style.opacity = 0;
+            } else {
+                ptrJ.style.opacity = 1;
+                // Привязываемся к offsetLeft конкретной DOM-ячейки j
+                ptrJ.style.left = cells[s.j].offsetLeft + "px";
+            }
         }
 
         // Array
