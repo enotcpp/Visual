@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Arithmetic Slices II | Contribution Technique</title>
+    <title>Arithmetic Slices II | AlgoView Lab</title>
     <style>
         :root {
             --bg-main: #141416;
@@ -19,10 +19,19 @@
         }
 
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 2rem 0; font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); }
-        .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
 
-        .lab-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+        .lab-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 32px; margin-bottom: 24px;
+        }
+
         .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
         .header-row h1 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); }
         
@@ -33,36 +42,51 @@
         .stat-value span { color: var(--pos); }
 
         .inputs-row { display: flex; gap: 12px; margin-bottom: 24px; align-items: center; }
-        input[type="text"] { background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; width: 200px; outline: none; font-family: monospace; }
-        button { padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 13px; }
+        input[type="text"] { 
+            background: var(--bg-input); border: 1px solid var(--border); 
+            color: white; padding: 10px; border-radius: 8px; width: 250px; outline: none;
+            font-family: monospace;
+        }
+        button {
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600; 
+            cursor: pointer; transition: 0.2s; font-size: 13px;
+        }
+        button:hover { background: var(--border); }
         button.primary { background: var(--accent); border-color: var(--accent); color: white; }
 
-        .visual-area { background: var(--code-bg); border-radius: 12px; padding: 32px; margin-bottom: 24px; border: 1px solid var(--border); }
+        .visual-area { 
+            background: var(--code-bg); border-radius: 12px; padding: 32px; 
+            margin-bottom: 24px; border: 1px solid var(--border); min-height: 400px;
+        }
         
-        /* Array with Connections */
-        .array-container { position: relative; display: flex; justify-content: center; gap: 20px; margin-bottom: 60px; height: 60px; }
-        .cell { width: 50px; height: 50px; border: 1px solid var(--border); background: var(--bg-card); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; transition: 0.3s; position: relative; z-index: 2; }
-        .cell .idx { font-size: 9px; color: var(--text-secondary); margin-bottom: 2px; }
-        .cell.active { border-color: var(--text-secondary); opacity: 1; }
-        .cell.target { border-color: var(--pos); background: rgba(29, 158, 117, 0.1); color: var(--pos); transform: scale(1.1); }
-        .cell.source { border-color: var(--accent); color: var(--accent); }
-        .cell.inactive { opacity: 0.2; }
+        .array-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; }
+        .cell {
+            width: 54px; height: 54px; border: 1px solid var(--border);
+            background: var(--bg-card); border-radius: 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 16px; transition: 0.3s;
+            position: relative;
+        }
+        .cell .idx { font-size: 9px; color: var(--text-secondary); position: absolute; top: 5px; }
+        .cell.inactive { opacity: 0.2; transform: scale(0.9); }
+        .cell.source { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 15px rgba(127, 119, 221, 0.2); }
+        .cell.target { border-color: var(--pos); color: var(--pos); transform: scale(1.1); box-shadow: 0 0 15px rgba(29, 158, 117, 0.2); }
 
-        /* DP Table / Map Visualization */
-        .dp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-        .dp-column { background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 10px; opacity: 0.3; transition: 0.3s; }
-        .dp-column.highlight { opacity: 1; border-color: var(--accent); }
-        .dp-title { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-        .dp-entry { display: flex; justify-content: space-between; font-family: monospace; font-size: 12px; margin-bottom: 4px; }
-        .dp-entry.new { color: var(--pos); font-weight: bold; }
+        .dp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .dp-column { background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; padding: 12px; opacity: 0.3; transition: 0.3s; }
+        .dp-column.highlight { opacity: 1; background: #2a2a30; }
+        .dp-title { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        .dp-entry { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-bottom: 6px; }
+        .dp-entry.new { background: rgba(29, 158, 117, 0.2); color: var(--pos); font-weight: bold; padding: 2px 4px; border-radius: 4px; }
         .diff-tag { color: var(--orange); }
 
-        /* TABS */
         .tabs-nav { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
         .tab-btn { background: none; border: none; padding: 12px 24px; color: var(--text-secondary); cursor: pointer; font-size: 12px; font-weight: 700; text-transform: uppercase; }
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+
         code { display: block; background: var(--code-bg); padding: 20px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #a6accd; }
         .code-line { display: block; border-left: 3px solid transparent; padding: 0 15px; }
         .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
@@ -78,14 +102,14 @@
             <h1>Arithmetic Slices II (Subsequence)</h1>
             <div class="stats-group">
                 <div class="stat-item">
-                    <div class="stat-label">Valid Slices Found</div>
+                    <div class="stat-label">Total Valid Slices</div>
                     <div class="stat-value" id="stat-total">0</div>
                 </div>
             </div>
         </div>
 
         <div class="inputs-row">
-            <label style="font-size: 11px; color: var(--text-secondary)">ARRAY:</label>
+            <label style="font-size: 11px; color: var(--text-secondary)">INPUT ARRAY:</label>
             <input type="text" id="arr-input" value="2, 4, 6, 8, 10">
             <button onclick="resetLab()">Reset</button>
             <div style="flex-grow: 1"></div>
@@ -103,13 +127,18 @@
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab(0)">Logic</button>
             <button class="tab-btn" onclick="switchTab(1)">Python</button>
+            <button class="tab-btn" onclick="switchTab(2)">C++</button>
         </div>
+        
         <div id="tab-logic" class="tab-content active">
             <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
-                В этой задаче <code>dp[i][diff]</code> хранит количество арифметических подпоследовательностей, заканчивающихся в <b>i</b> с разностью <b>diff</b>. <br>
-                Когда мы соединяем <code>j</code> и <code>i</code>, все прогрессии из <code>dp[j][diff]</code> удлиняются и становятся "валидными" (длина ≥ 3).
+                In this problem, we look for <b>subsequences</b>. The key idea is that a pair <code>(nums[j], nums[i])</code> with difference <code>diff</code> 
+                can either start a new progression (length 2) or extend existing ones that ended at index <code>j</code>.
+                <br><br>
+                <code>dp[i][diff]</code> stores the total count of such chains. We only add to the total count those chains that already had a length of 2+ before reaching <code>i</code>.
             </p>
         </div>
+
         <div id="tab-python" class="tab-content">
             <code>
 <span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">numberOfArithmeticSlices</span>(nums):</span>
@@ -124,6 +153,24 @@
 <span class="code-line" data-l="10"><span class="indent"></span><span class="kw">return</span> total</span>
             </code>
         </div>
+
+        <div id="tab-cpp" class="tab-content">
+            <code>
+<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">numberOfArithmeticSlices</span>(vector&lt;<span class="kw">int</span>&gt;& nums) {</span>
+<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> n = nums.<span class="fn">size</span>(); <span class="kw">long long</span> total_count = <span class="num">0</span>;</span>
+<span class="code-line" data-l="3"><span class="indent"></span>vector&lt;unordered_map&lt;<span class="kw">long long</span>, <span class="kw">int</span>&gt;&gt; dp(n);</span>
+<span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; n; ++i) {</span>
+<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j &lt; i; ++j) {</span>
+<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">long long</span> diff = (<span class="kw">long long</span>)nums[i] - nums[j];</span>
+<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="indent"></span><span class="kw">int</span> count_at_j = dp[j].<span class="fn">count</span>(diff) ? dp[j][diff] : <span class="num">0</span>;</span>
+<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>total_count += count_at_j;</span>
+<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span><span class="indent"></span>dp[i][diff] += (count_at_j + <span class="num">1</span>);</span>
+<span class="code-line" data-l="10"><span class="indent"></span><span class="indent"></span>}</span>
+<span class="code-line" data-l="11"><span class="indent"></span>}</span>
+<span class="code-line" data-l="12"><span class="indent"></span><span class="kw">return</span> (<span class="kw">int</span>)total_count;</span>
+<span class="code-line" data-l="13">}</span>
+            </code>
+        </div>
     </div>
 </div>
 
@@ -136,77 +183,61 @@
         steps = [];
         let total = 0;
         let dp = nums.map(() => ({}));
-
-        // Начальное состояние
-        steps.push({ i: -1, j: -1, total: 0, dp: JSON.parse(JSON.stringify(dp)), line: 2 });
+        steps.push({ i: -1, j: -1, diff: null, total: 0, dp: deepCopy(dp), line: 2 });
 
         for (let i = 0; i < nums.length; i++) {
             for (let j = 0; j < i; j++) {
                 let diff = nums[i] - nums[j];
                 let count_at_j = dp[j][diff] || 0;
-                
-                // Шаг 1: Вычисление diff и взятие данных из j
-                steps.push({
-                    i, j, diff, total,
-                    line: 7,
-                    dp: JSON.parse(JSON.stringify(dp))
-                });
-
+                steps.push({ i, j, diff, total, line: 7, dp: deepCopy(dp) });
                 total += count_at_j;
                 dp[i][diff] = (dp[i][diff] || 0) + count_at_j + 1;
-
-                // Шаг 2: Обновление total и dp[i]
-                steps.push({
-                    i, j, diff, total,
-                    line: 9,
-                    dp: JSON.parse(JSON.stringify(dp)),
-                    isNew: true
-                });
+                steps.push({ i, j, diff, total, line: 9, dp: deepCopy(dp), isUpdate: true });
             }
         }
-        steps.push({ i: -1, j: -1, total, dp: JSON.parse(JSON.stringify(dp)), line: 10 });
+        steps.push({ i: -1, j: -1, diff: null, total, dp: deepCopy(dp), line: 10 });
     }
+
+    function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
 
     function render() {
         const s = steps[stepPointer];
         document.getElementById('stat-total').innerText = s.total;
-
-        // Render Array
         const arrCont = document.getElementById('main-array');
         arrCont.innerHTML = '';
         nums.forEach((v, idx) => {
             const cell = document.createElement('div');
             cell.className = 'cell';
-            if (idx > Math.max(s.i, 0) && s.i !== -1) cell.classList.add('inactive');
+            if (s.i !== -1 && idx > s.i) cell.classList.add('inactive');
             if (idx === s.i) cell.classList.add('target');
             if (idx === s.j) cell.classList.add('source');
             cell.innerHTML = `<div class="idx">${idx}</div>${v}`;
             arrCont.appendChild(cell);
         });
 
-        // Render DP Table
         const table = document.getElementById('dp-table');
         table.innerHTML = '';
         nums.forEach((_, idx) => {
             const col = document.createElement('div');
             col.className = 'dp-column';
             if (idx === s.i || idx === s.j) col.classList.add('highlight');
-            
-            let html = `<div class="dp-title">DP[${idx}] (Maps)</div>`;
-            for (let d in s.dp[idx]) {
-                const isCurrentDiff = (idx === s.i && parseInt(d) === s.diff);
-                html += `<div class="dp-entry ${isCurrentDiff ? 'new' : ''}">
-                    <span class="diff-tag">Δ${d}</span>
-                    <span>count: ${s.dp[idx][d]}</span>
-                </div>`;
+            let html = `<div class="dp-title">Index ${idx} Maps</div>`;
+            const entries = Object.entries(s.dp[idx]);
+            if (entries.length === 0) html += `<div style="font-size:10px;opacity:0.3">empty</div>`;
+            else {
+                entries.forEach(([diff, count]) => {
+                    const isFocus = (idx === s.i && parseInt(diff) === s.diff && s.isUpdate);
+                    html += `<div class="dp-entry ${isFocus ? 'new' : ''}"><span class="diff-tag">Δ${diff}</span><span>cnt: ${count}</span></div>`;
+                });
             }
             col.innerHTML = html;
             table.appendChild(col);
         });
 
-        // Sync Code
         document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll(`[data-l="${s.line}"]`).forEach(el => el.classList.add('active'));
+        document.querySelectorAll(`#tab-python [data-l="${s.line}"]`).forEach(el => el.classList.add('active'));
+        let cppLine = s.line === 10 ? 12 : s.line;
+        document.querySelectorAll(`#tab-cpp [data-l="${cppLine}"]`).forEach(el => el.classList.add('active'));
     }
 
     function step(dir) {
@@ -216,7 +247,7 @@
 
     function resetLab() {
         const val = document.getElementById('arr-input').value;
-        nums = val.split(',').map(x => parseInt(x.trim()));
+        nums = val.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
         stepPointer = 0;
         generateSteps();
         render();
