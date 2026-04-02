@@ -145,32 +145,33 @@
                 If the arithmetic property holds, each new element adds <code>prev_contribution + 1</code> slices.
             </p>
         </div>
-        <div id="tab-python" class="tab-content">
-            <code>
-<span class="code-line" data-l="1">def numberOfArithmeticSlices(nums):</span>
-<span class="code-line" data-l="2"><span class="indent"></span>total, current_contrib = 0, 0</span>
-<span class="code-line" data-l="3"><span class="indent"></span>for i in range(2, len(nums)):</span>
-<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>if nums[i] - nums[i-1] == nums[i-1] - nums[i-2]:</span>
-<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="indent"></span>current_contrib += 1</span>
+<div id="tab-python" class="tab-content">
+    <code>
+<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">numberOfArithmeticSlices</span>(nums):</span>
+<span class="code-line" data-l="2"><span class="indent"></span>total, current_contrib = <span class="num">0</span>, <span class="num">0</span></span>
+<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, <span class="fn">len</span>(nums)):</span>
+<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> nums[i] - nums[i-<span class="num">1</span>] == nums[i-<span class="num">1</span>] - nums[i-<span class="num">2</span>]:</span>
+<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="indent"></span>current_contrib += <span class="num">1</span></span>
 <span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span>total += current_contrib</span>
-<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span>else: current_contrib = 0</span>
-<span class="code-line" data-l="8"><span class="indent"></span>return total</span>
-            </code>
-        </div>
-        <div id="tab-cpp" class="tab-content">
-            <code>
-<span class="code-line" data-l="1">int numberOfArithmeticSlices(vector&lt;int&gt;& nums) {</span>
-<span class="code-line" data-l="2"><span class="indent"></span>int total = 0, current_contrib = 0;</span>
-<span class="code-line" data-l="3"><span class="indent"></span>for (int i = 2; i < nums.size(); i++) {</span>
-<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span>if (nums[i]-nums[i-1] == nums[i-1]-nums[i-2]) {</span>
+<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">else</span>: current_contrib = <span class="num">0</span></span>
+<span class="code-line" data-l="8"><span class="indent"></span><span class="kw">return</span> total</span>
+    </code>
+</div>
+        
+<div id="tab-cpp" class="tab-content">
+    <code>
+<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">numberOfArithmeticSlices</span>(vector&lt;<span class="kw">int</span>&gt;& nums) {</span>
+<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> total = <span class="num">0</span>, current_contrib = <span class="num">0</span>;</span>
+<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">2</span>; i < nums.<span class="fn">size</span>(); i++) {</span>
+<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (nums[i] - nums[i-<span class="num">1</span>] == nums[i-<span class="num">1</span>] - nums[i-<span class="num">2</span>]) {</span>
 <span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="indent"></span>current_contrib++;</span>
 <span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span>total += current_contrib;</span>
-<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span>} else current_contrib = 0;</span>
+<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span>} <span class="kw">else</span> current_contrib = <span class="num">0</span>;</span>
 <span class="code-line" data-l="8"><span class="indent"></span>}</span>
-<span class="code-line" data-l="9"><span class="indent"></span>return total;</span>
+<span class="code-line" data-l="9"><span class="indent"></span><span class="kw">return</span> total;</span>
 <span class="code-line" data-l="10">}</span>
-            </code>
-        </div>
+    </code>
+</div>
     </div>
 </div>
 
