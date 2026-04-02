@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contribution Technique | AlgoView Lab</title>
+    <style>
+        :root {
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --pos: #1d9e75;
+            --orange: #e67e22;
+            --border: #313136;
+            --code-bg: #0d0d0f;
+            --line-hl: rgba(127, 119, 221, 0.15);
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+        /* VISUALIZER CARD */
+        .lab-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 32px; margin-bottom: 24px;
+        }
+
+        .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+        .header-row h1 { margin: 0; font-size: 22px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); }
+        
+        .stats-group { display: flex; gap: 20px; }
+        .stat-item { text-align: right; }
+        .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-value { font-size: 18px; font-weight: 700; font-family: monospace; }
+        .stat-value span { color: var(--pos); }
+
+        /* CONTROLS */
+        .inputs-row { display: flex; gap: 12px; margin-bottom: 24px; align-items: center; }
+        input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+        button {
+            padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600; 
+            cursor: pointer; transition: 0.2s; font-size: 13px;
+        }
+        button:hover { background: var(--border); }
+        button.primary { background: var(--accent); border-color: var(--accent); color: white; }
+
+        /* VISUAL AREA */
+        .visual-area { 
+            background: var(--bg-main); border-radius: 12px; padding: 40px; 
+            margin-bottom: 24px; min-height: 300px; border: 1px solid var(--border);
+        }
+        
+        .array-display { display: flex; justify-content: center; gap: 10px; margin-bottom: 40px; }
+        .cell {
+            width: 45px; height: 45px; border: 1px solid var(--border);
+            background: var(--bg-card); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 16px; transition: 0.3s;
+        }
+        .cell.active { border-color: var(--orange); color: var(--orange); transform: translateY(-5px); }
+        .cell.new { border-color: var(--accent); background: rgba(127, 119, 221, 0.1); color: var(--accent); }
+
+        .contribution-grid { display: flex; flex-direction: column; gap: 10px; }
+        .slice-row { display: flex; align-items: center; gap: 12px; font-size: 12px; }
+        .slice-label { width: 60px; color: var(--text-secondary); font-weight: bold; }
+        .slice-box { 
+            padding: 4px 10px; border-radius: 4px; background: var(--bg-input); 
+            border: 1px solid var(--border); color: var(--text-secondary); opacity: 0.4;
+        }
+        .slice-box.highlight { opacity: 1; border-color: var(--pos); color: var(--pos); background: rgba(29, 158, 117, 0.1); }
+
+        /* LAB INFO CARD (TABS) */
+        .tabs-nav { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .tab-btn { 
+            background: none; border: none; padding: 12px 24px; color: var(--text-secondary);
+            cursor: pointer; font-size: 12px; font-weight: 700; text-transform: uppercase;
+        }
+        .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* CODE FORMATTING */
+        code { 
+            display: block; background: var(--code-bg); padding: 20px; 
+            border-radius: 8px; font-family: 'JetBrains Mono', monospace; 
+            font-size: 13px; line-height: 1.6; color: #a6accd; overflow-x: auto;
+        }
+        .code-line { display: block; border-left: 3px solid transparent; padding: 0 15px; }
+        .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
+        .indent { display: inline-block; width: 24px; }
+        .kw { color: #cc99cd; } .fn { color: #82aaff; } .cm { color: #676e95; } .num { color: #f8c555; }
+
+        .theory-text { line-height: 1.8; font-size: 14px; color: var(--text-secondary); }
+        .theory-text b { color: var(--text-main); }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="lab-card">
+        <div class="header-row">
+            <h1>Contribution Technique</h1>
+            <div class="stats-group">
+                <div class="stat-item">
+                    <div class="stat-label">New Contribution</div>
+                    <div class="stat-value" id="stat-contrib"><span>+0</span></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Slices</div>
+                    <div class="stat-value" id="stat-total">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="inputs-row">
+            <label style="font-size: 12px; color: var(--text-secondary)">Window Size (n):</label>
+            <input type="range" id="n-range" min="3" max="8" value="3" oninput="init()">
+            <button onclick="step(-1)">Back</button>
+            <button class="primary" onclick="step(1)">Next Step</button>
+            <button onclick="reset()">Reset</button>
+        </div>
+
+        <div class="visual-area">
+            <div class="array-display" id="main-array"></div>
+            <div class="contribution-grid" id="sub-grid"></div>
+        </div>
+    </div>
+
+    <div class="lab-card">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab(0)">Theory</button>
+            <button class="tab-btn" onclick="switchTab(1)">Python</button>
+            <button class="tab-btn" onclick="switchTab(2)">C++</button>
+        </div>
+
+        <div id="tab-theory" class="tab-content active">
+            <div class="theory-text">
+                The <b>Contribution Technique</b> focuses on how the last element added to an array affects the total count of valid subarrays (Arithmetic Slices). <br><br>
+                For any new element <code>A[i]</code>, if it continues an existing arithmetic progression <code>(A[i]-A[i-1] == A[i-1]-A[i-2])</code>, it contributes <b>exactly one more</b> slice than the previous element contributed. <br><br>
+                The total number of slices is the sum of these individual contributions.
+            </div>
+        </div>
+
+        <div id="tab-python" class="tab-content">
+            <code id="code-python">
+<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">numberOfArithmeticSlices</span>(nums):</span>
+<span class="code-line" data-l="2"><span class="indent"></span>total, current_contrib = <span class="num">0</span>, <span class="num">0</span></span>
+<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, <span class="fn">len</span>(nums)):</span>
+<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> nums[i] - nums[i-<span class="num">1</span>] == nums[i-<span class="num">1</span>] - nums[i-<span class="num">2</span>]:</span>
+<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="indent"></span>current_contrib += <span class="num">1</span></span>
+<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span>total += current_contrib</span>
+<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">else</span>:</span>
+<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>current_contrib = <span class="num">0</span></span>
+<span class="code-line" data-l="9"><span class="indent"></span><span class="kw">return</span> total</span>
+            </code>
+        </div>
+
+        <div id="tab-cpp" class="tab-content">
+            <code id="code-cpp">
+<span class="code-line" data-l="1"><span class="kw">int</span> <span class="fn">numberOfArithmeticSlices</span>(vector&lt;<span class="kw">int</span>&gt;& nums) {</span>
+<span class="code-line" data-l="2"><span class="indent"></span><span class="kw">int</span> total = <span class="num">0</span>, current_contrib = <span class="num">0</span>;</span>
+<span class="code-line" data-l="3"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">2</span>; i < nums.<span class="fn">size</span>(); i++) {</span>
+<span class="code-line" data-l="4"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (nums[i] - nums[i-<span class="num">1</span>] == nums[i-<span class="num">1</span>] - nums[i-<span class="num">2</span>]) {</span>
+<span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="indent"></span>current_contrib++;</span>
+<span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="indent"></span>total += current_contrib;</span>
+<span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span>} <span class="kw">else</span> {</span>
+<span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>current_contrib = <span class="num">0</span>;</span>
+<span class="code-line" data-l="9"><span class="indent"></span><span class="indent"></span>}</span>
+<span class="code-line" data-l="10"><span class="indent"></span>}</span>
+<span class="code-line" data-l="11"><span class="indent"></span><span class="kw">return</span> total;</span>
+<span class="code-line" data-l="12">}</span>
+            </code>
+        </div>
+    </div>
+</div>
+
+<script>
+    let steps = [];
+    let currentStep = 0;
+
+    function init() {
+        const n = parseInt(document.getElementById('n-range').value);
+        const nums = Array.from({length: n}, (_, i) => i + 1); // Simple arithmetic sequence [1,2,3,4...]
+        steps = [];
+        
+        let total = 0;
+        let current_contrib = 0;
+
+        // Step 0: Initialization
+        steps.push({
+            i: null,
+            contrib: 0,
+            total: 0,
+            line: 2,
+            slices: []
+        });
+
+        for (let i = 2; i < nums.length; i++) {
+            // Step: Comparison
+            steps.push({
+                i: i,
+                contrib: current_contrib,
+                total: total,
+                line: 4,
+                slices: getSlices(i, current_contrib)
+            });
+
+            if (nums[i] - nums[i-1] === nums[i-1] - nums[i-2]) {
+                current_contrib++;
+                total += current_contrib;
+                // Step: Found and Added
+                steps.push({
+                    i: i,
+                    contrib: current_contrib,
+                    total: total,
+                    line: 6,
+                    slices: getSlices(i, current_contrib)
+                });
+            } else {
+                current_contrib = 0;
+                steps.push({
+                    i: i,
+                    contrib: 0,
+                    total: total,
+                    line: 8,
+                    slices: []
+                });
+            }
+        }
+        
+        currentStep = 0;
+        render();
+    }
+
+    function getSlices(maxIndex, count) {
+        let found = [];
+        // A contribution of 'count' at index 'i' means slices of length 3, 4, ... up to count+2
+        for (let len = 3; len <= count + 2; len++) {
+            found.push({start: maxIndex - len + 1, end: maxIndex, len: len});
+        }
+        return found;
+    }
+
+    function render() {
+        const stepData = steps[currentStep];
+        const n = parseInt(document.getElementById('n-range').value);
+        
+        // Update Stats
+        document.getElementById('stat-contrib').innerHTML = `<span>+${stepData.contrib}</span>`;
+        document.getElementById('stat-total').textContent = stepData.total;
+
+        // Render Array
+        const arrayContainer = document.getElementById('main-array');
+        arrayContainer.innerHTML = '';
+        for (let i = 0; i < n; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            if (i === stepData.i) cell.classList.add('active');
+            if (i > stepData.i && stepData.i !== null) cell.style.opacity = '0.3';
+            cell.textContent = i + 1;
+            arrayContainer.appendChild(cell);
+        }
+
+        // Render Contribution Slices
+        const subGrid = document.getElementById('sub-grid');
+        subGrid.innerHTML = '';
+        
+        const possibleLengths = [3, 4, 5, 6, 7, 8];
+        possibleLengths.filter(l => l <= n).forEach(len => {
+            const row = document.createElement('div');
+            row.className = 'slice-row';
+            row.innerHTML = `<div class="slice-label">LEN ${len}</div><div class="items-flex" id="len-${len}"></div>`;
+            subGrid.appendChild(row);
+
+            const itemsFlex = document.getElementById(`len-${len}`);
+            for (let s = 0; s <= n - len; s++) {
+                const box = document.createElement('div');
+                box.className = 'slice-box';
+                const isMatching = stepData.slices.some(slice => slice.start === s && slice.len === len);
+                if (isMatching) box.classList.add('highlight');
+                box.textContent = `${s+1}..${s+len}`;
+                itemsFlex.appendChild(box);
+            }
+        });
+
+        syncCode(stepData.line);
+    }
+
+    function syncCode(line) {
+        document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll(`[data-l="${line}"]`).forEach(el => el.classList.add('active'));
+    }
+
+    function step(dir) {
+        currentStep = Math.max(0, Math.min(steps.length - 1, currentStep + dir));
+        render();
+    }
+
+    function reset() {
+        currentStep = 0;
+        render();
+    }
+
+    function switchTab(idx) {
+        const tabs = ['theory', 'python', 'cpp'];
+        document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+        document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === idx));
+    }
+
+    // Initialize on load
+    init();
+</script>
+
+</body>
+</html>
