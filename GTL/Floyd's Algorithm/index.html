@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Floyd's Algorithm: Precise N-Counter</title>
+    <style>
+        :root { --bg: #0d0d0f; --card: #16161a; --border: #2d2d33; --text: #e1e1e3; --accent: #7f77dd; --pos: #1d9e75; --orange: #e67e22; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; }
+        .wrap { max-width: 1100px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; }
+        
+        .header { display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-end; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        .inp-group { display: flex; flex-direction: column; gap: 5px; }
+        input { background: #000; border: 1px solid var(--border); color: #fff; padding: 10px; width: 60px; border-radius: 6px; font-family: monospace; }
+        button { background: var(--accent); border: none; color: #fff; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button.nav { background: #2d2d33; }
+
+        .counters-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #050505; border: 1px solid var(--border); padding: 15px; border-radius: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 140px; }
+        .stat-card.highlight { border-color: var(--orange); background: rgba(230, 126, 34, 0.05); }
+        .num { font-size: 32px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+        .sub { font-size: 10px; color: #94949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .n-large { font-size: 56px; color: var(--pos); line-height: 1; }
+
+        canvas { background: #000; border-radius: 10px; width: 100%; height: 380px; border: 1px solid var(--border); }
+
+        #equation-formula { font-size: 18px; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; min-height: 25px; }
+        .f-n { color: var(--pos); font-weight: bold; }
+        .f-c { color: #fff; font-weight: bold; }
+        .f-l2 { color: var(--accent); font-weight: bold; }
+        .f-res { color: var(--orange); font-weight: bold; }
+
+        .tabs { display: flex; margin-top: 25px; border-bottom: 1px solid var(--border); }
+        .tab-btn { padding: 12px 20px; background: none; border: none; color: #94949e; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+        .tab-content { display: none; padding: 20px; background: #08080a; border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; }
+        .tab-content.active { display: block; }
+        
+        pre { margin: 0; color: #a6accd; font-size: 13px; line-height: 1.4; }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.1s; }
+        .code-line.active { background: rgba(127, 119, 221, 0.15); border-left-color: var(--accent); color: #fff; }
+        .keyword { color: #c678dd; }
+        .type { color: #e5c07b; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="header">
+        <div class="inp-group"><label>Tail (L1)</label><input type="number" id="l1-in" value="3"></div>
+        <div class="inp-group"><label>Loop (C)</label><input type="number" id="c-in" value="6"></div>
+        <button onclick="init()">Reset & Apply</button>
+        <div style="flex-grow:1"></div>
+        <button class="nav" onclick="step(-1)">← Prev Step</button>
+        <button onclick="step(1)">Next Step →</button>
+    </div>
+
+    <div class="counters-grid">
+        <div class="stat-card">
+            <span class="sub">Slow Path (L1 + L2)</span>
+            <span id="c-slow" class="num" style="color:var(--accent)">0 + 0</span>
+        </div>
+        <div class="stat-card">
+            <span class="sub">Full Loops (n)</span>
+            <span id="c-n" class="num n-large">0</span>
+        </div>
+        <div class="stat-card highlight">
+            <span class="sub">Equation: L1 = (n * C) - L2</span>
+            <div id="equation-formula">-</div>
+            <span id="c-calc" class="num" style="color:var(--orange);">0</span>
+        </div>
+    </div>
+
+    <canvas id="cv"></canvas>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="setTab(0)">PROOF THEORY</button>
+        <button class="tab-btn" onclick="setTab(1)">C++ IMPLEMENTATION</button>
+        <button class="tab-btn" onclick="setTab(2)">PYTHON</button>
+    </div>
+
+    <div id="tab0" class="tab-content active">
+        <div style="font-size: 14px; color: #94949e; line-height: 1.6;">
+            At meeting point: <b>S = L1 + L2</b><br>
+            Fast path: <b>2S = L1 + L2 + n*C</b><br>
+            Subtracting equations: <b>S = n*C</b><br>
+            Result: <span style="color:var(--orange)">L1 + L2 = n*C  =>  L1 = (n*C) - L2</span>
+        </div>
+    </div>
+
+    <div id="tab1" class="tab-content">
+<pre><code><span class="cpp-1 code-line"><span class="type">ListNode</span> *detectCycle(<span class="type">ListNode</span> *head) {</span><span class="cpp-2 code-line">    <span class="type">ListNode</span> *slow = head, *fast = head;</span><span class="cpp-3 code-line">    <span class="keyword">while</span> (fast && fast->next) {</span><span class="cpp-4 code-line">        slow = slow->next;</span><span class="cpp-5 code-line">        fast = fast->next->next;</span><span class="cpp-6 code-line">        <span class="keyword">if</span> (slow == fast) {</span><span class="cpp-7 code-line">            <span class="type">ListNode</span> *p1 = head, *p2 = slow;</span><span class="cpp-8 code-line">            <span class="keyword">while</span> (p1 != p2) {</span><span class="cpp-9 code-line">                p1 = p1->next; p2 = p2->next;</span><span class="cpp-10 code-line">            }</span><span class="cpp-11 code-line">            <span class="keyword">return</span> p1;</span><span class="cpp-12 code-line">        }</span><span class="cpp-13 code-line">    }</span><span class="cpp-14 code-line">    <span class="keyword">return</span> <span class="keyword">nullptr</span>;</span><span class="cpp-15 code-line">}</span></code></pre>
+    </div>
+
+    <div id="tab2" class="tab-content">
+<pre><code><span class="py-1 code-line"><span class="keyword">def</span> <span style="color:#61afef">detectCycle</span>(head):</span><span class="py-2 code-line">    slow = fast = head</span><span class="py-3 code-line">    <span class="keyword">while</span> fast <span class="keyword">and</span> fast.next:</span><span class="py-4 code-line">        slow, fast = slow.next, fast.next.next</span><span class="py-5 code-line">        <span class="keyword">if</span> slow == fast:</span><span class="py-6 code-line">            p1, p2 = head, slow</span><span class="py-7 code-line">            <span class="keyword">while</span> p1 != p2:</span><span class="py-8 code-line">                p1, p2 = p1.next, p2.next</span><span class="py-9 code-line">            <span class="keyword">return</span> p1</span><span class="py-10 code-line">    <span class="keyword">return</span> <span class="keyword">None</span></span></code></pre>
+    </div>
+</div>
+
+<script>
+    let L1, C, steps = [], cur = 0;
+    const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+    const next = (n) => n < L1 + C - 1 ? n + 1 : L1;
+
+    function init() {
+        L1 = parseInt(document.getElementById('l1-in').value);
+        C = parseInt(document.getElementById('c-in').value);
+        steps = []; cur = 0;
+
+        let s = 0, f = 0, ds = 0, n_count = 0;
+        steps.push({ s, f, l1: 0, l2: 0, n: 0, formula: "-", res: 0, cpp: "cpp-2", py: "py-2" });
+
+        while (true) {
+            let f_next_mid = next(f);
+            let f_next_final = next(f_next_mid);
+
+            // считаем полный цикл fast
+            if (f >= L1 && f_next_final < f) {
+                n_count++;
+            }
+
+            s = next(s);
+            f = f_next_final;
+            ds++;
+            
+            let l1_p = Math.min(ds, L1), l2_p = Math.max(0, ds - L1);
+            
+            if (s === f) {
+                const fStr = `(<span class="f-n">${n_count}</span> * <span class="f-c">${C}</span>) - <span class="f-l2">${l2_p}</span> = <span class="f-res">${L1}</span>`;
+                steps.push({ s, f, l1: l1_p, l2: l2_p, n: n_count, formula: fStr, res: L1, cpp: "cpp-7", py: "py-6" });
+                break;
+            } else {
+                steps.push({ s, f, l1: l1_p, l2: l2_p, n: n_count, formula: "-", res: 0, cpp: "cpp-4", py: "py-4" });
+            }
+        }
+
+        let p1 = 0, p2 = steps[steps.length-1].s;
+        let n_fix = steps[steps.length-1].n, l2_fix = steps[steps.length-1].l2;
+        let staticFormula = steps[steps.length-1].formula; 
+        let count = L1;
+
+        while (count > 0) {
+            p1 = next(p1); p2 = next(p2); count--;
+            steps.push({ s: p2, f: p1, l1: L1, l2: l2_fix, n: n_fix, formula: staticFormula, res: count, cpp: "cpp-9", py: "py-8" });
+        }
+        steps.push({ ...steps[steps.length-1], cpp: "cpp-11", py: "py-9" });
+        render();
+    }
+
+    function getPos(i) {
+        const gap = 70, startX = 80, centerY = 190, r = 80;
+        if (i < L1) return { x: startX + i * gap, y: centerY };
+        const a = ((i - L1) / C) * Math.PI * 2 - Math.PI;
+        return { x: startX + L1 * gap + r + Math.cos(a) * r, y: centerY + Math.sin(a) * r };
+    }
+
+    function render() {
+        const s = steps[cur];
+        cv.width = cv.clientWidth; cv.height = cv.clientHeight;
+        ctx.clearRect(0,0,cv.width,cv.height);
+
+        ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+        for(let i=0; i<L1+C; i++){
+            let p1 = getPos(i), p2 = getPos(next(i));
+            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        }
+        for(let i=0; i<L1+C; i++){
+            const p = getPos(i);
+            ctx.beginPath(); ctx.arc(p.x, p.y, 22, 0, Math.PI*2);
+            ctx.fillStyle = (i === L1) ? '#e67e2222' : '#16161a'; ctx.fill();
+            ctx.strokeStyle = (i === L1) ? '#e67e22' : '#333'; ctx.stroke();
+            ctx.fillStyle = '#fff'; ctx.textAlign='center'; ctx.font='bold 14px monospace'; ctx.fillText(i, p.x, p.y+5);
+        }
+
+        const ps = getPos(s.s), pf = getPos(s.f);
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#7f77dd'; ctx.beginPath(); ctx.arc(ps.x, ps.y, 28, 0, Math.PI*2); ctx.stroke();
+        ctx.strokeStyle = '#1d9e75'; ctx.beginPath(); ctx.arc(pf.x, pf.y, 32, 0, Math.PI*2); ctx.stroke();
+
+        document.getElementById('c-slow').innerText = `${s.l1} + ${s.l2}`;
+        document.getElementById('c-n').innerText = s.n;
+        document.getElementById('equation-formula').innerHTML = s.formula;
+        document.getElementById('c-calc').innerText = s.res;
+
+        document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+        if(s.cpp) { const el = document.querySelector('.' + s.cpp); if(el) el.classList.add('active'); }
+        if(s.py) { const el = document.querySelector('.' + s.py); if(el) el.classList.add('active'); }
+    }
+
+    function step(d) { cur = Math.max(0, Math.min(steps.length-1, cur+d)); render(); }
+    function setTab(i) {
+        document.querySelectorAll('.tab-btn').forEach((b,idx)=>b.classList.toggle('active', idx===i));
+        document.querySelectorAll('.tab-content').forEach((c,idx)=>c.classList.toggle('active', idx===i));
+    }
+    init();
+</script>
+</body>
+</html>
