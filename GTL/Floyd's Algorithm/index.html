@@ -4,42 +4,66 @@
     <meta charset="UTF-8">
     <title>Floyd's Algorithm: Precise N-Counter</title>
     <style>
-        :root { --bg: #0d0d0f; --card: #16161a; --border: #2d2d33; --text: #e1e1e3; --accent: #7f77dd; --pos: #1d9e75; --orange: #e67e22; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; }
-        .wrap { max-width: 1100px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; }
+        :root { 
+            --bg-main: #141416; 
+            --bg-card: #1e1e22; 
+            --bg-input: #26262a; 
+            --text-main: #e1e1e3; 
+            --text-secondary: #9ba1a6; 
+            --accent: #7f77dd; 
+            --pos: #1d9e75; 
+            --orange: #e67e22; 
+            --border: #313136; 
+            --code-bg: #0d0d0f;
+            --line-hl: rgba(127, 119, 221, 0.15);
+        }
+        
+        body { margin: 0; background: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; padding: 20px; }
+        .wrap { max-width: 1100px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; }
         
         .header { display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-end; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
         .inp-group { display: flex; flex-direction: column; gap: 5px; }
-        input { background: #000; border: 1px solid var(--border); color: #fff; padding: 10px; width: 60px; border-radius: 6px; font-family: monospace; }
-        button { background: var(--accent); border: none; color: #fff; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button.nav { background: #2d2d33; }
+        .inp-group label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        input { background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 10px; width: 60px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; }
+        button { background: var(--accent); border: none; color: #fff; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        button.nav { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); }
 
         .counters-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #050505; border: 1px solid var(--border); padding: 15px; border-radius: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 140px; }
-        .stat-card.highlight { border-color: var(--orange); background: rgba(230, 126, 34, 0.05); }
+        .stat-card { background: var(--code-bg); border: 1px solid var(--border); padding: 15px; border-radius: 10px; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 140px; }
+        .stat-card.highlight { border-color: var(--orange); background: rgba(230, 126, 34, 0.03); }
+        
         .num { font-size: 32px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
-        .sub { font-size: 10px; color: #94949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .sub { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         .n-large { font-size: 56px; color: var(--pos); line-height: 1; }
 
         canvas { background: #000; border-radius: 10px; width: 100%; height: 380px; border: 1px solid var(--border); }
 
+        /* Equation Styles */
         #equation-formula { font-size: 18px; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; min-height: 25px; }
         .f-n { color: var(--pos); font-weight: bold; }
         .f-c { color: #fff; font-weight: bold; }
         .f-l2 { color: var(--accent); font-weight: bold; }
         .f-res { color: var(--orange); font-weight: bold; }
 
+        /* Tabs System */
         .tabs { display: flex; margin-top: 25px; border-bottom: 1px solid var(--border); }
-        .tab-btn { padding: 12px 20px; background: none; border: none; color: #94949e; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .tab-btn { padding: 12px 20px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
-        .tab-content { display: none; padding: 20px; background: #08080a; border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; }
+        .tab-content { display: none; padding: 25px; background: var(--code-bg); border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; }
         .tab-content.active { display: block; }
         
-        pre { margin: 0; color: #a6accd; font-size: 13px; line-height: 1.4; }
-        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.1s; }
-        .code-line.active { background: rgba(127, 119, 221, 0.15); border-left-color: var(--accent); color: #fff; }
-        .keyword { color: #c678dd; }
-        .type { color: #e5c07b; }
+        /* Code Sync Styles */
+        pre { margin: 0; color: #a6accd; font-size: 13px; line-height: 1.5; font-family: 'JetBrains Mono', monospace; }
+        .code-line { display: block; padding: 0 15px; border-left: 3px solid transparent; transition: 0.1s; }
+        .code-line.active { background: var(--line-hl); border-left-color: var(--accent); color: #fff; }
+        
+        /* Manual Syntax Highlighting */
+        .kw { color: #c678dd; } /* keyword */
+        .fn { color: #61afef; } /* function */
+        .cm { color: #5c6370; font-style: italic; } /* comment */
+        .tp { color: #e5c07b; } /* type */
     </style>
 </head>
 <body>
@@ -79,20 +103,20 @@
     </div>
 
     <div id="tab0" class="tab-content active">
-        <div style="font-size: 14px; color: #94949e; line-height: 1.6;">
-            At meeting point: <b>S = L1 + L2</b><br>
-            Fast path: <b>2S = L1 + L2 + n*C</b><br>
-            Subtracting equations: <b>S = n*C</b><br>
-            Result: <span style="color:var(--orange)">L1 + L2 = n*C  =>  L1 = (n*C) - L2</span>
+        <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+            At meeting point: <b style="color:var(--text-main)">S = L1 + L2</b><br>
+            Fast path: <b style="color:var(--text-main)">2S = L1 + L2 + n*C</b><br>
+            Subtracting equations: <b style="color:var(--text-main)">S = n*C</b><br>
+            Result: <span style="color:var(--orange); font-weight: bold;">L1 + L2 = n*C  =>  L1 = (n*C) - L2</span>
         </div>
     </div>
 
     <div id="tab1" class="tab-content">
-<pre><code><span class="cpp-1 code-line"><span class="type">ListNode</span> *detectCycle(<span class="type">ListNode</span> *head) {</span><span class="cpp-2 code-line">    <span class="type">ListNode</span> *slow = head, *fast = head;</span><span class="cpp-3 code-line">    <span class="keyword">while</span> (fast && fast->next) {</span><span class="cpp-4 code-line">        slow = slow->next;</span><span class="cpp-5 code-line">        fast = fast->next->next;</span><span class="cpp-6 code-line">        <span class="keyword">if</span> (slow == fast) {</span><span class="cpp-7 code-line">            <span class="type">ListNode</span> *p1 = head, *p2 = slow;</span><span class="cpp-8 code-line">            <span class="keyword">while</span> (p1 != p2) {</span><span class="cpp-9 code-line">                p1 = p1->next; p2 = p2->next;</span><span class="cpp-10 code-line">            }</span><span class="cpp-11 code-line">            <span class="keyword">return</span> p1;</span><span class="cpp-12 code-line">        }</span><span class="cpp-13 code-line">    }</span><span class="cpp-14 code-line">    <span class="keyword">return</span> <span class="keyword">nullptr</span>;</span><span class="cpp-15 code-line">}</span></code></pre>
+<pre><code><span class="cpp-1 code-line"><span class="tp">ListNode</span> *<span class="fn">detectCycle</span>(<span class="tp">ListNode</span> *head) {</span><span class="cpp-2 code-line">    <span class="tp">ListNode</span> *slow = head, *fast = head;</span><span class="cpp-3 code-line">    <span class="kw">while</span> (fast && fast->next) {</span><span class="cpp-4 code-line">        slow = slow->next;</span><span class="cpp-5 code-line">        fast = fast->next->next;</span><span class="cpp-6 code-line">        <span class="kw">if</span> (slow == fast) {</span><span class="cpp-7 code-line">            <span class="tp">ListNode</span> *p1 = head, *p2 = slow;</span><span class="cpp-8 code-line">            <span class="kw">while</span> (p1 != p2) {</span><span class="cpp-9 code-line">                p1 = p1->next; p2 = p2->next;</span><span class="cpp-10 code-line">            }</span><span class="cpp-11 code-line">            <span class="kw">return</span> p1;</span><span class="cpp-12 code-line">        }</span><span class="cpp-13 code-line">    }</span><span class="cpp-14 code-line">    <span class="kw">return</span> nullptr;</span><span class="cpp-15 code-line">}</span></code></pre>
     </div>
 
     <div id="tab2" class="tab-content">
-<pre><code><span class="py-1 code-line"><span class="keyword">def</span> <span style="color:#61afef">detectCycle</span>(head):</span><span class="py-2 code-line">    slow = fast = head</span><span class="py-3 code-line">    <span class="keyword">while</span> fast <span class="keyword">and</span> fast.next:</span><span class="py-4 code-line">        slow, fast = slow.next, fast.next.next</span><span class="py-5 code-line">        <span class="keyword">if</span> slow == fast:</span><span class="py-6 code-line">            p1, p2 = head, slow</span><span class="py-7 code-line">            <span class="keyword">while</span> p1 != p2:</span><span class="py-8 code-line">                p1, p2 = p1.next, p2.next</span><span class="py-9 code-line">            <span class="keyword">return</span> p1</span><span class="py-10 code-line">    <span class="keyword">return</span> <span class="keyword">None</span></span></code></pre>
+<pre><code><span class="py-1 code-line"><span class="kw">def</span> <span class="fn">detectCycle</span>(head):</span><span class="py-2 code-line">    slow = fast = head</span><span class="py-3 code-line">    <span class="kw">while</span> fast <span class="kw">and</span> fast.next:</span><span class="py-4 code-line">        slow, fast = slow.next, fast.next.next</span><span class="py-5 code-line">        <span class="kw">if</span> slow == fast:</span><span class="py-6 code-line">            p1, p2 = head, slow</span><span class="py-7 code-line">            <span class="kw">while</span> p1 != p2:</span><span class="py-8 code-line">                p1, p2 = p1.next, p2.next</span><span class="py-9 code-line">            <span class="kw">return</span> p1</span><span class="py-10 code-line">    <span class="kw">return</span> None</span></code></pre>
     </div>
 </div>
 
@@ -110,16 +134,16 @@
         steps.push({ s, f, l1: 0, l2: 0, n: 0, formula: "-", res: 0, cpp: "cpp-2", py: "py-2" });
 
         while (true) {
-            let f_next_mid = next(f);
-            let f_next_final = next(f_next_mid);
+            let f_prev = f;
+            let f_mid = next(f);
+            let f_final = next(f_mid);
 
-            // считаем полный цикл fast
-            if (f >= L1 && f_next_final < f) {
-                n_count++;
-            }
+            // N инкрементируется строго при пересечении ENTRY быстрым указателем
+            if (f_prev < L1 && f_mid === L1) n_count++;
+            else if (f_mid === L1 || f_final === L1) n_count++;
 
             s = next(s);
-            f = f_next_final;
+            f = f_final;
             ds++;
             
             let l1_p = Math.min(ds, L1), l2_p = Math.max(0, ds - L1);
@@ -158,32 +182,43 @@
         cv.width = cv.clientWidth; cv.height = cv.clientHeight;
         ctx.clearRect(0,0,cv.width,cv.height);
 
-        ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+        // Grid/Edges
+        ctx.strokeStyle = '#313136'; ctx.lineWidth = 2;
         for(let i=0; i<L1+C; i++){
             let p1 = getPos(i), p2 = getPos(next(i));
             ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
         }
+        // Nodes
         for(let i=0; i<L1+C; i++){
             const p = getPos(i);
             ctx.beginPath(); ctx.arc(p.x, p.y, 22, 0, Math.PI*2);
-            ctx.fillStyle = (i === L1) ? '#e67e2222' : '#16161a'; ctx.fill();
-            ctx.strokeStyle = (i === L1) ? '#e67e22' : '#333'; ctx.stroke();
-            ctx.fillStyle = '#fff'; ctx.textAlign='center'; ctx.font='bold 14px monospace'; ctx.fillText(i, p.x, p.y+5);
+            ctx.fillStyle = (i === L1) ? 'rgba(230, 126, 34, 0.15)' : '#0d0d0f'; ctx.fill();
+            ctx.strokeStyle = (i === L1) ? varColor('--orange') : '#313136'; ctx.stroke();
+            ctx.fillStyle = '#fff'; ctx.textAlign='center'; ctx.font='bold 14px "JetBrains Mono"'; ctx.fillText(i, p.x, p.y+5);
         }
 
+        // Pointers
         const ps = getPos(s.s), pf = getPos(s.f);
         ctx.lineWidth = 4;
-        ctx.strokeStyle = '#7f77dd'; ctx.beginPath(); ctx.arc(ps.x, ps.y, 28, 0, Math.PI*2); ctx.stroke();
-        ctx.strokeStyle = '#1d9e75'; ctx.beginPath(); ctx.arc(pf.x, pf.y, 32, 0, Math.PI*2); ctx.stroke();
+        ctx.strokeStyle = varColor('--accent'); ctx.beginPath(); ctx.arc(ps.x, ps.y, 28, 0, Math.PI*2); ctx.stroke();
+        ctx.strokeStyle = varColor('--pos'); ctx.beginPath(); ctx.arc(pf.x, pf.y, 32, 0, Math.PI*2); ctx.stroke();
 
+        // Stats
         document.getElementById('c-slow').innerText = `${s.l1} + ${s.l2}`;
         document.getElementById('c-n').innerText = s.n;
         document.getElementById('equation-formula').innerHTML = s.formula;
         document.getElementById('c-calc').innerText = s.res;
 
+        // Sync Code Highlighting
+        syncCode(s);
+    }
+
+    function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+    function syncCode(s) {
         document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
-        if(s.cpp) { const el = document.querySelector('.' + s.cpp); if(el) el.classList.add('active'); }
-        if(s.py) { const el = document.querySelector('.' + s.py); if(el) el.classList.add('active'); }
+        if(s.cpp) document.querySelector('.' + s.cpp)?.classList.add('active');
+        if(s.py) document.querySelector('.' + s.py)?.classList.add('active');
     }
 
     function step(d) { cur = Math.max(0, Math.min(steps.length-1, cur+d)); render(); }
