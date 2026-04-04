@@ -31,37 +31,36 @@
         .visualizer-card {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 20px; padding: 30px; margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
         .inputs { display: flex; gap: 15px; margin-bottom: 25px; align-items: flex-end; }
         textarea { 
             background: var(--bg-input); border: 1px solid var(--border);
-            color: var(--text-main); padding: 10px; border-radius: 8px;
-            width: 250px; height: 70px; font-family: monospace; font-size: 14px; resize: none; outline: none;
+            color: var(--text-main); padding: 12px; border-radius: 10px;
+            width: 250px; height: 80px; font-family: 'JetBrains Mono', monospace; font-size: 13px; resize: none; outline: none;
         }
         
         button {
-            padding: 10px 18px; border-radius: 8px; border: none;
-            background: var(--accent); color: white; font-weight: 600; cursor: pointer;
-            transition: 0.2s; font-size: 14px;
+            padding: 10px 20px; border-radius: 8px; border: none;
+            background: var(--accent); color: white; font-weight: 700; cursor: pointer;
+            transition: 0.2s ease; font-size: 14px;
         }
         button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        button:hover { opacity: 0.9; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
 
         .info-box {
             background: var(--bg-main); border-left: 4px solid var(--accent);
-            padding: 16px; min-height: 85px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;
+            padding: 16px; min-height: 85px; margin-bottom: 25px; font-size: 14px; line-height: 1.6;
         }
-        .info-box b { color: var(--accent); }
 
         .section-label {
             font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
             color: var(--text-secondary); margin-bottom: 12px; font-weight: 800;
         }
 
-        /* GRID LOGIC */
+        /* GRID & VECTOR */
         .grid-container { display: flex; flex-direction: column; align-items: center; gap: 35px; margin-bottom: 30px; }
-
         #grid-main, #dp-vector {
             display: grid;
             grid-template-columns: repeat(var(--cols, 3), 75px);
@@ -76,7 +75,7 @@
         }
         
         .grid-val { font-size: 11px; color: var(--text-secondary); position: absolute; top: 6px; right: 8px; }
-        .dp-val { font-size: 22px; font-weight: bold; color: var(--text-main); }
+        .dp-val { font-size: 22px; font-weight: 800; color: var(--text-main); }
         
         .cell.filled { background: var(--bg-input); }
         .cell.active { 
@@ -85,15 +84,13 @@
             transform: scale(1.1); z-index: 10;
             box-shadow: 0 8px 20px rgba(0,0,0,0.4);
         }
-        /* ТЕ САМЫЕ ЗЕЛЕНЫЕ КЛЕТКИ */
         .cell.source { border: 2.5px solid var(--accent-secondary); background: #085041; }
         .cell.path { background: #5c54c7; border-color: #fff; box-shadow: 0 0 15px var(--accent); }
 
-        /* VECTOR SPECIFIC */
         .vector-cell { height: 65px; border-style: dashed; background: transparent; }
-        .vector-cell.filled { border-style: solid; background: var(--bg-input); }
+        .vector-cell.filled { border-style: solid; background: var(--bg-input); border-color: var(--accent-secondary); }
 
-        /* LAB TABS */
+        /* TABS */
         .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
         .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
@@ -101,9 +98,9 @@
         .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
         .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
         .sub-btn.active { border-color: var(--accent); color: var(--accent); }
-        .tab-content { display: none; padding: 25px; line-height: 1.6; }
+        .tab-content { display: none; padding: 25px; }
         .tab-content.active { display: block; }
-        pre[class*="language-"] { margin: 0 !important; border-radius: 10px; background: var(--code-bg) !important; font-size: 13px; }
+        pre[class*="language-"] { margin: 0 !important; border-radius: 12px; background: var(--code-bg) !important; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -117,11 +114,11 @@
             <button onclick="rebuild()">Update Grid</button>
         </div>
 
-        <div class="info-box" id="info">Нажмите "Next Step", чтобы начать вычисление.</div>
+        <div class="info-box" id="info">Готов к работе.</div>
 
         <div class="grid-container">
             <div>
-                <div class="section-label">2D DP Table / Matrix</div>
+                <div class="section-label">2D DP Table</div>
                 <div id="grid-main"></div>
             </div>
 
@@ -138,8 +135,9 @@
             <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
         </div>
         
-        <div style="margin-top: 20px; font-size: 15px;">
-            Minimum Path Sum: <span id="resv" style="font-size: 28px; font-weight: bold; color: var(--accent-secondary); margin-left: 10px;">—</span>
+        <div style="margin-top: 20px;">
+            <span style="color:var(--text-secondary)">Min Path Sum:</span>
+            <span id="resv" style="font-size: 28px; font-weight: 800; color: var(--accent-secondary); margin-left: 10px;">—</span>
         </div>
     </div>
 
@@ -163,16 +161,49 @@
 <script>
     const db = {
         theory: {
-            EN: "<h3>Minimum Path Sum</h3><p>Find a path from top-left to bottom-right minimizing the sum. <b>1D Optimization:</b> We only need the current and previous values in the row to update <code>dp[c]</code>.</p>",
-            RU: "<h3>Минимальная сумма пути</h3><p>Находим путь с минимальной суммой. <b>1D Оптимизация:</b> Нам достаточно одного массива, где <code>dp[c]</code> обновляется на основе <code>dp[c]</code> (значение сверху) и <code>dp[c-1]</code> (значение слева).</p>"
+            EN: "<h3>Minimum Path Sum</h3><p>The space-optimized approach uses a 1D vector. <code>dp[j]</code> represents the minimum path sum to the current cell. It is updated using its own previous value (from the cell above) and <code>dp[j-1]</code> (from the cell to the left).</p>",
+            RU: "<h3>Минимальная сумма пути</h3><p>Оптимизация по памяти $O(N)$ использует одномерный вектор. Значение <code>dp[j]</code> обновляется «на месте»: оно одновременно хранит результат для клетки сверху (до обновления) и становится результатом для текущей клетки после сложения.</p>"
         },
         python: {
-            v1: "def minPathSum(grid):\n    R, C = len(grid), len(grid[0])\n    dp = [[0]*C for _ in range(R)]\n    for r in range(R):\n        for c in range(C):\n            if r == 0 and c == 0: dp[r][c] = grid[0][0]\n            elif r == 0: dp[r][c] = dp[r][c-1] + grid[r][c]\n            elif c == 0: dp[r][c] = dp[r-1][c] + grid[r][c]\n            else: dp[r][c] = min(dp[r-1][c], dp[r][c-1]) + grid[r][c]\n    return dp[-1][-1]",
-            v2: "def minPathSum_opt(grid):\n    C = len(grid[0])\n    dp = [float('inf')] * C\n    dp[0] = 0\n    for row in grid:\n        for c in range(C):\n            if c == 0: dp[c] += row[c]\n            else: dp[c] = min(dp[c], dp[c-1]) + row[c]\n    return dp[-1]"
+            v1: "def minPathSum(grid):\n    C = len(grid[0])\n    dp = [float('inf')] * C\n    dp[0] = 0\n    for row in grid:\n        for c in range(C):\n            if c == 0: dp[c] += row[c]\n            else: dp[c] = min(dp[c], dp[c-1]) + row[c]\n    return dp[-1]",
+            v2: "# Classic 2D DP\ndef minPathSum2D(grid):\n    R, C = len(grid), len(grid[0])\n    for i in range(R):\n        for j in range(C):\n            if i == 0 and j == 0: continue\n            elif i == 0: grid[i][j] += grid[i][j-1]\n            elif j == 0: grid[i][j] += grid[i-1][j]\n            else: grid[i][j] += min(grid[i-1][j], grid[i][j-1])\n    return grid[-1][-1]"
         },
         cpp: {
-            v1: "int minPathSum(vector<vector<int>>& grid) {\n    int R = grid.size(), C = grid[0].size();\n    for(int i=0; i<R; i++) {\n        for(int j=0; j<C; j++) {\n            if(i==0 && j==0) continue;\n            if(i==0) grid[i][j] += grid[i][j-1];\n            else if(j==0) grid[i][j] += grid[i-1][j];\n            else grid[i][j] += min(grid[i-1][j], grid[i][j-1]);\n        }\n    }\n    return grid[R-1][C-1];\n}",
-            v2: "int minPathSum(vector<vector<int>>& grid) {\n    int C = grid[0].size();\n    vector<int> dp(C, INT_MAX);\n    dp[0] = 0;\n    for(auto& row : grid) {\n        for(int c=0; c<C; c++) {\n            if(c==0) dp[c] += row[c];\n            else dp[c] = min(dp[c], dp[c-1]) + row[c];\n        }\n    }\n    return dp[C-1];\n}"
+            v1: `class Solution {
+public:
+    int minPathSum(vector<vector<int>>& grid) 
+    {
+        int m = grid.size();
+        int n = grid[0].size();
+        vector<int> dp(n, grid[0][0]);
+
+        // Инициализируем первую строку
+        for (int j = 1; j < n; j++) dp[j] = dp[j - 1] + grid[0][j];
+
+        for (int i = 1; i < m; i++) {
+            // Первый элемент строки может прийти только сверху
+            dp[0] += grid[i][0]; 
+            for (int j = 1; j < n; j++) {
+                // Выбираем: либо сверху (dp[j]), либо слева (dp[j-1])
+                dp[j] = grid[i][j] + min(dp[j], dp[j - 1]);
+            }
+        }
+        return dp[n - 1];        
+    }
+};`,
+            v2: `// In-place O(1) space optimization
+int minPathSum(vector<vector<int>>& grid) {
+    int m = grid.size(), n = grid[0].size();
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == 0 && j == 0) continue;
+            if (i == 0) grid[i][j] += grid[i][j-1];
+            else if (j == 0) grid[i][j] += grid[i-1][j];
+            else grid[i][j] += min(grid[i-1][j], grid[i][j-1]);
+        }
+    }
+    return grid[m-1][n-1];
+}`
         }
     };
 
@@ -227,7 +258,7 @@
         let dpTable = Array.from({length: R}, () => Array(C).fill(null));
         let dpVec = Array(C).fill('∞');
 
-        _steps.push({ r:-1, c:-1, dpTable: dpTable.map(row=>[...row]), dpVec: [...dpVec], sources:[], msg: "Начинаем обход матрицы." });
+        _steps.push({ r:-1, c:-1, dpTable: dpTable.map(row=>[...row]), dpVec: [...dpVec], sources:[], msg: "Начало: инициализация 1D вектора." });
 
         for (let r = 0; r < R; r++) {
             for (let c = 0; c < C; c++) {
@@ -248,7 +279,7 @@
                     dpTable: dpTable.map(row=>[...row]), 
                     dpVec: [...dpVec],
                     sources, 
-                    msg: `Ячейка [${r},${c}]: берем <b>${grid[r][c]}</b> + min сосед. Итог: <b>${dpTable[r][c]}</b>` 
+                    msg: `Шаг [${r},${c}]: <code>dp[${c}]</code> обновлен значением <b>${dpTable[r][c]}</b>` 
                 });
             }
         }
@@ -262,17 +293,16 @@
             else if (cc === 0) cr--;
             else (dpTable[cr-1][cc] < dpTable[cr][cc-1]) ? cr-- : cc--;
         }
-        _steps.push({ r: R-1, c: C-1, dpTable: dpTable.map(row=>[...row]), dpVec: [...dpVec], sources:[], path, done: true, msg: "Путь найден!" });
+        _steps.push({ r: R-1, c: C-1, dpTable: dpTable.map(row=>[...row]), dpVec: [...dpVec], sources:[], path, done: true, msg: "<b>Готово!</b> Минимальный путь найден." });
         return _steps;
     }
 
     function render() {
         const s = steps[cur], R = grid.length, C = grid[0].length;
-        document.getElementById('ctr').textContent = `Шаг ${cur}/${steps.length-1}`;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('resv').textContent = s.done ? s.dpTable[R-1][C-1] : '...';
 
-        // Table
         const viz = document.getElementById('grid-main');
         viz.style.setProperty('--cols', C);
         let html = '';
@@ -288,7 +318,6 @@
         }
         viz.innerHTML = html;
 
-        // Vector
         const vecViz = document.getElementById('dp-vector');
         vecViz.style.setProperty('--cols', C);
         let vHtml = '';
@@ -296,7 +325,7 @@
             let cls = 'cell vector-cell';
             if (v !== '∞') cls += ' filled';
             if (idx === s.c && !s.done) cls += ' active';
-            vHtml += `<div class="${cls}"><div class="grid-val">i:${idx}</div><div class="dp-val">${v}</div></div>`;
+            vHtml += `<div class="${cls}"><div class="grid-val">dp[${idx}]</div><div class="dp-val">${v}</div></div>`;
         });
         vecViz.innerHTML = vHtml;
     }
