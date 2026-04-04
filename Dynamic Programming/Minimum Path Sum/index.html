@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Minimum Path Sum | AlgoView Lab</title>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
     <style>
         :root {
             --bg-main: #1a1a1c;
@@ -15,218 +17,362 @@
             --accent-secondary: #1d9e75;
             --border: #3e3e42;
             --code-bg: #0d0d0f;
-            --highlight-line: rgba(127, 119, 221, 0.3);
+            --line-hl: rgba(127, 119, 221, 0.3);
         }
 
-        body { margin: 0; padding: 2rem 0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg-main); color: var(--text-main); }
-        .wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 450px; gap: 20px; }
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 2rem 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
         
-        /* Левая колонка - Визуализатор */
-        .visualizer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; }
-        .grid-container { display: flex; flex-direction: column; align-items: center; gap: 30px; margin: 25px 0; }
+        .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
         
-        #grid-main, #dp-vector { display: grid; grid-template-columns: repeat(var(--cols, 3), 65px); gap: 10px; }
+        .visualizer-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .inputs { display: flex; gap: 15px; margin-bottom: 25px; align-items: flex-end; }
+        textarea { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-main); padding: 12px; border-radius: 10px;
+            width: 250px; height: 80px; font-family: 'JetBrains Mono', monospace; font-size: 13px; resize: none; outline: none;
+        }
+        
+        button {
+            padding: 10px 20px; border-radius: 8px; border: none;
+            background: var(--accent); color: white; font-weight: 700; cursor: pointer;
+            transition: 0.2s ease; font-size: 14px;
+        }
+        button.secondary { background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .info-box {
+            background: var(--bg-main); border-left: 4px solid var(--accent);
+            padding: 16px; min-height: 85px; margin-bottom: 25px; font-size: 14px; line-height: 1.6;
+        }
+
+        .section-label {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--text-secondary); margin-bottom: 12px; font-weight: 800;
+        }
+
+        .grid-container { display: flex; flex-direction: column; align-items: center; gap: 35px; margin-bottom: 30px; }
+        #grid-main, #dp-vector {
+            display: grid;
+            grid-template-columns: repeat(var(--cols, 3), 75px);
+            gap: 12px;
+        }
         
         .cell {
-            width: 65px; height: 65px; border-radius: 10px; border: 1px solid var(--border);
-            background: var(--bg-card); position: relative; display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s ease;
+            width: 75px; height: 75px; border-radius: 12px;
+            border: 1px solid var(--border); background: var(--bg-card);
+            position: relative; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center;
         }
-        .grid-val { font-size: 10px; color: var(--text-secondary); position: absolute; top: 4px; right: 6px; }
-        .dp-val { font-size: 20px; font-weight: 800; }
         
-        .cell.active { border: 3px solid var(--accent); background: #3c3489; transform: scale(1.05); z-index: 5; }
-        .cell.source { border: 2px solid var(--accent-secondary); background: #085041; }
-        .cell.path { background: var(--accent); border-color: #fff; }
+        .grid-val { font-size: 11px; color: var(--text-secondary); position: absolute; top: 6px; right: 8px; }
+        .dp-val { font-size: 22px; font-weight: 800; color: var(--text-main); }
+        
         .cell.filled { background: var(--bg-input); }
-        .vector-cell { height: 50px; border-style: dashed; }
-        .vector-cell.filled { border-style: solid; }
+        .cell.active { 
+            border: 3px solid var(--accent); 
+            background: #3c3489; 
+            transform: scale(1.1); z-index: 10;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        .cell.source { border: 2.5px solid var(--accent-secondary); background: #085041; }
+        .cell.path { background: #5c54c7; border-color: #fff; box-shadow: 0 0 15px var(--accent); }
 
-        /* Правая колонка - Код */
-        .code-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
-        .tabs { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: none; color: var(--text-secondary); cursor: pointer; font-weight: bold; font-size: 12px; }
-        .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
-        
-        pre { margin: 0 !important; padding: 15px !important; font-size: 12px !important; flex-grow: 1; line-height: 1.5; }
-        .line-hl { background: var(--highlight-line); display: block; margin: 0 -15px; padding: 0 15px; border-left: 3px solid var(--accent); }
+        .vector-cell { height: 65px; border-style: dashed; background: transparent; }
+        .vector-cell.filled { border-style: solid; background: var(--bg-input); border-color: var(--accent-secondary); }
 
-        .controls { display: flex; gap: 10px; margin-top: 20px; }
-        button { padding: 10px 15px; border-radius: 8px; border: none; background: var(--accent); color: white; cursor: pointer; font-weight: 600; }
-        button.sec { background: var(--bg-input); color: var(--text-main); }
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 15px 22px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        .context-controls { margin-left: auto; display: flex; align-items: center; gap: 6px; padding-right: 15px; }
+        .sub-btn { font-size: 10px; padding: 4px 8px; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 4px; cursor: pointer; }
+        .sub-btn.active { border-color: var(--accent); color: var(--accent); }
+        .tab-content { display: none; padding: 25px; min-height: 300px; }
+        .tab-content.active { display: block; }
         
-        .info-box { background: var(--bg-main); border-left: 4px solid var(--accent); padding: 12px; margin-bottom: 15px; font-size: 13px; min-height: 60px; }
+        pre[class*="language-"] { 
+            margin: 0 !important; 
+            border-radius: 12px; 
+            background: var(--code-bg) !important; 
+            font-size: 13px; 
+            line-height: 1.5; 
+            position: relative;
+            padding: 1em !important;
+        }
+
+        /* Подсветка активной строки */
+        .line-highlight {
+            position: absolute;
+            left: 0;
+            right: 0;
+            background: var(--line-hl);
+            border-left: 3px solid var(--accent);
+            pointer-events: none;
+            height: 1.5em; /* Должно совпадать с line-height */
+            transition: top 0.2s ease;
+        }
     </style>
 </head>
 <body>
 
 <div class="wrap">
     <div class="visualizer-card">
-        <div class="info-box" id="info">Нажмите "Next Step"</div>
-        
+        <div class="inputs">
+            <textarea id="grid-input">1,3,1
+1,5,1
+4,2,1</textarea>
+            <button onclick="rebuild()">Update Grid</button>
+        </div>
+
+        <div class="info-box" id="info">Готов к работе.</div>
+
         <div class="grid-container">
             <div>
-                <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 5px;">2D GRID / DP TABLE</div>
+                <div class="section-label">2D DP Table</div>
                 <div id="grid-main"></div>
             </div>
+
             <div>
-                <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 5px;">1D DP VECTOR</div>
+                <div class="section-label">1D DP Vector (Space Optimized)</div>
                 <div id="dp-vector"></div>
             </div>
         </div>
 
-        <div class="controls">
-            <button class="sec" onclick="go(-1)">Back</button>
-            <button onclick="go(1)">Next Step</button>
-            <button class="sec" onclick="reset()">Reset</button>
+        <div class="inputs" style="margin-top: 20px; margin-bottom: 0;">
+            <button class="secondary" onclick="go(-1)">< Back</button>
+            <button onclick="go(1)">Next Step ></button>
+            <button class="secondary" onclick="resetAll()">Reset</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
         </div>
         
-        <textarea id="grid-input" style="display:none">1,3,1\n1,5,1\n4,2,1</textarea>
+        <div style="margin-top: 20px;">
+            <span style="color:var(--text-secondary)">Min Path Sum:</span>
+            <span id="resv" style="font-size: 28px; font-weight: 800; color: var(--accent-secondary); margin-left: 10px;">—</span>
+        </div>
     </div>
 
-    <div class="code-section">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="setLang('cpp')">C++ (O(N) Space)</button>
-            <button class="tab-btn" onclick="setLang('python')">Python</button>
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+            <div class="context-controls" id="context-panel"></div>
         </div>
-        <pre id="code-block"></pre>
+        <div id="theory" class="tab-content active"><div id="theory-display"></div></div>
+        <div id="python" class="tab-content">
+            <pre><code class="language-python" id="python-display"></code><div id="hl-py" class="line-highlight" style="display:none"></div></pre>
+        </div>
+        <div id="cpp" class="tab-content">
+            <pre><code class="language-cpp" id="cpp-display"></code><div id="hl-cpp" class="line-highlight" style="display:none"></div></pre>
+        </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
-    const codeData = {
-        cpp: [
-            "class Solution {",
-            "public:",
-            "    int minPathSum(vector<vector<int>>& grid) {",
-            "        int m = grid.size(), n = grid[0].size();",
-            "        vector<int> dp(n, grid[0][0]);", // index 4
-            "",
-            "        for (int j = 1; j < n; j++) ",
-            "            dp[j] = dp[j-1] + grid[0][j];", // index 7
-            "",
-            "        for (int i = 1; i < m; i++) {",
-            "            dp[0] += grid[i][0];", // index 10
-            "            for (int j = 1; j < n; j++) {",
-            "                dp[j] = grid[i][j] + min(dp[j], dp[j-1]);", // index 12
-            "            }",
-            "        }",
-            "        return dp[n-1];", // index 15
-            "    }",
-            "};"
-        ],
-        python: [
-            "def minPathSum(grid):",
-            "    m, n = len(grid), len(grid[0])",
-            "    dp = [grid[0][0]] * n",
-            "    for j in range(1, n):",
-            "        dp[j] = dp[j-1] + grid[0][j]",
-            "    for i in range(1, m):",
-            "        dp[0] += grid[i][0]",
-            "        for j in range(1, n):",
-            "            dp[j] = grid[i][j] + min(dp[j], dp[j-1])",
-            "    return dp[-1]"
-        ]
+    const db = {
+        theory: {
+            EN: "<h3>Minimum Path Sum</h3><p>The space-optimized approach uses a 1D vector. <code>dp[j]</code> represents the minimum path sum to the current cell.</p>",
+            RU: "<h3>Минимальная сумма пути</h3><p>Оптимизация по памяти $O(N)$ использует одномерный вектор.</p>"
+        },
+        python: {
+            v1: `def minPathSum(grid):
+    m, n = len(grid), len(grid[0])
+    dp = [grid[0][0]] * n
+    for j in range(1, n):
+        dp[j] = dp[j-1] + grid[0][j]
+    for i in range(1, m):
+        dp[0] += grid[i][0]
+        for j in range(1, n):
+            dp[j] = grid[i][j] + min(dp[j], dp[j-1])
+    return dp[-1]`
+        },
+        cpp: {
+            v1: `class Solution {
+public:
+    int minPathSum(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        vector<int> dp(n, grid[0][0]);
+        for (int j = 1; j < n; j++) 
+            dp[j] = dp[j - 1] + grid[0][j];
+        for (int i = 1; i < m; i++) {
+            dp[0] += grid[i][0];
+            for (int j = 1; j < n; j++) {
+                dp[j] = grid[i][j] + min(dp[j], dp[j - 1]);
+            }
+        }
+        return dp[n - 1];
+    }
+};`
+        }
     };
 
-    let lang = 'cpp';
-    let grid = [[1,3,1],[1,5,1],[4,2,1]];
-    let steps = [];
-    let cur = 0;
+    let grid = [[1,3,1],[1,5,1],[4,2,1]], steps = [], cur = 0, currentMainTab = 'theory', activeSub = 'v1';
 
-    function setLang(l) { 
-        lang = l; 
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase().includes(l)));
-        render(); 
+    function switchMainTab(btn, tabId) {
+        currentMainTab = tabId;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        renderContextControls();
     }
 
-    function buildSteps() {
-        const M = grid.length, N = grid[0].length;
-        let s = [];
-        let dpTable = Array.from({length:M}, ()=>Array(N).fill(null));
-        let dpVec = Array(N).fill('∞');
+    function renderContextControls() {
+        const panel = document.getElementById('context-panel'); panel.innerHTML = '';
+        const list = currentMainTab === 'theory' ? ['EN', 'RU'] : ['v1'];
+        list.forEach((item, idx) => {
+            const b = document.createElement('button');
+            b.className = 'sub-btn' + (idx === 0 ? ' active' : '');
+            b.textContent = item;
+            b.onclick = () => {
+                document.querySelectorAll('.sub-btn').forEach(s => s.classList.remove('active'));
+                b.classList.add('active'); activeSub = item; updateContent();
+            };
+            panel.appendChild(b);
+        });
+        activeSub = list[0];
+        updateContent();
+    }
 
-        // Step 0: Init
-        dpTable[0][0] = grid[0][0];
-        dpVec[0] = grid[0][0];
-        s.push({ r:0, c:0, table: dpTable.map(r=>[...r]), vec:[...dpVec], line: {cpp:4, python:2}, msg: "Инициализируем dp[0] значением grid[0][0]" });
+    function updateContent() {
+        const display = document.getElementById(currentMainTab + '-display');
+        if (currentMainTab === 'theory') {
+            display.innerHTML = db.theory[activeSub];
+        } else {
+            // Вставляем текст кода и подсвечиваем его через Prism
+            display.textContent = db[currentMainTab][activeSub];
+            Prism.highlightElement(display);
+            updateLineHighlight();
+        }
+    }
 
-        // Step 1: First Row
-        for(let j=1; j<N; j++) {
-            dpTable[0][j] = dpTable[0][j-1] + grid[0][j];
-            dpVec[j] = dpTable[0][j];
-            s.push({ r:0, c:j, table: dpTable.map(r=>[...r]), vec:[...dpVec], src:[{r:0,c:j-1}], line: {cpp:7, python:4}, msg: `Заполняем первую строку: dp[${j}] = dp[${j-1}] + grid[0][${j}]` });
+    function updateLineHighlight() {
+        const step = steps[cur];
+        const hlPy = document.getElementById('hl-py');
+        const hlCpp = document.getElementById('hl-cpp');
+        
+        if (!step || currentMainTab === 'theory') {
+            hlPy.style.display = 'none';
+            hlCpp.style.display = 'none';
+            return;
         }
 
-        // Step 2: Rows
-        for(let i=1; i<M; i++) {
-            // First col of row
-            dpTable[i][0] = dpTable[i-1][0] + grid[i][0];
-            dpVec[0] = dpTable[i][0];
-            s.push({ r:i, c:0, table: dpTable.map(r=>[...r]), vec:[...dpVec], src:[{r:i-1,c:0}], line: {cpp:10, python:6}, msg: `Первый элемент строки ${i}: только сверху.` });
+        const activeHl = currentMainTab === 'python' ? hlPy : hlCpp;
+        const lineIdx = currentMainTab === 'python' ? step.linePy : step.lineCpp;
 
-            for(let j=1; j<N; j++) {
-                dpTable[i][j] = grid[i][j] + Math.min(dpTable[i-1][j], dpTable[i][j-1]);
-                dpVec[j] = dpTable[i][j];
-                s.push({ r:i, c:j, table: dpTable.map(r=>[...r]), vec:[...dpVec], src:[{r:i-1,c:j}, {r:i,c:j-1}], line: {cpp:12, python:8}, msg: `Сравниваем: сверху (был в dp[${j}]) и слева (уже в dp[${j-1}])` });
+        if (lineIdx !== undefined && lineIdx >= 0) {
+            activeHl.style.display = 'block';
+            // 1.5em — это высота строки, 1em — начальный отступ padding в pre
+            activeHl.style.top = (1 + lineIdx * 1.5) + 'em'; 
+        } else {
+            activeHl.style.display = 'none';
+        }
+    }
+
+    function rebuild() {
+        const text = document.getElementById('grid-input').value.trim();
+        try {
+            const newGrid = text.split('\n').map(r => r.split(',').map(v => parseInt(v.trim())).filter(v => !isNaN(v)));
+            if (newGrid.length > 0) { grid = newGrid; init(); }
+        } catch(e) { alert("Format error"); }
+    }
+
+    function init() { steps = buildSteps(); cur = 0; render(); }
+
+    function buildSteps() {
+        const R = grid.length, C = grid[0].length;
+        let _steps = [];
+        let dpTable = Array.from({length: R}, () => Array(C).fill(null));
+        let dpVec = Array(C).fill('∞');
+
+        dpTable[0][0] = grid[0][0];
+        dpVec[0] = grid[0][0];
+        _steps.push({ r:0, c:0, dpTable: dpTable.map(row=>[...row]), dpVec: [...dpVec], sources:[], lineCpp: 4, linePy: 2, msg: "Инициализация: dp[0] = grid[0][0]" });
+
+        for (let j = 1; j < C; j++) {
+            dpTable[0][j] = dpTable[0][j-1] + grid[0][j];
+            dpVec[j] = dpTable[0][j];
+            _steps.push({ r:0, c:j, dpTable: dpTable.map(row=>[...row]), dpVec: [...dpVec], sources:[{r:0, c:j-1}], lineCpp: 6, linePy: 4, msg: "Первая строка: сумма слева." });
+        }
+
+        for (let r = 1; r < R; r++) {
+            dpTable[r][0] = dpTable[r-1][0] + grid[r][0];
+            dpVec[0] = dpTable[r][0];
+            _steps.push({ r:r, c:0, dpTable: dpTable.map(row=>[...row]), dpVec: [...dpVec], sources:[{r:r-1, c:0}], lineCpp: 8, linePy: 6, msg: "Начало строки: обновляем dp[0] значением сверху." });
+
+            for (let c = 1; c < C; c++) {
+                dpTable[r][c] = grid[r][c] + Math.min(dpTable[r-1][c], dpTable[r][c-1]);
+                dpVec[c] = dpTable[r][c];
+                _steps.push({ r, c, dpTable: dpTable.map(row=>[...row]), dpVec: [...dpVec], sources:[{r:r-1, c}, {r, c:c-1}], lineCpp: 10, linePy: 8, msg: `Ячейка [${r},${c}]: min(сверху, слева) + ${grid[r][c]}` });
             }
         }
 
-        // Final path
-        let path = []; let r = M-1, c = N-1;
-        while(r>=0 && c>=0) {
-            path.push({r,c});
-            if(r==0 && c==0) break;
-            if(r==0) c--; else if(c==0) r--;
-            else (dpTable[r-1][c] < dpTable[r][c-1]) ? r-- : c--;
+        let path = []; let cr = R - 1, cc = C - 1;
+        while (cr >= 0 && cc >= 0) {
+            path.push({r: cr, c: cc});
+            if (cr === 0 && cc === 0) break;
+            if (cr === 0) cc--; else if (cc === 0) cr--;
+            else (dpTable[cr-1][cc] < dpTable[cr][cc-1]) ? cr-- : cc--;
         }
-        s.push({ r:M-1, c:N-1, table: dpTable.map(r=>[...r]), vec:[...dpVec], path, line: {cpp:15, python:9}, msg: "Путь найден!" });
-        return s;
+        _steps.push({ r: R-1, c: C-1, dpTable: dpTable.map(row=>[...row]), dpVec: [...dpVec], sources:[], path, done: true, lineCpp: 13, linePy: 9, msg: "Путь найден!" });
+        return _steps;
     }
 
     function render() {
-        const step = steps[cur];
-        const M = grid.length, N = grid[0].length;
-        document.getElementById('info').innerHTML = step.msg;
+        const s = steps[cur], R = grid.length, C = grid[0].length;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('resv').textContent = s.done ? s.dpTable[R-1][C-1] : '...';
 
-        // Grid
-        const gridEl = document.getElementById('grid-main');
-        gridEl.style.setProperty('--cols', N);
-        gridEl.innerHTML = step.table.flatMap((row, r) => row.map((val, c) => {
-            let cls = 'cell';
-            if(val !== null) cls += ' filled';
-            if(r === step.r && c === step.c && !step.path) cls += ' active';
-            if(step.src?.some(s => s.r === r && s.c === c)) cls += ' source';
-            if(step.path?.some(p => p.r === r && p.c === c)) cls += ' path';
-            return `<div class="${cls}"><div class="grid-val">${grid[r][c]}</div><div class="dp-val">${val||''}</div></div>`;
-        })).join('');
+        const viz = document.getElementById('grid-main');
+        viz.style.setProperty('--cols', C);
+        let html = '';
+        for (let r = 0; r < R; r++) {
+            for (let c = 0; c < C; c++) {
+                let cls = 'cell';
+                if (s.dpTable[r][c] !== null) cls += ' filled';
+                if (r === s.r && c === s.c && !s.done) cls += ' active';
+                if (s.sources.some(src => src.r === r && src.c === c)) cls += ' source';
+                if (s.path && s.path.some(p => p.r === r && p.c === c)) cls += ' path';
+                html += `<div class="${cls}"><div class="grid-val">${grid[r][c]}</div><div class="dp-val">${s.dpTable[r][c] !== null ? s.dpTable[r][c] : ''}</div></div>`;
+            }
+        }
+        viz.innerHTML = html;
 
-        // Vector
-        const vecEl = document.getElementById('dp-vector');
-        vecEl.style.setProperty('--cols', N);
-        vecEl.innerHTML = step.vec.map((val, idx) => {
+        const vecViz = document.getElementById('dp-vector');
+        vecViz.style.setProperty('--cols', C);
+        let vHtml = '';
+        s.dpVec.forEach((v, idx) => {
             let cls = 'cell vector-cell';
-            if(val !== '∞') cls += ' filled';
-            if(idx === step.c && !step.path) cls += ' active';
-            return `<div class="${cls}"><div class="dp-val">${val}</div></div>`;
-        }).join('');
+            if (v !== '∞') cls += ' filled';
+            if (idx === s.c && !s.done) cls += ' active';
+            vHtml += `<div class="${cls}"><div class="dp-val">${v}</div></div>`;
+        });
+        vecViz.innerHTML = vHtml;
 
-        // Code Highlight
-        const codeBlock = document.getElementById('code-block');
-        const lines = codeData[lang].map((l, i) => i === step.line[lang] ? `<span class="line-hl">${l}</span>` : l).join('\n');
-        codeBlock.innerHTML = `<code class="language-${lang}">${lines}</code>`;
-        Prism.highlightElement(codeBlock.querySelector('code'));
+        if (currentMainTab !== 'theory') {
+            updateContent();
+        }
     }
 
-    function go(d) { cur = Math.max(0, Math.min(steps.length-1, cur + d)); render(); }
-    function reset() { cur = 0; render(); }
+    function go(dir) { if (cur+dir >= 0 && cur+dir < steps.length) { cur+=dir; render(); } }
+    function resetAll() { cur = 0; render(); }
 
-    steps = buildSteps();
-    render();
+    renderContextControls(); init();
 </script>
 </body>
 </html>
