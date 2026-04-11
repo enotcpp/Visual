@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Multiplication | AlgoView Lab</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --bg-main: #141416;
+            --bg-card: #1e1e22;
+            --bg-input: #26262a;
+            --text-main: #e1e1e3;
+            --text-secondary: #9ba1a6;
+            --accent: #7f77dd;
+            --accent-soft: rgba(127, 119, 221, 0.1);
+            --border: #313136;
+            --code-bg: #0d0d0f;
+            --highlight-a: #e67e22; /* Множитель */
+            --highlight-b: #1d9e75; /* Строка B */
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg-main); color: var(--text-main); 
+        }
+        
+        .wrap { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        h1 { font-size: 22px; margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+
+        .visualizer-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 30px; margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .inputs { display: flex; gap: 15px; margin-bottom: 25px; align-items: flex-start; flex-wrap: wrap; }
+        .matrix-input-group { display: flex; flex-direction: column; gap: 8px; }
+        .matrix-input-group label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;}
+        
+        .inputs textarea { 
+            background: var(--bg-input); border: 1px solid var(--border);
+            color: white; padding: 12px; border-radius: 8px; outline: none; 
+            font-family: monospace; font-size: 14px; resize: none;
+            width: 200px; height: 80px; line-height: 1.5;
+        }
+        
+        .controls { display: flex; gap: 12px; align-items: center; margin-top: 10px; }
+        button {
+            padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg-input); color: var(--text-main); font-weight: 600;
+            cursor: pointer; transition: 0.2s; font-size: 14px;
+        }
+        button:hover { border-color: var(--accent); background: #2d2d32; }
+        button.primary { background: var(--accent); color: white; border: none; }
+
+        .info-box { min-height: 45px; color: var(--text-secondary); font-size: 14px; margin-bottom: 30px; border-left: 3px solid var(--border); padding-left: 15px; }
+        .math { font-family: monospace; color: var(--accent); font-weight: bold; }
+
+        .matrix-container { 
+            display: flex; justify-content: center; align-items: center; 
+            gap: 40px; margin: 40px 0; min-height: 250px; flex-wrap: wrap;
+        }
+
+        .matrix-block { display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; }
+        .matrix-label { font-size: 11px; text-transform: uppercase; font-weight: 800; color: var(--text-secondary); letter-spacing: 1.5px; }
+        
+        .matrix-grid { 
+            display: grid; border: 2px solid var(--border); border-radius: 12px; overflow: hidden;
+            background: var(--bg-main); gap: 1px;
+        }
+        
+        .matrix-cell {
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: monospace; font-size: 18px; font-weight: 600;
+            color: var(--text-main); border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        /* Оптимизированные стили подсветки */
+        .cell-factor { background-color: rgba(230, 126, 34, 0.4); color: white; border: 2px solid var(--highlight-a); }
+        .cell-row-active { background-color: var(--accent-soft); border: 1px dashed var(--accent); }
+        .cell-b-row { background-color: rgba(29, 158, 117, 0.2); border: 1px dashed var(--highlight-b); }
+        .cell-target { background-color: var(--accent); color: white; transform: scale(1.05); }
+
+        .operator { font-size: 24px; font-weight: 300; color: var(--text-secondary); margin-top: 15px; }
+
+        .lab-info { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .tabs-nav { display: flex; background: #141416; border-bottom: 1px solid var(--border); }
+        .tab-btn { background: none; border: none; padding: 18px 25px; color: var(--text-secondary); font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+        .tab-btn.active { color: var(--accent); background: var(--bg-card); }
+        
+        .tab-content { display: none; padding: 25px; line-height: 1.6; min-height: 200px; }
+        .tab-content.active { display: block; }
+        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="visualizer-card">
+        <h1>🚀 Optimized Matrix Multiplication</h1>
+        
+        <div class="inputs">
+            <div class="matrix-input-group">
+                <label>Matrix A</label>
+                <textarea id="matrix-a-input">1, 2&#10;3, 4</textarea>
+            </div>
+            <div class="matrix-input-group">
+                <label>Matrix B</label>
+                <textarea id="matrix-b-input">5, 6&#10;7, 8</textarea>
+            </div>
+            <div class="matrix-input-group" style="margin-left: auto;">
+                <label>Actions</label>
+                <div class="controls">
+                    <button onclick="rebuild()" class="primary">Load Data</button>
+                    <button onclick="randomize()">Random</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box" id="info">Ready to start.</div>
+        
+        <div class="matrix-container">
+            <div class="matrix-block">
+                <div class="matrix-label">Matrix A (i, k)</div>
+                <div class="matrix-grid grid-a" id="grid-a"></div>
+            </div>
+            <div class="operator">×</div>
+            <div class="matrix-block">
+                <div class="matrix-label">Matrix B (k, j)</div>
+                <div class="matrix-grid grid-b" id="grid-b"></div>
+            </div>
+            <div class="operator">=</div>
+            <div class="matrix-block">
+                <div class="matrix-label">Result C (i, j)</div>
+                <div class="matrix-grid grid-c" id="grid-c"></div>
+            </div>
+        </div>
+
+        <div class="inputs" style="margin-top: 30px; margin-bottom: 0;">
+            <button onclick="go(-1)">← Back</button>
+            <button onclick="go(1)" class="primary">Next Step →</button>
+            <button id="auto-btn" onclick="toggleAuto()">Auto Play</button>
+            <span id="ctr" style="margin-left: auto; font-size: 12px; color: var(--text-secondary);"></span>
+        </div>
+    </div>
+
+    <div class="lab-info">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchMainTab(this, 'theory')">Theory</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'python')">Python</button>
+            <button class="tab-btn" onclick="switchMainTab(this, 'cpp')">C++</button>
+        </div>
+        <div id="theory" class="tab-content active">
+            <h3>Cache-Friendly Algorithm (i-k-j)</h3>
+            <p>В отличие от классического метода (i-j-k), здесь мы меняем порядок вложенных циклов. Это позволяет обращаться к элементам матриц <b>B</b> и <b>C</b> последовательно, что идеально для кэша процессора.</p>
+            <ul>
+                <li>Цикл <b>i</b>: фиксирует строку в A и C.</li>
+                <li>Цикл <b>k</b>: фиксирует множитель A[i][k] и строку в B.</li>
+                <li>Цикл <b>j</b>: линейно проходит по строкам, суммируя результат.</li>
+            </ul>
+        </div>
+        <div id="python" class="tab-content">
+            <pre><code class="language-python">def multiply(A, B):
+    rows_A, cols_A = len(A), len(A[0])
+    cols_B = len(B[0])
+    C = [[0] * cols_B for _ in range(rows_A)]
+
+    for i in range(rows_A):
+        for k in range(cols_A):
+            factor = A[i][k]
+            if factor == 0: continue
+            for j in range(cols_B):
+                C[i][j] += factor * B[k][j]
+    return C</code></pre>
+        </div>
+        <div id="cpp" class="tab-content">
+            <pre><code class="language-cpp">Matrix multiply(const Matrix& A, const Matrix& B) {
+    int rows_A = A.size(), cols_A = A[0].size();
+    int cols_B = B[0].size();
+    Matrix C(rows_A, vector&lt;long long&gt;(cols_B, 0));
+
+    for (int i = 0; i < rows_A; i++) {
+        for (int k = 0; k < cols_A; k++) {
+            if (A[i][k] == 0) continue; 
+            for (int j = 0; j < cols_B; j++) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+    return C;
+}</code></pre>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+
+<script>
+    let matrixA = [], matrixB = [], steps = [], cur = 0, timer = null;
+
+    function randomize() {
+        const r = () => Math.floor(Math.random() * 5) + 1;
+        document.getElementById('matrix-a-input').value = `${r()}, ${r()}\n${r()}, ${r()}`;
+        document.getElementById('matrix-b-input').value = `${r()}, ${r()}\n${r()}, ${r()}`;
+        rebuild();
+    }
+
+    function rebuild() {
+        if (timer) toggleAuto();
+        matrixA = document.getElementById('matrix-a-input').value.trim().split('\n').map(r => r.split(',').map(v => parseInt(v.trim())));
+        matrixB = document.getElementById('matrix-b-input').value.trim().split('\n').map(r => r.split(',').map(v => parseInt(v.trim())));
+        initSteps();
+    }
+
+    function initSteps() {
+        steps = [];
+        const rA = matrixA.length, cA = matrixA[0].length, cB = matrixB[0].length;
+        let C = Array.from({length: rA}, () => Array(cB).fill(0));
+
+        steps.push({ C: JSON.parse(JSON.stringify(C)), i:-1, k:-1, j:-1, msg: "Начинаем оптимизированное умножение." });
+
+        for (let i = 0; i < rA; i++) {
+            for (let k = 0; k < cA; k++) {
+                const factor = matrixA[i][k];
+                steps.push({ C: JSON.parse(JSON.stringify(C)), i, k, j:-1, msg: `Берем множитель <span class='math'>A[${i}][${k}] = ${factor}</span>.` });
+                
+                if (factor === 0) continue;
+
+                for (let j = 0; j < cB; j++) {
+                    C[i][j] += factor * matrixB[k][j];
+                    steps.push({ 
+                        C: JSON.parse(JSON.stringify(C)), i, k, j, 
+                        msg: `Обновляем <span class='math'>C[${i}][${j}]</span>: прибавляем ${factor} × ${matrixB[k][j]}`
+                    });
+                }
+            }
+        }
+        cur = 0; render();
+    }
+
+    function drawGrid(id, data, activeI, activeK, activeJ) {
+        const el = document.getElementById(id);
+        el.style.gridTemplateColumns = `repeat(${data[0].length}, 1fr)`;
+        el.innerHTML = data.flatMap((row, r) => row.map((v, c) => {
+            let cls = '';
+            if (id === 'grid-a' && r === activeI && c === activeK) cls = 'cell-factor';
+            if (id === 'grid-b' && r === activeK) cls = (c === activeJ) ? 'cell-target' : 'cell-b-row';
+            if (id === 'grid-c' && r === activeI) cls = (c === activeJ) ? 'cell-target' : 'cell-row-active';
+            return `<div class="matrix-cell ${cls}">${v}</div>`;
+        })).join('');
+    }
+
+    function render() {
+        const s = steps[cur];
+        document.getElementById('info').innerHTML = s.msg;
+        document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
+        drawGrid('grid-a', matrixA, s.i, s.k, s.j);
+        drawGrid('grid-b', matrixB, s.i, s.k, s.j);
+        drawGrid('grid-c', s.C, s.i, s.k, s.j);
+    }
+
+    function go(d) { if(steps[cur+d]) { cur+=d; render(); } }
+    
+    function toggleAuto() {
+        const btn = document.getElementById('auto-btn');
+        if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 600); }
+    }
+
+    function switchMainTab(btn, id) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(id).classList.add('active');
+        Prism.highlightAll();
+    }
+
+    rebuild();
+</script>
+</body>
+</html>
