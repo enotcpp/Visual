@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cache-Friendly Matrix Multiplication | AlgoView Lab</title>
     
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    
     <style>
         :root {
             --bg-main: #141416;
@@ -18,8 +16,9 @@
             --accent-soft: rgba(127, 119, 221, 0.1);
             --border: #313136;
             --code-bg: #0d0d0f;
-            --highlight-a: #e67e22; /* Множитель */
-            --highlight-b: #1d9e75; /* Строка B */
+            --highlight-a: #e67e22; 
+            --highlight-b: #1d9e75;
+            --line-hl: rgba(127, 119, 221, 0.35);
         }
 
         * { box-sizing: border-box; }
@@ -46,7 +45,7 @@
             background: var(--bg-input); border: 1px solid var(--border);
             color: white; padding: 12px; border-radius: 8px; outline: none; 
             font-family: monospace; font-size: 14px; resize: none;
-            width: 200px; height: 80px; line-height: 1.5;
+            width: 200px; height: 100px; line-height: 1.5;
         }
         
         .controls { display: flex; gap: 12px; align-items: center; margin-top: 10px; }
@@ -82,7 +81,6 @@
             transition: all 0.2s;
         }
 
-        /* Оптимизированные стили подсветки */
         .cell-factor { background-color: rgba(230, 126, 34, 0.4); color: white; border: 2px solid var(--highlight-a); }
         .cell-row-active { background-color: var(--accent-soft); border: 1px dashed var(--accent); }
         .cell-b-row { background-color: rgba(29, 158, 117, 0.2); border: 1px dashed var(--highlight-b); }
@@ -97,7 +95,19 @@
         
         .tab-content { display: none; padding: 25px; line-height: 1.6; min-height: 200px; }
         .tab-content.active { display: block; }
-        pre[class*="language-"] { margin: 0; border-radius: 10px; background: var(--code-bg) !important; font-size: 14px; }
+
+        /* CODE VIEW */
+        .code-view { 
+            font-family: 'JetBrains Mono', monospace; font-size: 13px; 
+            background: var(--code-bg); padding: 15px; border-radius: 10px; 
+            color: #9ba1a6; white-space: pre; overflow-x: auto; line-height: 1.6;
+        }
+        .code-line { display: block; padding: 0 10px; border-left: 3px solid transparent; transition: 0.2s; }
+        .code-line.active { background: var(--line-hl); border-left: 3px solid var(--accent); color: #fff; }
+        .indent { display: inline-block; width: 24px; }
+        .kw { color: #cc99cd; } 
+        .fn { color: #e67e22; }
+        .num { color: #f8c555; }
     </style>
 </head>
 <body>
@@ -108,12 +118,12 @@
         
         <div class="inputs">
             <div class="matrix-input-group">
-                <label>Matrix A</label>
-                <textarea id="matrix-a-input">1, 2&#10;3, 4</textarea>
+                <label>Matrix A (3x3)</label>
+                <textarea id="matrix-a-input">1, 2, 3&#10;4, 5, 6&#10;7, 8, 9</textarea>
             </div>
             <div class="matrix-input-group">
-                <label>Matrix B</label>
-                <textarea id="matrix-b-input">5, 6&#10;7, 8</textarea>
+                <label>Matrix B (3x3)</label>
+                <textarea id="matrix-b-input">1, 0, 1&#10;0, 1, 0&#10;1, 0, 1</textarea>
             </div>
             <div class="matrix-input-group" style="margin-left: auto;">
                 <label>Actions</label>
@@ -159,58 +169,26 @@
         </div>
         <div id="theory" class="tab-content active">
             <h3>Cache-Friendly Algorithm (i-k-j)</h3>
-            <p>В отличие от классического метода (i-j-k), здесь мы меняем порядок вложенных циклов. Это позволяет обращаться к элементам матриц <b>B</b> и <b>C</b> последовательно, что идеально для кэша процессора.</p>
-            <ul>
-                <li>Цикл <b>i</b>: фиксирует строку в A и C.</li>
-                <li>Цикл <b>k</b>: фиксирует множитель A[i][k] и строку в B.</li>
-                <li>Цикл <b>j</b>: линейно проходит по строкам, суммируя результат.</li>
-            </ul>
+            <p>В отличие от классического метода (i-j-k), здесь мы меняем порядок циклов. Это позволяет обращаться к памяти последовательно.</p>
         </div>
         <div id="python" class="tab-content">
-            <pre><code class="language-python">def multiply(A, B):
-    rows_A, cols_A = len(A), len(A[0])
-    cols_B = len(B[0])
-    C = [[0] * cols_B for _ in range(rows_A)]
-
-    for i in range(rows_A):
-        for k in range(cols_A):
-            factor = A[i][k]
-            if factor == 0: continue
-            for j in range(cols_B):
-                C[i][j] += factor * B[k][j]
-    return C</code></pre>
+            <div class="code-view" id="python-display">
+<span class="code-line" data-l="1"><span class="kw">def</span> <span class="fn">multiply</span>(A, B):</span><span class="code-line" data-l="2"><span class="indent"></span>C = [[<span class="num">0</span>] * cB <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(rA)]</span><span class="code-line" data-l="3"><span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(rA):</span><span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(cA):</span><span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span>factor = A[i][k]</span><span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> factor == <span class="num">0</span>: <span class="kw">continue</span></span><span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(cB):</span><span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>C[i][j] += factor * B[k][j]</span><span class="code-line" data-l="10"><span class="kw">return</span> C</span></div>
         </div>
         <div id="cpp" class="tab-content">
-            <pre><code class="language-cpp">Matrix multiply(const Matrix& A, const Matrix& B) {
-    int rows_A = A.size(), cols_A = A[0].size();
-    int cols_B = B[0].size();
-    Matrix C(rows_A, vector&lt;long long&gt;(cols_B, 0));
-
-    for (int i = 0; i < rows_A; i++) {
-        for (int k = 0; k < cols_A; k++) {
-            if (A[i][k] == 0) continue; 
-            for (int j = 0; j < cols_B; j++) {
-                C[i][j] += A[i][k] * B[k][j];
-            }
-        }
-    }
-    return C;
-}</code></pre>
+            <div class="code-view" id="cpp-display">
+<span class="code-line" data-l="1"><span class="kw">Matrix</span> <span class="fn">multiply</span>(<span class="kw">const</span> Matrix& A, <span class="kw">const</span> Matrix& B) {</span><span class="code-line" data-l="2"><span class="indent"></span>Matrix C(rA, vector&lt;long long&gt;(cB, <span class="num">0</span>));</span><span class="code-line" data-l="3"><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i < rA; i++) {</span><span class="code-line" data-l="4"><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> k = <span class="num">0</span>; k < cA; k++) {</span><span class="code-line" data-l="5"><span class="indent"></span><span class="indent"></span><span class="kw">long long</span> f = A[i][k];</span><span class="code-line" data-l="6"><span class="indent"></span><span class="indent"></span><span class="kw">if</span> (f == <span class="num">0</span>) <span class="kw">continue</span>;</span><span class="code-line" data-l="7"><span class="indent"></span><span class="indent"></span><span class="kw">for</span> (<span class="kw">int</span> j = <span class="num">0</span>; j < cB; j++) {</span><span class="code-line" data-l="8"><span class="indent"></span><span class="indent"></span><span class="indent"></span>C[i][j] += f * B[k][j];</span><span class="code-line" data-l="10"><span class="kw">return</span> C; }</span></div>
         </div>
     </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
 
 <script>
     let matrixA = [], matrixB = [], steps = [], cur = 0, timer = null;
 
     function randomize() {
-        const r = () => Math.floor(Math.random() * 5) + 1;
-        document.getElementById('matrix-a-input').value = `${r()}, ${r()}\n${r()}, ${r()}`;
-        document.getElementById('matrix-b-input').value = `${r()}, ${r()}\n${r()}, ${r()}`;
+        const r = () => Math.floor(Math.random() * 5);
+        document.getElementById('matrix-a-input').value = `${r()}, ${r()}, ${r()}\n${r()}, ${r()}, ${r()}\n${r()}, ${r()}, ${r()}`;
+        document.getElementById('matrix-b-input').value = `${r()}, ${r()}, ${r()}\n${r()}, ${r()}, ${r()}\n${r()}, ${r()}, ${r()}`;
         rebuild();
     }
 
@@ -226,46 +204,63 @@
         const rA = matrixA.length, cA = matrixA[0].length, cB = matrixB[0].length;
         let C = Array.from({length: rA}, () => Array(cB).fill(0));
 
-        steps.push({ C: JSON.parse(JSON.stringify(C)), i:-1, k:-1, j:-1, msg: "Начинаем оптимизированное умножение." });
+        // Step 0: Init
+        steps.push({ C: JSON.parse(JSON.stringify(C)), i:-1, k:-1, j:-1, msg: "Initializing matrix C.", line: 2 });
 
         for (let i = 0; i < rA; i++) {
             for (let k = 0; k < cA; k++) {
                 const factor = matrixA[i][k];
-                steps.push({ C: JSON.parse(JSON.stringify(C)), i, k, j:-1, msg: `Берем множитель <span class='math'>A[${i}][${k}] = ${factor}</span>.` });
+                steps.push({ C: JSON.parse(JSON.stringify(C)), i, k, j:-1, msg: `Factor A[${i}][${k}] = ${factor}`, line: 5 });
                 
-                if (factor === 0) continue;
+                if (factor === 0) {
+                    steps.push({ C: JSON.parse(JSON.stringify(C)), i, k, j:-1, msg: "Factor is 0, skipping.", line: 6 });
+                    continue;
+                }
 
                 for (let j = 0; j < cB; j++) {
                     C[i][j] += factor * matrixB[k][j];
                     steps.push({ 
                         C: JSON.parse(JSON.stringify(C)), i, k, j, 
-                        msg: `Обновляем <span class='math'>C[${i}][${j}]</span>: прибавляем ${factor} × ${matrixB[k][j]}`
+                        msg: `Computing: C[${i}][${j}] += ${factor} * ${matrixB[k][j]}`,
+                        line: 8 
                     });
                 }
             }
         }
+        
+        steps.push({ C: JSON.parse(JSON.stringify(C)), i:-1, k:-1, j:-1, msg: "Done! Returning result C.", line: 10 });
         cur = 0; render();
+    }
+
+    function syncCode() {
+        document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active'));
+        const step = steps[cur];
+        if (step && step.line) {
+            document.querySelectorAll(`.code-line[data-l="${step.line}"]`).forEach(l => l.classList.add('active'));
+        }
     }
 
     function drawGrid(id, data, activeI, activeK, activeJ) {
         const el = document.getElementById(id);
         el.style.gridTemplateColumns = `repeat(${data[0].length}, 1fr)`;
         el.innerHTML = data.flatMap((row, r) => row.map((v, c) => {
-            let cls = '';
-            if (id === 'grid-a' && r === activeI && c === activeK) cls = 'cell-factor';
-            if (id === 'grid-b' && r === activeK) cls = (c === activeJ) ? 'cell-target' : 'cell-b-row';
-            if (id === 'grid-c' && r === activeI) cls = (c === activeJ) ? 'cell-target' : 'cell-row-active';
-            return `<div class="matrix-cell ${cls}">${v}</div>`;
+            let cls = 'matrix-cell';
+            if (id === 'grid-a' && r === activeI && c === activeK) cls += ' cell-factor';
+            if (id === 'grid-b' && r === activeK) cls += (c === activeJ) ? ' cell-target' : ' cell-b-row';
+            if (id === 'grid-c' && r === activeI) cls += (c === activeJ) ? ' cell-target' : ' cell-row-active';
+            return `<div class="${cls}">${v}</div>`;
         })).join('');
     }
 
     function render() {
         const s = steps[cur];
+        if (!s) return;
         document.getElementById('info').innerHTML = s.msg;
         document.getElementById('ctr').textContent = `Step ${cur}/${steps.length-1}`;
         drawGrid('grid-a', matrixA, s.i, s.k, s.j);
         drawGrid('grid-b', matrixB, s.i, s.k, s.j);
         drawGrid('grid-c', s.C, s.i, s.k, s.j);
+        syncCode();
     }
 
     function go(d) { if(steps[cur+d]) { cur+=d; render(); } }
@@ -273,7 +268,7 @@
     function toggleAuto() {
         const btn = document.getElementById('auto-btn');
         if (timer) { clearInterval(timer); timer = null; btn.textContent = "Auto Play"; }
-        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 600); }
+        else { btn.textContent = "Stop"; timer = setInterval(() => go(1), 400); }
     }
 
     function switchMainTab(btn, id) {
@@ -281,7 +276,7 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(id).classList.add('active');
-        Prism.highlightAll();
+        syncCode();
     }
 
     rebuild();
